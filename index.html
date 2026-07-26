@@ -32,12 +32,19 @@
         .hidden {
             display: none !important;
         }
-        /* Hide Blogger theme default header/navbar/sidebar/footer elements */
+        /* Hide Blogger theme default header/navbar/sidebar/footer elements & hero images */
+        header, footer, nav, aside,
+        .header, .footer, .nav, .navbar, .top-bar, .top-nav, .mobile-nav, .search-box, .search-button, .back-button,
         #navbar-iframe, .navbar, .header-outer, .header-wrapper, #header, #header-wrapper,
-        .sidebar-wrapper, .sidebar, #sidebar, .post-header, .post-title, .post-footer,
+        .sidebar-wrapper, .sidebar, #sidebar, .post-header, .post-title, .post-footer, .post-header-container,
         .post-feeds, .feed-links, .footer-outer, .footer-wrapper, #footer, .blog-pager,
         .comments, #comments, .attribution, .widget, .widget-content, .status-msg-wrap, .status-msg-body,
-        .blog-posts, .main-inner, .column-center-inner, .date-header, .post-outer {
+        .blog-posts, .main-inner, .column-center-inner, .date-header, .post-outer, .bg-photo, .bg-cover,
+        .hero-image, .featured-image, .post-featured-image, .snippet-thumbnail, .post-header-image,
+        .post-hero, .hero-container, .header-hero, .touch-icon, .search-input, .centered-top-container,
+        .bg-image, .bg-photo-container, .lightbox, .fancybox-overlay, .flat-button, .search-action,
+        .blog-post-hero, .header-bar, .mobile-header, div[class*="hero"], div[class*="header-bg"],
+        .bg-photo-container, .centered-top {
             display: none !important;
             visibility: hidden !important;
             height: 0 !important;
@@ -50,7 +57,7 @@
             border: none !important;
         }
         /* Ensure post body parent containers take full height without padding */
-        .content-outer, .content-inner, .main-outer, .main-inner, .post, .post-body, .entry-content {
+        .content-outer, .content-inner, .main-outer, .main-inner, .post, .post-body, .entry-content, .post-outer-container {
             margin: 0 !important;
             padding: 0 !important;
             width: 100% !important;
@@ -59,16 +66,19 @@
             background: #0b0f19 !important;
             border: none !important;
             box-shadow: none !important;
+            overflow: hidden !important;
         }
         /* Adaptive PC & Mobile Frame Container (Fullscreen Overlay mode for Blogger) */
         .pc-wrapper {
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
             width: 100vw !important;
             height: 100vh !important;
             height: 100dvh !important;
-            z-index: 999999999 !important;
+            z-index: 2147483647 !important;
             background: #0b0f19 !important;
             display: flex !important;
             justify-content: center !important;
@@ -83,7 +93,7 @@
             max-width: 100% !important;
             height: 100% !important;
             max-height: 100% !important;
-            z-index: 99999999 !important;
+            z-index: 2147483647 !important;
             background-color: #0b0f19 !important;
             display: flex !important;
             flex-direction: column !important;
@@ -779,6 +789,42 @@
         </div>
     </div>
 
+    <!-- Script Pembersih Tampilan Blogger (Promote App Wrapper ke Fullscreen Body) -->
+    <script>
+        (function promoteBloggerApp() {
+            function setupBloggerFullscreen() {
+                const wrapper = document.querySelector('.pc-wrapper');
+                if (wrapper) {
+                    if (wrapper.parentElement !== document.body) {
+                        document.body.appendChild(wrapper);
+                    }
+                    wrapper.style.display = 'flex';
+                    wrapper.style.visibility = 'visible';
+                    wrapper.style.opacity = '1';
+                }
+                document.documentElement.style.cssText = "margin:0!important;padding:0!important;overflow:hidden!important;width:100vw!important;height:100vh!important;";
+                document.body.style.cssText = "margin:0!important;padding:0!important;overflow:hidden!important;width:100vw!important;height:100vh!important;background:#0b0f19!important;";
+
+                // Sembunyikan elemen-elemen header/navbar/hero milik tema Blogger
+                const selector = 'header, footer, nav, aside, .header, .footer, .nav, .navbar, .top-bar, .top-nav, .mobile-nav, .search-box, .search-button, .back-button, #navbar-iframe, .navbar, .header-outer, .header-wrapper, #header, #header-wrapper, .sidebar-wrapper, .sidebar, #sidebar, .post-header, .post-title, .post-footer, .post-header-container, .post-feeds, .feed-links, .footer-outer, .footer-wrapper, #footer, .blog-pager, .comments, #comments, .attribution, .widget, .widget-content, .status-msg-wrap, .status-msg-body, .blog-posts, .main-inner, .column-center-inner, .date-header, .post-outer, .bg-photo, .bg-cover, .hero-image, .featured-image, .post-featured-image, .snippet-thumbnail, .post-header-image, .post-hero, .hero-container, .header-hero, .touch-icon, .search-input, .centered-top-container, .bg-image, .bg-photo-container, .lightbox, .fancybox-overlay, .flat-button, .search-action, .blog-post-hero, .header-bar, .mobile-header, .centered-top';
+                document.querySelectorAll(selector).forEach(el => {
+                    if (wrapper && !wrapper.contains(el)) {
+                        el.style.display = 'none';
+                        el.style.visibility = 'hidden';
+                    }
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', setupBloggerFullscreen);
+            } else {
+                setupBloggerFullscreen();
+            }
+            window.addEventListener('load', setupBloggerFullscreen);
+            setInterval(setupBloggerFullscreen, 400);
+        })();
+    </script>
+
     <!-- Firebase SDK Scripts for Console / Blogger Integration -->
     <script>
         (async function() {
@@ -835,36 +881,15 @@
         let state = {
             currentUser: null, // { role: 'admin'|'siswa', name: '', username: '', nis: '' }
             sekolah: {
-                nama: "RA AL-HIDAYAH PALALANG",
-                alamat: "Palalang Waru Pamekasan",
-                tahun: "2025/2026",
-                kepsek: "Safinatul Jannah, S.Pd.",
-                logo: "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg"
-            },
-            siswa: [
-                {
-                    nis: "1234",
-                    nama: "alwan",
-                    kelas: "SMA",
-                    wali: "Bapak Alwan",
-                    hp: "08123456789",
-                    user: "alwan",
-                    pass: "123",
-                    saldo: 50000
-                }
-            ],
-            transaksi: [
-                {
-                    id: "TRX-1001",
-                    nis: "1234",
-                    nama: "alwan",
-                    kelas: "SMA",
-                    tipe: "setor",
-                    nominal: 50000,
-                    keperluan: "Setoran Tabungan",
-                    tanggal: getFormattedNow()
-                }
-            ],
+  nama: "RA AL-HIDAYAH PALALANG",
+  alamat: "Palalang Waru Pamekasan",
+  tahun: "2025/2026",
+  kepsek: "Safinatul Jannah, S.Pd.",
+  logo: "https://cdn.phototourl.com/free/2026-07-25-74f0b0a2-b2e2-4833-be27-00e8df7520f2.jpg"
+},
+siswa: [],
+transaksi: [],
+
             selectedClass: "Semua",
             selectedRiwayatClass: "Semua",
             historyDateFilter: getTodayYYYYMMDD(),
