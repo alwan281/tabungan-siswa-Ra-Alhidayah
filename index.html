@@ -660,6 +660,11 @@
                         </div>
 
                         <div>
+                            <label class="text-[10px] font-semibold text-slate-400 block mb-1">Tanggal Transaksi (Bisa Atur / Backdate)</label>
+                            <input type="date" id="setor-tanggal" class="custom-input w-full px-3 py-2 rounded-xl text-xs font-medium text-slate-200">
+                        </div>
+
+                        <div>
                             <label class="text-[10px] font-semibold text-slate-400 block mb-1">Catatan / Keperluan</label>
                             <input type="text" id="setor-catatan" placeholder="Misal: Setoran Mingguan" value="Setoran Tabungan" class="custom-input w-full px-3 py-2 rounded-xl text-xs font-medium">
                         </div>
@@ -706,6 +711,11 @@
                         </div>
 
                         <div>
+                            <label class="text-[10px] font-semibold text-slate-400 block mb-1">Tanggal Transaksi (Bisa Atur / Backdate)</label>
+                            <input type="date" id="tarik-tanggal" class="custom-input w-full px-3 py-2 rounded-xl text-xs font-medium text-slate-200">
+                        </div>
+
+                        <div>
                             <label class="text-[10px] font-semibold text-slate-400 block mb-1">Catatan / Keperluan</label>
                             <input type="text" id="tarik-catatan" placeholder="Misal: Beli Alat Tulis" value="Penarikan Tabungan" class="custom-input w-full px-3 py-2 rounded-xl text-xs font-medium">
                         </div>
@@ -714,6 +724,90 @@
                     <button onclick="submitPenarikan()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-rose-600/30">
                         PROSES PENARIKAN TABUNGAN
                     </button>
+                </div>
+            </div>
+
+            <!-- MODAL: RIWAYAT DETAIL PER SISWA -->
+            <div id="modal-riwayat-siswa" class="fixed inset-0 z-[9999999] bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+                <div class="glass-card w-full max-w-lg rounded-2xl p-4 sm:p-5 border border-blue-500/30 shadow-2xl space-y-3 max-h-[92vh] flex flex-col">
+                    <div class="flex justify-between items-center pb-2 border-b border-slate-800 shrink-0">
+                        <h3 class="text-xs font-bold text-blue-400 flex items-center gap-2">
+                            <i class="fas fa-clock-rotate-left"></i> Riwayat Setoran & Mutasi Siswa
+                        </h3>
+                        <button onclick="closeModal('modal-riwayat-siswa')" class="text-slate-400 hover:text-white p-1">
+                            <i class="fas fa-times text-sm"></i>
+                        </button>
+                    </div>
+
+                    <!-- Info Card Siswa -->
+                    <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 shrink-0 space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <div>
+                                <h4 id="detail-siswa-nama" class="text-xs font-bold text-slate-100">Nama Siswa</h4>
+                                <p id="detail-siswa-info" class="text-[10px] text-slate-400">NIS: - • Kelas: -</p>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <p class="text-[9px] text-slate-400">Saldo saat ini</p>
+                                <p id="detail-siswa-saldo-saat-ini" class="text-xs font-extrabold text-blue-400">Rp0</p>
+                            </div>
+                        </div>
+                        <div id="detail-siswa-admin-actions" class="pt-1 flex items-center gap-2 hidden">
+                            <button id="btn-detail-setor" class="flex-1 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold flex items-center justify-center gap-1 transition-all">
+                                <i class="fas fa-plus"></i> Setor Uang
+                            </button>
+                            <button id="btn-detail-tarik" class="flex-1 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 text-[10px] font-bold flex items-center justify-center gap-1 transition-all">
+                                <i class="fas fa-minus"></i> Tarik Uang
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Tanggal Ke Tanggal & Jenis Transaksi -->
+                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 shrink-0 space-y-2">
+                        <p class="text-[10px] font-bold text-slate-300 flex items-center gap-1">
+                            <i class="fas fa-filter text-blue-400"></i> Filter Tanggal Setoran:
+                        </p>
+                        <div class="grid grid-cols-2 gap-2 text-[10px]">
+                            <div>
+                                <label class="text-[9px] text-slate-400 block mb-0.5">Dari Tanggal:</label>
+                                <input type="date" id="detail-tgl-mulai" onchange="renderDetailRiwayatSiswaList()" class="custom-input w-full px-2 py-1.5 rounded-lg text-[11px] text-slate-200">
+                            </div>
+                            <div>
+                                <label class="text-[9px] text-slate-400 block mb-0.5">Sampai Tanggal:</label>
+                                <input type="date" id="detail-tgl-selesai" onchange="renderDetailRiwayatSiswaList()" class="custom-input w-full px-2 py-1.5 rounded-lg text-[11px] text-slate-200">
+                            </div>
+                        </div>
+
+                        <!-- Preset Tanggal & Type Filter -->
+                        <div class="flex items-center justify-between gap-1 pt-1 flex-wrap text-[10px]">
+                            <div class="flex items-center gap-1 overflow-x-auto pb-0.5 max-w-full">
+                                <button type="button" onclick="setDetailPresetDate('bulan_ini')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold whitespace-nowrap">Bulan Ini</button>
+                                <button type="button" onclick="setDetailPresetDate('bulan_lalu')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold whitespace-nowrap">Bulan Lalu</button>
+                                <button type="button" onclick="setDetailPresetDate('semua')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold whitespace-nowrap">Semua Tanggal</button>
+                            </div>
+                            <select id="detail-tipe-filter" onchange="renderDetailRiwayatSiswaList()" class="bg-slate-800 text-slate-200 px-2 py-1 rounded text-[10px] border border-slate-700 font-semibold">
+                                <option value="semua">Semua Transaksi</option>
+                                <option value="setor">Setoran Saja</option>
+                                <option value="tarik">Penarikan Saja</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Rangkuman Stat Filter Periode Ini -->
+                    <div class="grid grid-cols-2 gap-2 text-center shrink-0">
+                        <div class="p-2 rounded-xl bg-emerald-950/30 border border-emerald-500/20">
+                            <p class="text-[9px] text-slate-400">Total Setoran (Periode Ini)</p>
+                            <p id="detail-stat-setor" class="text-xs font-bold text-emerald-400">Rp0</p>
+                        </div>
+                        <div class="p-2 rounded-xl bg-rose-950/30 border border-rose-500/20">
+                            <p class="text-[9px] text-slate-400">Total Penarikan (Periode Ini)</p>
+                            <p id="detail-stat-tarik" class="text-xs font-bold text-rose-400">Rp0</p>
+                        </div>
+                    </div>
+
+                    <!-- List Transaksi Scrollable -->
+                    <div class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[120px]" id="detail-transaksi-list">
+                        <!-- Dynamic items rendered by JS -->
+                    </div>
                 </div>
             </div>
 
@@ -881,15 +975,36 @@
         let state = {
             currentUser: null, // { role: 'admin'|'siswa', name: '', username: '', nis: '' }
             sekolah: {
-  nama: "RA AL-HIDAYAH PALALANG",
-  alamat: "Palalang Waru Pamekasan",
-  tahun: "2025/2026",
-  kepsek: "Safinatul Jannah, S.Pd.",
-  logo: "https://cdn.phototourl.com/free/2026-07-25-74f0b0a2-b2e2-4833-be27-00e8df7520f2.jpg"
-},
-siswa: [],
-transaksi: [],
-
+                nama: "RA AL-HIDAYAH PALALANG",
+                alamat: "Palalang Waru Pamekasan",
+                tahun: "2025/2026",
+                kepsek: "Safinatul Jannah, S.Pd.",
+                logo: "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg"
+            },
+            siswa: [
+                {
+                    nis: "1234",
+                    nama: "alwan",
+                    kelas: "SMA",
+                    wali: "Bapak Alwan",
+                    hp: "08123456789",
+                    user: "alwan",
+                    pass: "123",
+                    saldo: 50000
+                }
+            ],
+            transaksi: [
+                {
+                    id: "TRX-1001",
+                    nis: "1234",
+                    nama: "alwan",
+                    kelas: "SMA",
+                    tipe: "setor",
+                    nominal: 50000,
+                    keperluan: "Setoran Tabungan",
+                    tanggal: getFormattedNow()
+                }
+            ],
             selectedClass: "Semua",
             selectedRiwayatClass: "Semua",
             historyDateFilter: getTodayYYYYMMDD(),
@@ -1417,14 +1532,14 @@ transaksi: [],
 
             listContainer.innerHTML = filtered.map(s => `
                 <div class="glass-card p-4 rounded-2xl border border-slate-800 space-y-3 relative overflow-hidden transition-all hover:border-slate-700">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between cursor-pointer group" onclick="openModalRiwayatSiswa('${s.nis}')" title="Klik untuk lihat riwayat setoran & mutasi ${s.nama}">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white text-sm shadow-md">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white text-sm shadow-md group-hover:scale-105 transition-transform">
                                 ${s.nama ? s.nama.charAt(0).toUpperCase() : 'S'}
                             </div>
                             <div>
-                                <h4 class="text-xs font-extrabold text-slate-100 flex items-center gap-1.5">
-                                    ${s.nama}
+                                <h4 class="text-xs font-extrabold text-slate-100 flex items-center gap-1.5 group-hover:text-blue-400 group-hover:underline transition-colors">
+                                    ${s.nama} <i class="fas fa-clock-rotate-left text-[10px] text-blue-400"></i>
                                 </h4>
                                 <p class="text-[10px] text-slate-400 font-medium">NIS: ${s.nis} • ${s.kelas}</p>
                             </div>
@@ -1432,6 +1547,7 @@ transaksi: [],
                         <div class="text-right">
                             <p class="text-[9px] text-slate-400">Saldo Tabungan</p>
                             <p class="text-xs font-extrabold text-blue-400">${formatRp(s.saldo)}</p>
+                            <span class="text-[9px] text-blue-400 font-bold flex items-center justify-end gap-1 mt-0.5 group-hover:underline"><i class="fas fa-list-check text-[8px]"></i> Lihat Riwayat</span>
                         </div>
                     </div>
 
@@ -1516,7 +1632,7 @@ transaksi: [],
                         </div>
                         <div class="min-w-0 space-y-0.5">
                             <div class="flex items-center gap-2 flex-wrap">
-                                <h4 class="text-xs sm:text-sm font-bold text-slate-100 truncate">${t.nama}</h4>
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-100 truncate cursor-pointer hover:text-blue-400 hover:underline" onclick="openModalRiwayatSiswa('${t.nis}')" title="Klik untuk lihat riwayat detail ${t.nama}">${t.nama}</h4>
                                 <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20 font-bold shrink-0">${t.kelas}</span>
                             </div>
                             <div class="flex items-center gap-2 text-[10px] text-slate-400 flex-wrap">
@@ -1738,6 +1854,147 @@ transaksi: [],
             }
         }
 
+        let currentDetailSiswaNis = null;
+
+        function openModalRiwayatSiswa(nis) {
+            const s = state.siswa.find(x => x.nis === nis);
+            if (!s) return;
+
+            currentDetailSiswaNis = nis;
+            document.getElementById('detail-siswa-nama').textContent = s.nama;
+            document.getElementById('detail-siswa-info').textContent = `NIS: ${s.nis} • Kelas: ${s.kelas} • Wali: ${s.wali || '-'}`;
+            document.getElementById('detail-siswa-saldo-saat-ini').textContent = formatRp(s.saldo);
+
+            const isAdmin = state.currentUser && state.currentUser.role === 'admin';
+            const adminBox = document.getElementById('detail-siswa-admin-actions');
+            if (adminBox) {
+                if (isAdmin) {
+                    adminBox.classList.remove('hidden');
+                    document.getElementById('btn-detail-setor').onclick = () => { closeModal('modal-riwayat-siswa'); openModalSetor(s.nis); };
+                    document.getElementById('btn-detail-tarik').onclick = () => { closeModal('modal-riwayat-siswa'); openModalTarik(s.nis); };
+                } else {
+                    adminBox.classList.add('hidden');
+                }
+            }
+
+            document.getElementById('detail-tgl-mulai').value = "";
+            document.getElementById('detail-tgl-selesai').value = "";
+            document.getElementById('detail-tipe-filter').value = "semua";
+
+            renderDetailRiwayatSiswaList();
+            openModal('modal-riwayat-siswa');
+        }
+
+        function setDetailPresetDate(preset) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const todayStr = getTodayYYYYMMDD();
+
+            const tglMulai = document.getElementById('detail-tgl-mulai');
+            const tglSelesai = document.getElementById('detail-tgl-selesai');
+
+            if (preset === 'bulan_ini') {
+                if (tglMulai) tglMulai.value = `${yyyy}-${mm}-01`;
+                if (tglSelesai) tglSelesai.value = todayStr;
+            } else if (preset === 'bulan_lalu') {
+                const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+                const lmY = lastMonth.getFullYear();
+                const lmM = String(lastMonth.getMonth() + 1).padStart(2, '0');
+                const lmD = String(lastMonthEnd.getDate()).padStart(2, '0');
+                if (tglMulai) tglMulai.value = `${lmY}-${lmM}-01`;
+                if (tglSelesai) tglSelesai.value = `${lmY}-${lmM}-${lmD}`;
+            } else if (preset === 'semua') {
+                if (tglMulai) tglMulai.value = '';
+                if (tglSelesai) tglSelesai.value = '';
+            }
+
+            renderDetailRiwayatSiswaList();
+        }
+
+        function renderDetailRiwayatSiswaList() {
+            if (!currentDetailSiswaNis) return;
+            const container = document.getElementById('detail-transaksi-list');
+            if (!container) return;
+
+            const tglMulaiVal = document.getElementById('detail-tgl-mulai').value;
+            const tglSelesaiVal = document.getElementById('detail-tgl-selesai').value;
+            const tipeFilter = document.getElementById('detail-tipe-filter').value;
+
+            let startDate = tglMulaiVal ? new Date(tglMulaiVal + 'T00:00:00') : null;
+            let endDate = tglSelesaiVal ? new Date(tglSelesaiVal + 'T23:59:59') : null;
+
+            let filtered = state.transaksi.filter(t => t.nis === currentDetailSiswaNis);
+
+            if (tipeFilter !== 'semua') {
+                filtered = filtered.filter(t => t.tipe === tipeFilter);
+            }
+
+            filtered = filtered.filter(t => {
+                const dt = parseIndoDate(t.tanggal);
+                if (!dt) return true;
+                if (startDate && dt < startDate) return false;
+                if (endDate && dt > endDate) return false;
+                return true;
+            });
+
+            filtered.sort((a, b) => {
+                const timeA = Number((a.id || '').replace(/\D/g, '')) || 0;
+                const timeB = Number((b.id || '').replace(/\D/g, '')) || 0;
+                return timeB - timeA;
+            });
+
+            let totalSetor = 0;
+            let totalTarik = 0;
+            filtered.forEach(t => {
+                if (t.tipe === 'setor') totalSetor += Number(t.nominal) || 0;
+                if (t.tipe === 'tarik') totalTarik += Number(t.nominal) || 0;
+            });
+
+            document.getElementById('detail-stat-setor').textContent = formatRp(totalSetor);
+            document.getElementById('detail-stat-tarik').textContent = formatRp(totalTarik);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="p-6 text-center text-slate-500 space-y-1">
+                        <i class="fas fa-receipt text-2xl mb-1"></i>
+                        <p class="text-xs font-medium">Belum ada riwayat setoran / transaksi di periode tanggal ini.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const isAdmin = state.currentUser && state.currentUser.role === 'admin';
+
+            container.innerHTML = filtered.map(t => `
+                <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between text-xs transition-all hover:border-slate-700">
+                    <div class="space-y-0.5 min-w-0 pr-2">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase ${t.tipe === 'setor' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">
+                                ${t.tipe === 'setor' ? 'SETOR' : 'TARIK'}
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-mono"><i class="far fa-calendar-alt text-[9px]"></i> ${t.tanggal}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-200 font-medium truncate">${t.keperluan || (t.tipe === 'setor' ? 'Setoran Tabungan' : 'Penarikan Tabungan')}</p>
+                        <p class="text-[9px] text-slate-500 font-mono">ID: ${t.id}</p>
+                    </div>
+                    <div class="text-right flex items-center gap-2 shrink-0">
+                        <div>
+                            <p class="text-xs font-extrabold ${t.tipe === 'setor' ? 'text-emerald-400' : 'text-rose-400'}">
+                                ${t.tipe === 'setor' ? '+' : '-'}${formatRp(t.nominal)}
+                            </p>
+                        </div>
+                        ${isAdmin ? `
+                            <button onclick="deleteTransaksi('${t.id}')" class="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950/80 text-slate-400 hover:text-rose-400 border border-slate-700/60" title="Hapus Transaksi Ini">
+                                <i class="fas fa-trash-can text-[10px]"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
         function openModalSetor(nis) {
             const s = state.siswa.find(x => x.nis === nis);
             if (!s) return;
@@ -1747,6 +2004,9 @@ transaksi: [],
             document.getElementById('setor-siswa-info').textContent = `NIS: ${s.nis} • Kelas: ${s.kelas}`;
             document.getElementById('setor-siswa-saldo').textContent = `Saldo Tabungan Saat Ini: ${formatRp(s.saldo)}`;
             document.getElementById('setor-nominal').value = "";
+            
+            const tglElem = document.getElementById('setor-tanggal');
+            if (tglElem) tglElem.value = getTodayYYYYMMDD();
 
             openModal('modal-setor');
         }
@@ -1759,6 +2019,7 @@ transaksi: [],
             const nis = document.getElementById('setor-target-nis').value;
             const nominal = Number(document.getElementById('setor-nominal').value) || 0;
             const catatan = document.getElementById('setor-catatan').value.trim() || "Setoran Tabungan";
+            const customTgl = document.getElementById('setor-tanggal') ? document.getElementById('setor-tanggal').value : null;
 
             if (nominal <= 0) {
                 showToast("Nominal setoran harus lebih dari 0!", "error");
@@ -1770,6 +2031,14 @@ transaksi: [],
 
             s.saldo = (Number(s.saldo) || 0) + nominal;
 
+            let trxDate = getFormattedNow();
+            if (customTgl) {
+                const [y, m, d] = customTgl.split('-');
+                const nowTime = new Date();
+                const timeStr = String(nowTime.getHours()).padStart(2, '0') + ':' + String(nowTime.getMinutes()).padStart(2, '0');
+                trxDate = `${d}/${m}/${y} ${timeStr}`;
+            }
+
             const newTrx = {
                 id: "TRX-" + Date.now(),
                 nis: s.nis,
@@ -1778,7 +2047,7 @@ transaksi: [],
                 tipe: "setor",
                 nominal: nominal,
                 keperluan: catatan,
-                tanggal: getFormattedNow()
+                tanggal: trxDate
             };
 
             state.transaksi.unshift(newTrx);
@@ -1793,6 +2062,11 @@ transaksi: [],
             }
 
             closeModal('modal-setor');
+            if (currentDetailSiswaNis === s.nis) {
+                renderDetailRiwayatSiswaList();
+                const sObj = state.siswa.find(x => x.nis === currentDetailSiswaNis);
+                if (sObj) document.getElementById('detail-siswa-saldo-saat-ini').textContent = formatRp(sObj.saldo);
+            }
             renderAllViews();
         }
 
@@ -1806,6 +2080,9 @@ transaksi: [],
             document.getElementById('tarik-siswa-saldo').textContent = `Saldo Tabungan Saat Ini: ${formatRp(s.saldo)}`;
             document.getElementById('tarik-nominal').value = "";
 
+            const tglElem = document.getElementById('tarik-tanggal');
+            if (tglElem) tglElem.value = getTodayYYYYMMDD();
+
             openModal('modal-tarik');
         }
 
@@ -1817,6 +2094,7 @@ transaksi: [],
             const nis = document.getElementById('tarik-target-nis').value;
             const nominal = Number(document.getElementById('tarik-nominal').value) || 0;
             const catatan = document.getElementById('tarik-catatan').value.trim() || "Penarikan Tabungan";
+            const customTgl = document.getElementById('tarik-tanggal') ? document.getElementById('tarik-tanggal').value : null;
 
             const s = state.siswa.find(x => x.nis === nis);
             if (!s) return;
@@ -1833,6 +2111,14 @@ transaksi: [],
 
             s.saldo = (Number(s.saldo) || 0) - nominal;
 
+            let trxDate = getFormattedNow();
+            if (customTgl) {
+                const [y, m, d] = customTgl.split('-');
+                const nowTime = new Date();
+                const timeStr = String(nowTime.getHours()).padStart(2, '0') + ':' + String(nowTime.getMinutes()).padStart(2, '0');
+                trxDate = `${d}/${m}/${y} ${timeStr}`;
+            }
+
             const newTrx = {
                 id: "TRX-" + Date.now(),
                 nis: s.nis,
@@ -1841,7 +2127,7 @@ transaksi: [],
                 tipe: "tarik",
                 nominal: nominal,
                 keperluan: catatan,
-                tanggal: getFormattedNow()
+                tanggal: trxDate
             };
 
             state.transaksi.unshift(newTrx);
@@ -1856,11 +2142,33 @@ transaksi: [],
             }
 
             closeModal('modal-tarik');
+            if (currentDetailSiswaNis === s.nis) {
+                renderDetailRiwayatSiswaList();
+                const sObj = state.siswa.find(x => x.nis === currentDetailSiswaNis);
+                if (sObj) document.getElementById('detail-siswa-saldo-saat-ini').textContent = formatRp(sObj.saldo);
+            }
             renderAllViews();
         }
 
         function deleteTransaksi(id) {
             if (confirm("Yakin ingin menghapus catatan transaksi ini?")) {
+                const trx = state.transaksi.find(t => t.id === id);
+                if (trx) {
+                    const s = state.siswa.find(x => x.nis === trx.nis);
+                    if (s) {
+                        if (trx.tipe === 'setor') {
+                            s.saldo = Math.max(0, (Number(s.saldo) || 0) - Number(trx.nominal));
+                        } else if (trx.tipe === 'tarik') {
+                            s.saldo = (Number(s.saldo) || 0) + Number(trx.nominal);
+                        }
+                        if (!IS_PREVIEW && db) {
+                            const mods = window.firebaseAppModules;
+                            mods.setDoc(mods.doc(db, 'artifacts', appId, 'siswa', s.nis), s)
+                                .catch(err => console.error("Firestore update saldo error:", err));
+                        }
+                    }
+                }
+
                 state.transaksi = state.transaksi.filter(t => t.id !== id);
                 showToast("Catatan Transaksi Dihapus!", "info");
 
@@ -1870,6 +2178,11 @@ transaksi: [],
                         .catch(err => console.error("Firestore delete trx error:", err));
                 }
 
+                if (currentDetailSiswaNis) {
+                    renderDetailRiwayatSiswaList();
+                    const sObj = state.siswa.find(x => x.nis === currentDetailSiswaNis);
+                    if (sObj) document.getElementById('detail-siswa-saldo-saat-ini').textContent = formatRp(sObj.saldo);
+                }
                 renderAllViews();
             }
         }
