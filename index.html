@@ -547,14 +547,6 @@
                                 <button type="button" onclick="setLogoPreset('buku')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Buku</button>
                                 <button type="button" onclick="setLogoPreset('akademik')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Akademik</button>
                             </div>
-                        <div class="pt-3 border-t border-slate-800 space-y-2">
-                            <p class="text-[10px] font-bold text-slate-300 flex items-center justify-between">
-                                <span><i class="fas fa-arrows-rotate text-blue-400 mr-1"></i> Status Pembaruan Sistem:</span>
-                                <span class="text-emerald-400 font-mono">v2.5 (Aktif)</span>
-                            </p>
-                            <button type="button" onclick="applyAppUpdate()" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-blue-400 border border-blue-500/30 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all">
-                                <i class="fas fa-sync-alt text-xs"></i> Perbarui & Reset Cache Aplikasi
-                            </button>
                         </div>
                     </div>
 
@@ -888,31 +880,6 @@
                 </div>
             </div>
 
-            <!-- NOTIFIKASI PEMBARUAN APLIKASI MODERN -->
-            <div id="app-update-notification" class="fixed bottom-4 left-4 right-4 max-w-md mx-auto z-[99999999] bg-gradient-to-r from-blue-950/95 via-indigo-950/95 to-slate-950/95 border border-blue-500/50 p-3.5 rounded-2xl shadow-2xl backdrop-blur-lg hidden transition-all transform duration-300">
-                <div class="flex items-center justify-between gap-3">
-                    <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-400 font-bold shrink-0 animate-pulse">
-                            <i class="fas fa-rotate text-sm"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <h5 class="text-xs font-bold text-white flex items-center gap-1.5">
-                                Pembaruan Sistem Tersedia! <span class="bg-blue-500/30 text-blue-300 text-[9px] px-1.5 py-0.5 rounded font-mono border border-blue-400/30">v2.5</span>
-                            </h5>
-                            <p class="text-[10px] text-slate-300 truncate">Sistem diperbarui. Klik perbarui untuk muat ulang tanpa cache.</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-1.5 shrink-0">
-                        <button onclick="applyAppUpdate()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-blue-600/30 flex items-center gap-1 transition-all">
-                            <i class="fas fa-arrows-rotate text-[10px]"></i> Perbarui
-                        </button>
-                        <button onclick="closeUpdateNotification()" class="p-1.5 text-slate-400 hover:text-slate-200">
-                            <i class="fas fa-times text-xs"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 
@@ -1046,52 +1013,6 @@
         };
 
         let historyChartInstance = null;
-        const CURRENT_APP_BUILD = "v2.5_20260729_02";
-
-        function checkAppVersionUpdate() {
-            try {
-                const savedVersion = localStorage.getItem('app_saved_build_version');
-                if (savedVersion && savedVersion !== CURRENT_APP_BUILD) {
-                    showUpdateNotificationBanner();
-                } else {
-                    localStorage.setItem('app_saved_build_version', CURRENT_APP_BUILD);
-                }
-            } catch (e) {
-                console.warn("Version check notice:", e);
-            }
-        }
-
-        function showUpdateNotificationBanner() {
-            const banner = document.getElementById('app-update-notification');
-            if (banner) {
-                banner.classList.remove('hidden');
-            }
-        }
-
-        function closeUpdateNotification() {
-            const banner = document.getElementById('app-update-notification');
-            if (banner) {
-                banner.classList.add('hidden');
-            }
-        }
-
-        function applyAppUpdate() {
-            try {
-                localStorage.setItem('app_saved_build_version', CURRENT_APP_BUILD);
-                if ('caches' in window) {
-                    caches.keys().then(keys => {
-                        keys.forEach(k => caches.delete(k));
-                    });
-                }
-                showToast("Memuat ulang & menerapkan pembaruan sistem...", "info");
-                setTimeout(() => {
-                    const cleanUrl = window.location.origin + window.location.pathname + '?v=' + Date.now();
-                    window.location.href = cleanUrl;
-                }, 400);
-            } catch (e) {
-                window.location.reload(true);
-            }
-        }
 
         // ON APP INITIALIZATION
         if (document.readyState === 'loading') {
@@ -1106,7 +1027,6 @@
             try {
                 updateSchoolHeaderUI();
                 renderAllViews();
-                checkAppVersionUpdate();
                 if (!IS_PREVIEW) {
                     initFirebaseConnection();
                 }
@@ -1144,61 +1064,6 @@
             }
         }
 
-        function parseIndoDate(str) {
-            if (!str) return null;
-            const parts = str.trim().split(' ');
-            const dateStr = parts[0];
-            let day = 0, month = 0, year = 0;
-            if (dateStr.includes('/')) {
-                const p = dateStr.split('/');
-                if (p.length === 3) {
-                    day = parseInt(p[0], 10);
-                    month = parseInt(p[1], 10) - 1;
-                    year = parseInt(p[2], 10);
-                }
-            } else if (dateStr.includes('-')) {
-                const p = dateStr.split('-');
-                if (p.length === 3) {
-                    year = parseInt(p[0], 10);
-                    month = parseInt(p[1], 10) - 1;
-                    day = parseInt(p[2], 10);
-                }
-            }
-
-            if (!day || isNaN(month) || !year) return null;
-
-            let hours = 0, minutes = 0, seconds = 0;
-            if (parts[1]) {
-                const tp = parts[1].split(':');
-                if (tp.length >= 2) {
-                    hours = parseInt(tp[0], 10) || 0;
-                    minutes = parseInt(tp[1], 10) || 0;
-                    if (tp[2]) seconds = parseInt(tp[2], 10) || 0;
-                }
-            }
-            return new Date(year, month, day, hours, minutes, seconds);
-        }
-
-        function getTrxTimestamp(trx) {
-            if (!trx) return 0;
-            const dt = parseIndoDate(trx.tanggal);
-            if (dt && !isNaN(dt.getTime())) {
-                return dt.getTime();
-            }
-            return Number((trx.id || '').replace(/\D/g, '')) || 0;
-        }
-
-        function compareTrxByDateDesc(a, b) {
-            const timeA = getTrxTimestamp(a);
-            const timeB = getTrxTimestamp(b);
-            if (timeA !== timeB) {
-                return timeB - timeA;
-            }
-            const idA = Number((a.id || '').replace(/\D/g, '')) || 0;
-            const idB = Number((b.id || '').replace(/\D/g, '')) || 0;
-            return idB - idA;
-        }
-
         function loadDataFromFirestore() {
             if (!db) return;
             const mods = window.firebaseAppModules;
@@ -1224,7 +1089,11 @@
                 let loadedTrx = [];
                 snapshot.forEach(d => loadedTrx.push(d.data()));
                 if (loadedTrx.length > 0) {
-                    loadedTrx.sort((a, b) => compareTrxByDateDesc(a, b));
+                    loadedTrx.sort((a, b) => {
+                        const timeA = Number((a.id || '').replace(/\D/g, '')) || 0;
+                        const timeB = Number((b.id || '').replace(/\D/g, '')) || 0;
+                        return timeB - timeA;
+                    });
                     state.transaksi = loadedTrx;
                 }
                 renderAllViews();
@@ -1710,8 +1579,12 @@
             const listContainer = document.getElementById('transaksi-cards-list');
             let filtered = [...state.transaksi];
 
-            // Sort transactions descending strictly by transaction date & time
-            filtered.sort((a, b) => compareTrxByDateDesc(a, b));
+            // Sort transactions descending by ID/timestamp so newest appears first
+            filtered.sort((a, b) => {
+                const timeA = Number((a.id || '').replace(/\D/g, '')) || 0;
+                const timeB = Number((b.id || '').replace(/\D/g, '')) || 0;
+                return timeB - timeA;
+            });
 
             if (state.currentUser && state.currentUser.role === 'siswa') {
                 filtered = filtered.filter(t => t.nis === state.currentUser.nis);
@@ -2066,7 +1939,11 @@
                 return true;
             });
 
-            filtered.sort((a, b) => compareTrxByDateDesc(a, b));
+            filtered.sort((a, b) => {
+                const timeA = Number((a.id || '').replace(/\D/g, '')) || 0;
+                const timeB = Number((b.id || '').replace(/\D/g, '')) || 0;
+                return timeB - timeA;
+            });
 
             let totalSetor = 0;
             let totalTarik = 0;
