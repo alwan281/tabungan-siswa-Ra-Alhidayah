@@ -1,0 +1,9 @@
+{
+  "version": "2.3.0",
+  "changelog": [
+    "Notifikasi pembaruan remote via GitHub",
+    "Perbaikan riwayat siswa"
+  ],
+  "downloadUrl": "",
+  "force": false
+}
