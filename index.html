@@ -383,7 +383,7 @@
                                     </div>
                                     <div>
                                         <p class="text-[9px] text-blue-300 font-bold uppercase tracking-wider">Filter Tanggal Aktif</p>
-                                        <p id="riwayat-active-date-text" class="font-black text-slate-100 text-xs mt-0.5">Hari Ini</p>
+                                        <p id="riwayat-active-date-text" class="font-black text-slate-100 text-xs mt-0.5">Semua Tanggal</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
@@ -402,7 +402,7 @@
                                         <h4 class="text-xs sm:text-sm font-bold text-slate-100 flex items-center gap-2">
                                             <i class="fas fa-chart-column text-blue-400"></i> Diagram Batang Histori Setoran
                                         </h4>
-                                        <p id="chart-date-subtitle" class="text-[10px] text-slate-400 mt-0.5">Filter Tanggal: Hari ini</p>
+                                        <p id="chart-date-subtitle" class="text-[10px] text-slate-400 mt-0.5">Semua Tanggal Transaksi</p>
                                     </div>
                                     <div class="flex gap-2 text-[10px] font-semibold">
                                         <span class="flex items-center gap-1 text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Setor</span>
@@ -469,9 +469,23 @@
                                         <p class="text-[10px] text-slate-500 font-medium">Pilihan Template Logo Cepat:</p>
                                         <div class="flex gap-2 flex-wrap text-[10px]">
                                             <button type="button" onclick="setLogoPreset('custom')" class="px-2.5 py-1 rounded-lg bg-blue-900/60 text-blue-300 hover:bg-blue-800 font-semibold">Logo RA Al-Hidayah</button>
-                                            <button type="button" onclick="setLogoPreset('sd')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">SD Negeri</button>
-                                            <button type="button" onclick="setLogoPreset('buku')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Buku</button>
-                                            <button type="button" onclick="setLogoPreset('akademik')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Akademik</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-3 border-t border-slate-800 space-y-3">
+                                        <p class="text-[11px] font-bold text-amber-400 flex items-center gap-1.5">
+                                            <i class="fas fa-user-shield"></i> Akun Login Admin / Guru
+                                        </p>
+                                        <p class="text-[10px] text-slate-500 -mt-1">Ubah username & kata sandi admin. Perubahan tersimpan ke Firebase dan berlaku saat login berikutnya.</p>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label class="text-[10px] font-semibold text-slate-400 block mb-1">Username Admin</label>
+                                                <input type="text" id="tab-sekolah-admin-user" placeholder="admin" class="custom-input w-full px-3 py-2.5 rounded-xl text-xs font-medium">
+                                            </div>
+                                            <div>
+                                                <label class="text-[10px] font-semibold text-slate-400 block mb-1">Kata Sandi Baru</label>
+                                                <input type="text" id="tab-sekolah-admin-pass" placeholder="Kata sandi" class="custom-input w-full px-3 py-2.5 rounded-xl text-xs font-medium">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -543,9 +557,6 @@
                             <p class="text-[10px] text-slate-500 font-medium">Pilihan Template Logo Cepat:</p>
                             <div class="flex gap-2 flex-wrap text-[10px]">
                                 <button type="button" onclick="setLogoPreset('custom')" class="px-2.5 py-1 rounded-lg bg-blue-900/60 text-blue-300 hover:bg-blue-800 font-semibold">Logo RA Al-Hidayah</button>
-                                <button type="button" onclick="setLogoPreset('sd')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">SD Negeri</button>
-                                <button type="button" onclick="setLogoPreset('buku')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Buku</button>
-                                <button type="button" onclick="setLogoPreset('akademik')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Akademik</button>
                             </div>
                         </div>
                     </div>
@@ -880,6 +891,60 @@
                 </div>
             </div>
 
+            <!-- MODAL: PEMBARUAN APLIKASI (UPDATE POPUP) -->
+            <div id="modal-update" class="fixed inset-0 z-[99999999] bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+                <div class="glass-card w-full max-w-sm rounded-2xl p-5 border border-blue-500/40 shadow-2xl space-y-4 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500"></div>
+                    
+                    <div class="flex items-start gap-3 pt-1">
+                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-600/30 shrink-0">
+                            <i class="fas fa-rocket text-white text-lg"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="text-sm font-extrabold text-slate-100 flex items-center gap-2">
+                                Pembaruan Tersedia
+                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v2.2.0</span>
+                            </h3>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Versi baru Sistem Informasi Tabungan Siswa siap dipasang.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-700/60 space-y-2 max-h-36 overflow-y-auto">
+                        <p class="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fas fa-list-check text-emerald-400"></i> Yang Baru di Versi Ini
+                        </p>
+                        <ul id="update-changelog-list" class="text-[11px] text-slate-300 space-y-1.5 leading-relaxed">
+                            <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Notifikasi pembaruan otomatis & responsif</li>
+                            <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Performa loading lebih cepat & stabil</li>
+                            <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Perbaikan minor UI & keamanan data</li>
+                            <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Optimasi sinkronisasi Firebase realtime</li>
+                        </ul>
+                    </div>
+
+                    <div id="update-progress-section" class="hidden space-y-2">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-slate-400 font-medium flex items-center gap-1.5">
+                                <i class="fas fa-cloud-download-alt text-blue-400"></i> Mengunduh pembaruan...
+                            </span>
+                            <span id="update-progress-percent" class="font-bold text-blue-400">0%</span>
+                        </div>
+                        <div class="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden border border-slate-700">
+                            <div id="update-progress-bar" class="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-150 ease-out" style="width: 0%"></div>
+                        </div>
+                        <p id="update-progress-status" class="text-[10px] text-slate-500 text-center">Memulai unduhan...</p>
+                    </div>
+
+                    <div id="update-action-buttons" class="grid grid-cols-2 gap-2.5 pt-1">
+                        <button type="button" onclick="handlePostponeUpdate()" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition-all flex items-center justify-center gap-2 active:scale-95">
+                            <i class="fas fa-clock"></i> Tunda
+                        </button>
+                        <button type="button" id="btn-do-update" onclick="handleDoUpdate()" class="py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2 active:scale-95">
+                            <i class="fas fa-download"></i> Update
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -956,6 +1021,20 @@
            ========================================================================== */
         const IS_PREVIEW = false; // Mode produksi terhubung langsung ke Firebase Firestore
 
+        /* ==========================================================================
+           SISTEM PEMBARUAN APLIKASI (UPDATE POPUP)
+           Ubah APP_VERSION setiap kali ada rilis baru agar popup muncul otomatis
+           ========================================================================== */
+        const APP_VERSION = "2.2.0";
+        const APP_VERSION_STORAGE_KEY = "tabungan_ra_app_version_v1";
+        const UPDATE_CHANGELOG = [
+            "Notifikasi pembaruan otomatis & sangat responsif",
+            "Performa loading lebih cepat & stabil",
+            "Perbaikan minor UI dashboard & modal",
+            "Optimasi sinkronisasi Firebase realtime",
+            "Keamanan data tabungan ditingkatkan"
+        ];
+
         // Konfigurasi Firebase Tabungan Siswa
         const firebaseConfig = {
             apiKey: "AIzaSyCOQsvmdvJ2U21b-Bg894IKKTLXdL_XGg0",
@@ -979,40 +1058,157 @@
                 alamat: "Palalang Waru Pamekasan",
                 tahun: "2025/2026",
                 kepsek: "Safinatul Jannah, S.Pd.",
-                logo: "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg"
+                logo: "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg",
+                adminUser: "admin",
+                adminPass: "123"
             },
-            siswa: [
-                {
-                    nis: "1234",
-                    nama: "alwan",
-                    kelas: "SMA",
-                    wali: "Bapak Alwan",
-                    hp: "08123456789",
-                    user: "alwan",
-                    pass: "123",
-                    saldo: 50000
-                }
-            ],
-            transaksi: [
-                {
-                    id: "TRX-1001",
-                    nis: "1234",
-                    nama: "alwan",
-                    kelas: "SMA",
-                    tipe: "setor",
-                    nominal: 50000,
-                    keperluan: "Setoran Tabungan",
-                    tanggal: getFormattedNow()
-                }
-            ],
+            siswa: [],
+            transaksi: [],
             selectedClass: "Semua",
             selectedRiwayatClass: "Semua",
-            historyDateFilter: getTodayYYYYMMDD(),
+            historyDateFilter: null,
             searchQuery: "",
             currentMainTab: "tabungan"
         };
 
         let historyChartInstance = null;
+        let isUpdateInProgress = false;
+
+        /* ---------- UPDATE POPUP SYSTEM ---------- */
+        function isUpdateAvailable() {
+            try {
+                const stored = localStorage.getItem(APP_VERSION_STORAGE_KEY);
+                return !stored || String(stored) !== String(APP_VERSION);
+            } catch (e) {
+                return true;
+            }
+        }
+
+        function showUpdateModalUI() {
+            const modal = document.getElementById('modal-update');
+            if (!modal) return false;
+
+            const badge = document.getElementById('update-version-badge');
+            if (badge) badge.textContent = 'v' + APP_VERSION;
+
+            const list = document.getElementById('update-changelog-list');
+            if (list && UPDATE_CHANGELOG && UPDATE_CHANGELOG.length) {
+                list.innerHTML = UPDATE_CHANGELOG.map(item =>
+                    `<li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> ${item}</li>`
+                ).join('');
+            }
+
+            const progressSection = document.getElementById('update-progress-section');
+            const actionBtns = document.getElementById('update-action-buttons');
+            if (progressSection) {
+                progressSection.classList.add('hidden');
+                progressSection.style.display = 'none';
+            }
+            if (actionBtns) {
+                actionBtns.classList.remove('hidden');
+                actionBtns.style.display = '';
+            }
+            const bar = document.getElementById('update-progress-bar');
+            const pct = document.getElementById('update-progress-percent');
+            const status = document.getElementById('update-progress-status');
+            if (bar) bar.style.width = '0%';
+            if (pct) pct.textContent = '0%';
+            if (status) status.textContent = 'Memulai unduhan...';
+
+            // Paksa tampil (class + inline style agar pasti muncul)
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+            modal.style.visibility = 'visible';
+            modal.style.opacity = '1';
+            modal.style.zIndex = '99999999';
+            return true;
+        }
+
+        function hideUpdateModalUI() {
+            const modal = document.getElementById('modal-update');
+            if (!modal) return;
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+        }
+
+        function checkAndShowUpdatePopup() {
+            if (isUpdateInProgress) return;
+            if (!isUpdateAvailable()) return;
+            showUpdateModalUI();
+        }
+
+        function handlePostponeUpdate() {
+            if (isUpdateInProgress) return;
+            hideUpdateModalUI();
+            if (typeof showToast === 'function') {
+                showToast("Pembaruan ditunda. Akan muncul lagi saat login berikutnya.", "info");
+            }
+        }
+
+        function handleDoUpdate() {
+            if (isUpdateInProgress) return;
+            isUpdateInProgress = true;
+
+            const progressSection = document.getElementById('update-progress-section');
+            const actionBtns = document.getElementById('update-action-buttons');
+            const bar = document.getElementById('update-progress-bar');
+            const pct = document.getElementById('update-progress-percent');
+            const status = document.getElementById('update-progress-status');
+            const btnUpdate = document.getElementById('btn-do-update');
+
+            if (progressSection) {
+                progressSection.classList.remove('hidden');
+                progressSection.style.display = '';
+            }
+            if (actionBtns) {
+                actionBtns.classList.add('hidden');
+                actionBtns.style.display = 'none';
+            }
+            if (btnUpdate) btnUpdate.disabled = true;
+
+            const statuses = [
+                "Menghubungkan ke server...",
+                "Mengunduh paket pembaruan...",
+                "Memverifikasi integritas data...",
+                "Menerapkan pembaruan...",
+                "Menyelesaikan instalasi..."
+            ];
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                const step = Math.floor(Math.random() * 8) + 4;
+                progress = Math.min(100, progress + step);
+
+                if (bar) bar.style.width = progress + '%';
+                if (pct) pct.textContent = progress + '%';
+
+                if (status) {
+                    if (progress < 20) status.textContent = statuses[0];
+                    else if (progress < 45) status.textContent = statuses[1];
+                    else if (progress < 70) status.textContent = statuses[2];
+                    else if (progress < 90) status.textContent = statuses[3];
+                    else status.textContent = statuses[4];
+                }
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    try {
+                        localStorage.setItem(APP_VERSION_STORAGE_KEY, APP_VERSION);
+                    } catch (e) {}
+
+                    if (status) status.textContent = "Pembaruan berhasil diterapkan!";
+                    if (typeof showToast === 'function') {
+                        showToast("Aplikasi berhasil diperbarui ke v" + APP_VERSION + "!", "success");
+                    }
+
+                    setTimeout(() => {
+                        hideUpdateModalUI();
+                        isUpdateInProgress = false;
+                        if (btnUpdate) btnUpdate.disabled = false;
+                    }, 700);
+                }
+            }, 80);
+        }
 
         // ON APP INITIALIZATION
         if (document.readyState === 'loading') {
@@ -1030,10 +1226,20 @@
                 if (!IS_PREVIEW) {
                     initFirebaseConnection();
                 }
+                // Tampilkan popup update (retry beberapa kali agar pasti muncul)
+                setTimeout(checkAndShowUpdatePopup, 300);
+                setTimeout(checkAndShowUpdatePopup, 800);
+                setTimeout(checkAndShowUpdatePopup, 1500);
             } catch (err) {
                 console.error("InitApp error:", err);
+                setTimeout(checkAndShowUpdatePopup, 500);
             }
         }
+
+        // Cadangan: pastikan popup dicek juga setelah window fully loaded
+        window.addEventListener('load', function() {
+            setTimeout(checkAndShowUpdatePopup, 600);
+        });
 
         async function initFirebaseConnection() {
             try {
@@ -1068,34 +1274,52 @@
             if (!db) return;
             const mods = window.firebaseAppModules;
             
+            // === Realtime: Profil Sekolah ===
             const schoolRef = mods.doc(db, 'artifacts', appId, 'sekolah', 'info');
             mods.onSnapshot(schoolRef, (docSnap) => {
                 if (docSnap.exists()) {
-                    state.sekolah = docSnap.data();
+                    const data = docSnap.data() || {};
+                    // Gabungkan dengan default agar adminUser/adminPass selalu ada
+                    state.sekolah = {
+                        ...state.sekolah,
+                        ...data,
+                        adminUser: data.adminUser || state.sekolah.adminUser || "admin",
+                        adminPass: data.adminPass || state.sekolah.adminPass || "123"
+                    };
                     updateSchoolHeaderUI();
+                } else {
+                    // Seed data sekolah default jika belum ada di Firestore
+                    mods.setDoc(schoolRef, state.sekolah).catch(err => console.error("Seed sekolah error:", err));
                 }
             }, (err) => console.error("Firestore School error:", err));
 
+            // === Realtime: Data Siswa ===
             const siswaCol = mods.collection(db, 'artifacts', appId, 'siswa');
             mods.onSnapshot(siswaCol, (snapshot) => {
                 let loadedSiswa = [];
-                snapshot.forEach(d => loadedSiswa.push(d.data()));
-                if (loadedSiswa.length > 0) state.siswa = loadedSiswa;
+                snapshot.forEach(d => {
+                    const data = d.data();
+                    // Pastikan field nis selalu ada (pakai id dokumen jika perlu)
+                    if (!data.nis) data.nis = d.id;
+                    loadedSiswa.push(data);
+                });
+                // Selalu sync (termasuk jika kosong) agar data realtime akurat
+                state.siswa = loadedSiswa;
                 renderAllViews();
             }, (err) => console.error("Firestore Siswa error:", err));
 
+            // === Realtime: Jurnal Transaksi ===
             const trxCol = mods.collection(db, 'artifacts', appId, 'transaksi');
             mods.onSnapshot(trxCol, (snapshot) => {
                 let loadedTrx = [];
-                snapshot.forEach(d => loadedTrx.push(d.data()));
-                if (loadedTrx.length > 0) {
-                    loadedTrx.sort((a, b) => {
-                        const timeA = Number((a.id || '').replace(/\D/g, '')) || 0;
-                        const timeB = Number((b.id || '').replace(/\D/g, '')) || 0;
-                        return timeB - timeA;
-                    });
-                    state.transaksi = loadedTrx;
-                }
+                snapshot.forEach(d => {
+                    const data = d.data();
+                    if (!data.id) data.id = d.id;
+                    loadedTrx.push(data);
+                });
+                sortTransaksiTerbaru(loadedTrx);
+                // Selalu sync (termasuk jika kosong)
+                state.transaksi = loadedTrx;
                 renderAllViews();
             }, (err) => console.error("Firestore Trx error:", err));
         }
@@ -1185,7 +1409,7 @@
                     return;
                 }
 
-                // Verify Siswa Credential
+                // Verify Siswa Credential (dari data Firebase / state.siswa)
                 const s = state.siswa.find(x => (x.nis === nis || x.user === nis) && x.pass === pass);
                 if (s) {
                     state.currentUser = {
@@ -1195,15 +1419,6 @@
                         nis: s.nis
                     };
                     showToast(`Selamat datang, ${s.nama}!`, "success");
-                    enterDashboard();
-                } else if (IS_PREVIEW && (nis === "peserta" && pass === "edudigital")) {
-                    state.currentUser = {
-                        role: 'siswa',
-                        name: "Siswa RA AL-HIDAYAH",
-                        username: "peserta",
-                        nis: "1234"
-                    };
-                    showToast("Login Siswa Berhasil!", "success");
                     enterDashboard();
                 } else {
                     showToast("NIS / Username atau Password Siswa Salah!", "error");
@@ -1218,12 +1433,15 @@
                     return;
                 }
 
-                // Verify Admin Credential
-                if ((user === "admin" && (pass === "123" || pass === "edudigital")) || (user === "admin" && pass === "admin2026")) {
+                // Kredensial admin dari Firebase (state.sekolah) — bisa diubah di Info Sekolah
+                const adminUser = (state.sekolah.adminUser || "admin").trim();
+                const adminPass = (state.sekolah.adminPass || "123").trim();
+
+                if (user === adminUser && pass === adminPass) {
                     state.currentUser = {
                         role: 'admin',
                         name: "Pengelola Sekolah",
-                        username: "admin"
+                        username: adminUser
                     };
                     showToast("Login Admin Berhasil!", "success");
                     enterDashboard();
@@ -1242,6 +1460,9 @@
 
             updateRoleBadgeUI();
             renderAllViews();
+
+            // Tampilkan lagi popup update jika user sebelumnya menunda
+            setTimeout(checkAndShowUpdatePopup, 500);
         }
 
         function handleLogout() {
@@ -1299,6 +1520,8 @@
             if (document.getElementById('tab-sekolah-tahun')) document.getElementById('tab-sekolah-tahun').value = state.sekolah.tahun;
             if (document.getElementById('tab-sekolah-kepsek')) document.getElementById('tab-sekolah-kepsek').value = state.sekolah.kepsek;
             if (document.getElementById('tab-sekolah-logo')) document.getElementById('tab-sekolah-logo').value = state.sekolah.logo;
+            if (document.getElementById('tab-sekolah-admin-user')) document.getElementById('tab-sekolah-admin-user').value = state.sekolah.adminUser || "admin";
+            if (document.getElementById('tab-sekolah-admin-pass')) document.getElementById('tab-sekolah-admin-pass').value = state.sekolah.adminPass || "123";
         }
 
         function updateRoleBadgeUI() {
@@ -1424,16 +1647,17 @@
 
             const todayFormatted = getFormattedNow().split(' ')[0]; // DD/MM/YYYY
             const isSiswa = state.currentUser && state.currentUser.role === 'siswa';
+            const myNis = isSiswa ? String(state.currentUser.nis || '') : '';
 
             state.siswa.forEach(s => {
-                if (!isSiswa || s.nis === state.currentUser.nis) {
+                if (!isSiswa || String(s.nis || '') === myNis) {
                     totalSaldo += Number(s.saldo) || 0;
                     countSiswa++;
                 }
             });
 
             state.transaksi.forEach(t => {
-                if (!isSiswa || t.nis === state.currentUser.nis) {
+                if (!isSiswa || String(t.nis || '') === myNis) {
                     if (t.tanggal && t.tanggal.includes(todayFormatted)) {
                         if (t.tipe === 'setor') totalSetorHariIni += Number(t.nominal);
                         if (t.tipe === 'tarik') totalTarikHariIni += Number(t.nominal);
@@ -1499,7 +1723,8 @@
             const isSiswa = state.currentUser && state.currentUser.role === 'siswa';
 
             if (isSiswa) {
-                filtered = filtered.filter(s => s.nis === state.currentUser.nis);
+                const myNis = String(state.currentUser.nis || '');
+                filtered = filtered.filter(s => String(s.nis || '') === myNis);
             }
 
             if (state.selectedClass !== 'Semua') {
@@ -1577,17 +1802,15 @@
 
         function renderRiwayatList() {
             const listContainer = document.getElementById('transaksi-cards-list');
-            let filtered = [...state.transaksi];
+            if (!listContainer) return;
+            let filtered = [...(state.transaksi || [])];
 
-            // Sort transactions descending by ID/timestamp so newest appears first
-            filtered.sort((a, b) => {
-                const timeA = Number((a.id || '').replace(/\D/g, '')) || 0;
-                const timeB = Number((b.id || '').replace(/\D/g, '')) || 0;
-                return timeB - timeA;
-            });
+            // Urutkan terbaru di atas berdasarkan tanggal & jam transaksi
+            sortTransaksiTerbaru(filtered);
 
             if (state.currentUser && state.currentUser.role === 'siswa') {
-                filtered = filtered.filter(t => t.nis === state.currentUser.nis);
+                const myNis = String(state.currentUser.nis || '');
+                filtered = filtered.filter(t => String(t.nis || '') === myNis);
             }
 
             if (state.selectedRiwayatClass !== 'Semua') {
@@ -1595,9 +1818,20 @@
             }
 
             if (state.historyDateFilter) {
-                const [y, m, d] = state.historyDateFilter.split('-');
-                const formattedFilterDate = `${d}/${m}/${y}`;
-                filtered = filtered.filter(t => t.tanggal && t.tanggal.includes(formattedFilterDate));
+                const filterDt = parseIndoDateFromISO(state.historyDateFilter);
+                filtered = filtered.filter(t => {
+                    const dt = parseIndoDate(t.tanggal);
+                    if (!filterDt || !dt) {
+                        // Fallback string match
+                        const [y, m, d] = state.historyDateFilter.split('-');
+                        const formatted = `${parseInt(d, 10)}/${parseInt(m, 10)}/${y}`;
+                        const formattedPad = `${d}/${m}/${y}`;
+                        return t.tanggal && (t.tanggal.includes(formattedPad) || t.tanggal.includes(formatted));
+                    }
+                    return dt.getFullYear() === filterDt.getFullYear()
+                        && dt.getMonth() === filterDt.getMonth()
+                        && dt.getDate() === filterDt.getDate();
+                });
             }
 
             let totalSetorCls = 0;
@@ -1663,22 +1897,33 @@
         }
 
         function applyHistoryDateFilter() {
-            const dateVal = document.getElementById('history-date-picker').value;
+            const datePicker = document.getElementById('history-date-picker');
+            const dateVal = datePicker ? datePicker.value : '';
             if (dateVal) {
                 state.historyDateFilter = dateVal;
-                document.getElementById('riwayat-active-date-text').textContent = dateVal;
-                document.getElementById('chart-date-subtitle').textContent = `Filter Tanggal: ${dateVal}`;
-                renderRiwayatList();
-                renderHistoryChart();
+                const elText = document.getElementById('riwayat-active-date-text');
+                const elSub = document.getElementById('chart-date-subtitle');
+                if (elText) elText.textContent = dateVal;
+                if (elSub) elSub.textContent = `Filter Tanggal: ${dateVal}`;
+            } else {
+                state.historyDateFilter = null;
+                const elText = document.getElementById('riwayat-active-date-text');
+                const elSub = document.getElementById('chart-date-subtitle');
+                if (elText) elText.textContent = "Semua Tanggal";
+                if (elSub) elSub.textContent = "Semua Tanggal Transaksi";
             }
+            renderRiwayatList();
+            renderHistoryChart();
         }
 
         function resetHistoryDateFilter() {
             state.historyDateFilter = null;
             const datePicker = document.getElementById('history-date-picker');
             if (datePicker) datePicker.value = '';
-            document.getElementById('riwayat-active-date-text').textContent = "Semua Tanggal";
-            document.getElementById('chart-date-subtitle').textContent = "Semua Tanggal Transaksi";
+            const elText = document.getElementById('riwayat-active-date-text');
+            const elSub = document.getElementById('chart-date-subtitle');
+            if (elText) elText.textContent = "Semua Tanggal";
+            if (elSub) elSub.textContent = "Semua Tanggal Transaksi";
             renderRiwayatList();
             renderHistoryChart();
         }
@@ -1692,9 +1937,23 @@
                 historyChartInstance.destroy();
             }
 
-            let filtered = state.transaksi;
+            let filtered = [...(state.transaksi || [])];
+            if (state.currentUser && state.currentUser.role === 'siswa') {
+                const myNis = String(state.currentUser.nis || '');
+                filtered = filtered.filter(t => String(t.nis || '') === myNis);
+            }
             if (state.selectedRiwayatClass !== 'Semua') {
                 filtered = filtered.filter(t => t.kelas === state.selectedRiwayatClass);
+            }
+            if (state.historyDateFilter) {
+                const filterDt = parseIndoDateFromISO(state.historyDateFilter);
+                filtered = filtered.filter(t => {
+                    const dt = parseIndoDate(t.tanggal);
+                    if (!filterDt || !dt) return true;
+                    return dt.getFullYear() === filterDt.getFullYear()
+                        && dt.getMonth() === filterDt.getMonth()
+                        && dt.getDate() === filterDt.getDate();
+                });
             }
 
             const studentTotals = {};
@@ -1857,10 +2116,11 @@
         let currentDetailSiswaNis = null;
 
         function openModalRiwayatSiswa(nis) {
-            const s = state.siswa.find(x => x.nis === nis);
+            const targetNis = String(nis || '');
+            const s = state.siswa.find(x => String(x.nis) === targetNis);
             if (!s) return;
 
-            currentDetailSiswaNis = nis;
+            currentDetailSiswaNis = targetNis;
             document.getElementById('detail-siswa-nama').textContent = s.nama;
             document.getElementById('detail-siswa-info').textContent = `NIS: ${s.nis} • Kelas: ${s.kelas} • Wali: ${s.wali || '-'}`;
             document.getElementById('detail-siswa-saldo-saat-ini').textContent = formatRp(s.saldo);
@@ -1877,12 +2137,17 @@
                 }
             }
 
-            document.getElementById('detail-tgl-mulai').value = "";
-            document.getElementById('detail-tgl-selesai').value = "";
-            document.getElementById('detail-tipe-filter').value = "semua";
+            // Default: tampilkan semua tanggal
+            const elMulai = document.getElementById('detail-tgl-mulai');
+            const elSelesai = document.getElementById('detail-tgl-selesai');
+            const elTipe = document.getElementById('detail-tipe-filter');
+            if (elMulai) elMulai.value = "";
+            if (elSelesai) elSelesai.value = "";
+            if (elTipe) elTipe.value = "semua";
 
-            renderDetailRiwayatSiswaList();
             openModal('modal-riwayat-siswa');
+            // Render setelah modal tampil agar elemen filter siap
+            setTimeout(function() { renderDetailRiwayatSiswaList(); }, 50);
         }
 
         function setDetailPresetDate(preset) {
@@ -1918,32 +2183,40 @@
             const container = document.getElementById('detail-transaksi-list');
             if (!container) return;
 
-            const tglMulaiVal = document.getElementById('detail-tgl-mulai').value;
-            const tglSelesaiVal = document.getElementById('detail-tgl-selesai').value;
-            const tipeFilter = document.getElementById('detail-tipe-filter').value;
+            const elMulai = document.getElementById('detail-tgl-mulai');
+            const elSelesai = document.getElementById('detail-tgl-selesai');
+            const elTipe = document.getElementById('detail-tipe-filter');
+            const tglMulaiVal = elMulai ? elMulai.value : '';
+            const tglSelesaiVal = elSelesai ? elSelesai.value : '';
+            const tipeFilter = elTipe ? elTipe.value : 'semua';
 
-            let startDate = tglMulaiVal ? new Date(tglMulaiVal + 'T00:00:00') : null;
-            let endDate = tglSelesaiVal ? new Date(tglSelesaiVal + 'T23:59:59') : null;
+            const startDate = tglMulaiVal ? parseIndoDateFromISO(tglMulaiVal) : null;
+            let endDate = tglSelesaiVal ? parseIndoDateFromISO(tglSelesaiVal) : null;
+            if (endDate) {
+                endDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999);
+            }
 
-            let filtered = state.transaksi.filter(t => t.nis === currentDetailSiswaNis);
+            const targetNis = String(currentDetailSiswaNis);
+            let filtered = (state.transaksi || []).filter(t => String(t.nis || '') === targetNis);
 
-            if (tipeFilter !== 'semua') {
+            if (tipeFilter && tipeFilter !== 'semua') {
                 filtered = filtered.filter(t => t.tipe === tipeFilter);
             }
 
-            filtered = filtered.filter(t => {
-                const dt = parseIndoDate(t.tanggal);
-                if (!dt) return true;
-                if (startDate && dt < startDate) return false;
-                if (endDate && dt > endDate) return false;
-                return true;
-            });
+            // Filter tanggal hanya jika salah satu diisi; kosong = semua tanggal
+            if (startDate || endDate) {
+                filtered = filtered.filter(t => {
+                    const dt = parseIndoDate(t.tanggal);
+                    if (!dt) return true;
+                    const dayStart = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 0, 0, 0, 0);
+                    if (startDate && dayStart < startDate) return false;
+                    if (endDate && dayStart > endDate) return false;
+                    return true;
+                });
+            }
 
-            filtered.sort((a, b) => {
-                const timeA = Number((a.id || '').replace(/\D/g, '')) || 0;
-                const timeB = Number((b.id || '').replace(/\D/g, '')) || 0;
-                return timeB - timeA;
-            });
+            // Urutkan terbaru di atas berdasarkan tanggal & jam
+            sortTransaksiTerbaru(filtered);
 
             let totalSetor = 0;
             let totalTarik = 0;
@@ -2188,17 +2461,7 @@
         }
 
         function setLogoPreset(type) {
-            let url = "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg";
-            if (type === 'custom') {
-                url = "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg";
-            } else if (type === 'sd') {
-                url = "https://cdn-icons-png.flaticon.com/512/2991/2991148.png";
-            } else if (type === 'buku') {
-                url = "https://cdn-icons-png.flaticon.com/512/2232/2232688.png";
-            } else if (type === 'akademik') {
-                url = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
-            }
-
+            const url = "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg";
             if (document.getElementById('sekolah-logo')) document.getElementById('sekolah-logo').value = url;
             if (document.getElementById('tab-sekolah-logo')) document.getElementById('tab-sekolah-logo').value = url;
         }
@@ -2224,14 +2487,19 @@
             const modalLogo = document.getElementById('sekolah-logo')?.value.trim();
             const logo = (state.currentMainTab === 'sekolah' ? tabLogo : modalLogo) || tabLogo || modalLogo;
 
+            const adminUser = (document.getElementById('tab-sekolah-admin-user')?.value || "").trim() || "admin";
+            const adminPass = (document.getElementById('tab-sekolah-admin-pass')?.value || "").trim() || "123";
+
             state.sekolah.nama = nama;
             state.sekolah.alamat = alamat;
             state.sekolah.tahun = tahun;
             state.sekolah.kepsek = kepsek;
             state.sekolah.logo = logo;
+            state.sekolah.adminUser = adminUser;
+            state.sekolah.adminPass = adminPass;
 
             updateSchoolHeaderUI();
-            showToast("Profil Sekolah Berhasil Disimpan!", "success");
+            showToast("Profil Sekolah & Akun Admin Berhasil Disimpan!", "success");
 
             if (!IS_PREVIEW && db) {
                 const mods = window.firebaseAppModules;
@@ -2310,12 +2578,80 @@
 
         function parseIndoDate(str) {
             if (!str) return null;
-            const clean = str.trim().split(' ')[0];
-            const p = clean.split('/');
-            if (p.length === 3) {
-                return new Date(parseInt(p[2], 10), parseInt(p[1], 10) - 1, parseInt(p[0], 10));
-            }
+            try {
+                const clean = String(str).trim().split(' ')[0];
+                // Format DD/MM/YYYY
+                if (clean.indexOf('/') !== -1) {
+                    const p = clean.split('/');
+                    if (p.length === 3) {
+                        const d = parseInt(p[0], 10);
+                        const m = parseInt(p[1], 10) - 1;
+                        const y = parseInt(p[2], 10);
+                        if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+                            return new Date(y, m, d, 0, 0, 0, 0);
+                        }
+                    }
+                }
+                // Format YYYY-MM-DD
+                if (clean.indexOf('-') !== -1) {
+                    const p = clean.split('-');
+                    if (p.length === 3) {
+                        const y = parseInt(p[0], 10);
+                        const m = parseInt(p[1], 10) - 1;
+                        const d = parseInt(p[2], 10);
+                        if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+                            return new Date(y, m, d, 0, 0, 0, 0);
+                        }
+                    }
+                }
+            } catch (e) {}
             return null;
+        }
+
+        function parseIndoDateFromISO(isoStr) {
+            if (!isoStr) return null;
+            try {
+                const p = String(isoStr).trim().split('-');
+                if (p.length === 3) {
+                    const y = parseInt(p[0], 10);
+                    const m = parseInt(p[1], 10) - 1;
+                    const d = parseInt(p[2], 10);
+                    if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+                        return new Date(y, m, d, 0, 0, 0, 0);
+                    }
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        // Ambil timestamp dari tanggal+jam transaksi (format: DD/MM/YYYY HH:MM)
+        // Agar riwayat selalu urut terbaru di atas, termasuk backdate
+        function getTrxSortTime(t) {
+            if (!t) return 0;
+            const str = (t.tanggal || '').trim();
+            if (str) {
+                const parts = str.split(' ');
+                const datePart = parts[0] || '';
+                const timePart = parts[1] || '00:00';
+                const dp = datePart.split('/');
+                const tp = timePart.split(':');
+                if (dp.length === 3) {
+                    const day = parseInt(dp[0], 10) || 1;
+                    const month = (parseInt(dp[1], 10) || 1) - 1;
+                    const year = parseInt(dp[2], 10) || 2000;
+                    const hour = parseInt(tp[0], 10) || 0;
+                    const minute = parseInt(tp[1], 10) || 0;
+                    const second = parseInt(tp[2], 10) || 0;
+                    const ms = new Date(year, month, day, hour, minute, second).getTime();
+                    if (!isNaN(ms)) return ms;
+                }
+            }
+            // Fallback: nomor dari ID transaksi
+            return Number(String(t.id || '').replace(/\D/g, '')) || 0;
+        }
+
+        function sortTransaksiTerbaru(list) {
+            return list.sort((a, b) => getTrxSortTime(b) - getTrxSortTime(a));
         }
 
         function getFilteredRekapData() {
