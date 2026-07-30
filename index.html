@@ -903,7 +903,7 @@
                         <div class="min-w-0">
                             <h3 class="text-sm font-extrabold text-slate-100 flex items-center gap-2">
                                 Pembaruan Tersedia
-                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v2.2.0</span>
+                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v2.3.0</span>
                             </h3>
                             <p class="text-[11px] text-slate-400 mt-0.5">Versi baru Sistem Informasi Tabungan Siswa siap dipasang.</p>
                         </div>
@@ -1022,18 +1022,27 @@
         const IS_PREVIEW = false; // Mode produksi terhubung langsung ke Firebase Firestore
 
         /* ==========================================================================
-           SISTEM PEMBARUAN APLIKASI (UPDATE POPUP)
-           Ubah APP_VERSION setiap kali ada rilis baru agar popup muncul otomatis
+           SISTEM PEMBARUAN APLIKASI (UPDATE POPUP) — Remote + Local
+           1. Ubah APP_VERSION setiap rilis HTML baru
+           2. Upload file version.json ke GitHub (lihat UPDATE_CHECK_URL)
+           3. Naikkan "version" di version.json agar popup muncul di APK/Web
            ========================================================================== */
-        const APP_VERSION = "2.2.0";
+        const APP_VERSION = "2.3.0";
         const APP_VERSION_STORAGE_KEY = "tabungan_ra_app_version_v1";
+        // URL file version.json di GitHub (raw). GANTI sesuai repo Anda!
+        // Contoh: https://raw.githubusercontent.com/username/nama-repo/main/version.json
+        const UPDATE_CHECK_URL = "https://raw.githubusercontent.com/alwan281/tabungan-siswa-Ra-Alhidayah/main/version.json";
         const UPDATE_CHANGELOG = [
-            "Notifikasi pembaruan otomatis & sangat responsif",
-            "Performa loading lebih cepat & stabil",
-            "Perbaikan minor UI dashboard & modal",
+            "Notifikasi pembaruan remote via GitHub (APK & Web)",
+            "Riwayat siswa filter tanggal & tampilkan semua diperbaiki",
+            "Login admin mengikuti data Firebase Console",
             "Optimasi sinkronisasi Firebase realtime",
             "Keamanan data tabungan ditingkatkan"
         ];
+        let pendingUpdateVersion = APP_VERSION;
+        let pendingUpdateChangelog = UPDATE_CHANGELOG;
+        let pendingUpdateDownloadUrl = "";
+        let remoteUpdateChecked = false;
 
         // Konfigurasi Firebase Tabungan Siswa
         const firebaseConfig = {
@@ -1074,26 +1083,48 @@
         let historyChartInstance = null;
         let isUpdateInProgress = false;
 
-        /* ---------- UPDATE POPUP SYSTEM ---------- */
-        function isUpdateAvailable() {
+        /* ---------- UPDATE POPUP SYSTEM (Remote GitHub + Local) ---------- */
+        function compareVersions(a, b) {
+            const pa = String(a || '0').replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
+            const pb = String(b || '0').replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
+            const len = Math.max(pa.length, pb.length);
+            for (let i = 0; i < len; i++) {
+                const x = pa[i] || 0;
+                const y = pb[i] || 0;
+                if (x > y) return 1;
+                if (x < y) return -1;
+            }
+            return 0;
+        }
+
+        function getAcceptedVersion() {
             try {
-                const stored = localStorage.getItem(APP_VERSION_STORAGE_KEY);
-                return !stored || String(stored) !== String(APP_VERSION);
+                return localStorage.getItem(APP_VERSION_STORAGE_KEY) || '';
             } catch (e) {
-                return true;
+                return '';
             }
         }
 
-        function showUpdateModalUI() {
+        function isUpdateAvailable(targetVersion) {
+            const target = String(targetVersion || APP_VERSION);
+            const accepted = getAcceptedVersion();
+            if (!accepted) return true;
+            return compareVersions(target, accepted) > 0;
+        }
+
+        function showUpdateModalUI(version, changelog) {
             const modal = document.getElementById('modal-update');
             if (!modal) return false;
 
+            const ver = version || pendingUpdateVersion || APP_VERSION;
+            const logs = (changelog && changelog.length) ? changelog : (pendingUpdateChangelog || UPDATE_CHANGELOG);
+
             const badge = document.getElementById('update-version-badge');
-            if (badge) badge.textContent = 'v' + APP_VERSION;
+            if (badge) badge.textContent = 'v' + ver;
 
             const list = document.getElementById('update-changelog-list');
-            if (list && UPDATE_CHANGELOG && UPDATE_CHANGELOG.length) {
-                list.innerHTML = UPDATE_CHANGELOG.map(item =>
+            if (list) {
+                list.innerHTML = (logs || []).map(item =>
                     `<li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> ${item}</li>`
                 ).join('');
             }
@@ -1115,7 +1146,9 @@
             if (pct) pct.textContent = '0%';
             if (status) status.textContent = 'Memulai unduhan...';
 
-            // Paksa tampil (class + inline style agar pasti muncul)
+            const btnUpdate = document.getElementById('btn-do-update');
+            if (btnUpdate) btnUpdate.disabled = false;
+
             modal.classList.remove('hidden');
             modal.style.display = 'flex';
             modal.style.visibility = 'visible';
@@ -1133,15 +1166,59 @@
 
         function checkAndShowUpdatePopup() {
             if (isUpdateInProgress) return;
-            if (!isUpdateAvailable()) return;
-            showUpdateModalUI();
+            // Jika remote sudah dicek & ada update, tampilkan versi remote
+            if (pendingUpdateVersion && isUpdateAvailable(pendingUpdateVersion)) {
+                showUpdateModalUI(pendingUpdateVersion, pendingUpdateChangelog);
+                return;
+            }
+            // Fallback lokal
+            if (isUpdateAvailable(APP_VERSION)) {
+                pendingUpdateVersion = APP_VERSION;
+                pendingUpdateChangelog = UPDATE_CHANGELOG;
+                showUpdateModalUI(APP_VERSION, UPDATE_CHANGELOG);
+            }
+        }
+
+        async function checkRemoteUpdateAndShow() {
+            if (isUpdateInProgress) return;
+            const url = (UPDATE_CHECK_URL || '').trim();
+            // Lewati jika URL masih placeholder
+            if (!url || url.indexOf('YOUR_') !== -1 || url.indexOf('username') !== -1) {
+                checkAndShowUpdatePopup();
+                return;
+            }
+            try {
+                const res = await fetch(url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now(), {
+                    method: 'GET',
+                    cache: 'no-store',
+                    mode: 'cors'
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                remoteUpdateChecked = true;
+                const remoteVer = String(data.version || data.appVersion || '').replace(/^v/i, '');
+                if (!remoteVer) {
+                    checkAndShowUpdatePopup();
+                    return;
+                }
+                pendingUpdateVersion = remoteVer;
+                pendingUpdateChangelog = Array.isArray(data.changelog) ? data.changelog : (data.notes ? [data.notes] : UPDATE_CHANGELOG);
+                pendingUpdateDownloadUrl = data.downloadUrl || data.apkUrl || data.url || '';
+
+                if (isUpdateAvailable(remoteVer)) {
+                    showUpdateModalUI(remoteVer, pendingUpdateChangelog);
+                }
+            } catch (err) {
+                console.warn('Remote update check failed, fallback local:', err);
+                checkAndShowUpdatePopup();
+            }
         }
 
         function handlePostponeUpdate() {
             if (isUpdateInProgress) return;
             hideUpdateModalUI();
             if (typeof showToast === 'function') {
-                showToast("Pembaruan ditunda. Akan muncul lagi saat login berikutnya.", "info");
+                showToast("Pembaruan ditunda. Akan muncul lagi saat buka / login berikutnya.", "info");
             }
         }
 
@@ -1149,6 +1226,7 @@
             if (isUpdateInProgress) return;
             isUpdateInProgress = true;
 
+            const targetVer = pendingUpdateVersion || APP_VERSION;
             const progressSection = document.getElementById('update-progress-section');
             const actionBtns = document.getElementById('update-action-buttons');
             const bar = document.getElementById('update-progress-bar');
@@ -1193,18 +1271,35 @@
                 if (progress >= 100) {
                     clearInterval(interval);
                     try {
-                        localStorage.setItem(APP_VERSION_STORAGE_KEY, APP_VERSION);
+                        localStorage.setItem(APP_VERSION_STORAGE_KEY, targetVer);
                     } catch (e) {}
 
                     if (status) status.textContent = "Pembaruan berhasil diterapkan!";
                     if (typeof showToast === 'function') {
-                        showToast("Aplikasi berhasil diperbarui ke v" + APP_VERSION + "!", "success");
+                        showToast("Aplikasi berhasil diperbarui ke v" + targetVer + "!", "success");
                     }
 
                     setTimeout(() => {
                         hideUpdateModalUI();
                         isUpdateInProgress = false;
                         if (btnUpdate) btnUpdate.disabled = false;
+
+                        // Jika ada link unduh APK dari version.json → buka
+                        if (pendingUpdateDownloadUrl) {
+                            try {
+                                window.open(pendingUpdateDownloadUrl, '_blank');
+                            } catch (e) {
+                                window.location.href = pendingUpdateDownloadUrl;
+                            }
+                        } else {
+                            // Reload paksa tanpa cache agar ambil HTML terbaru
+                            try {
+                                const base = window.location.href.split('#')[0].split('?')[0];
+                                window.location.href = base + '?v=' + encodeURIComponent(targetVer) + '&t=' + Date.now();
+                            } catch (e) {
+                                window.location.reload();
+                            }
+                        }
                     }, 700);
                 }
             }, 80);
@@ -1226,19 +1321,19 @@
                 if (!IS_PREVIEW) {
                     initFirebaseConnection();
                 }
-                // Tampilkan popup update (retry beberapa kali agar pasti muncul)
-                setTimeout(checkAndShowUpdatePopup, 300);
-                setTimeout(checkAndShowUpdatePopup, 800);
-                setTimeout(checkAndShowUpdatePopup, 1500);
+                // Cek update remote (GitHub) lalu fallback lokal
+                setTimeout(checkRemoteUpdateAndShow, 400);
+                setTimeout(function() {
+                    if (!remoteUpdateChecked) checkAndShowUpdatePopup();
+                }, 2500);
             } catch (err) {
                 console.error("InitApp error:", err);
-                setTimeout(checkAndShowUpdatePopup, 500);
+                setTimeout(checkRemoteUpdateAndShow, 500);
             }
         }
 
-        // Cadangan: pastikan popup dicek juga setelah window fully loaded
         window.addEventListener('load', function() {
-            setTimeout(checkAndShowUpdatePopup, 600);
+            setTimeout(checkRemoteUpdateAndShow, 800);
         });
 
         async function initFirebaseConnection() {
@@ -1462,7 +1557,7 @@
             renderAllViews();
 
             // Tampilkan lagi popup update jika user sebelumnya menunda
-            setTimeout(checkAndShowUpdatePopup, 500);
+            setTimeout(checkRemoteUpdateAndShow, 500);
         }
 
         function handleLogout() {
