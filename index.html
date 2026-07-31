@@ -1060,7 +1060,8 @@
         const UPDATE_CHECK_URL = "https://raw.githubusercontent.com/alwan281/tabungan-siswa-Ra-Alhidayah/main/version.json";
         const UPDATE_CHANGELOG = [
             "Riwayat siswa filter tanggal & tampilkan semua diperbaiki",
-            "Login admin siwa atau guru lebih baru",
+            "Login admin mengikuti data",
+            "Optimasi sinkronisasi",
             "Keamanan data tabungan ditingkatkan"
         ];
         let pendingUpdateVersion = APP_VERSION;
@@ -1181,6 +1182,20 @@
             modal.style.visibility = 'visible';
             modal.style.opacity = '1';
             modal.style.zIndex = '99999999';
+            modal.style.pointerEvents = 'auto';
+            if (actionBtns) {
+                actionBtns.style.pointerEvents = 'auto';
+                actionBtns.style.display = 'grid';
+            }
+            if (btnUpdate) {
+                btnUpdate.disabled = false;
+                btnUpdate.style.pointerEvents = 'auto';
+            }
+            var btnPostpone = modal.querySelector('button[onclick*="handlePostponeUpdate"]');
+            if (btnPostpone) {
+                btnPostpone.disabled = false;
+                btnPostpone.style.pointerEvents = 'auto';
+            }
             return true;
         }
 
@@ -1189,6 +1204,7 @@
             if (!modal) return;
             modal.classList.add('hidden');
             modal.style.display = 'none';
+            modal.style.pointerEvents = 'none';
         }
 
         function checkAndShowUpdatePopup() {
@@ -1322,30 +1338,26 @@
                         showToast("Aplikasi berhasil diperbarui ke v" + targetVer + "!", "success");
                     }
 
-                    setTimeout(() => {
+                    setTimeout(function() {
                         hideUpdateModalUI();
                         isUpdateInProgress = false;
                         if (btnUpdate) btnUpdate.disabled = false;
 
-                        // Jika ada link unduh APK dari version.json → buka
+                        // Hanya buka link unduh APK jika ada — JANGAN reload paksa (sering crash WebView/APK)
                         if (pendingUpdateDownloadUrl) {
                             try {
-                                window.open(pendingUpdateDownloadUrl, '_blank');
-                            } catch (e) {
-                                window.location.href = pendingUpdateDownloadUrl;
-                            }
-                        } else {
-                            // Reload paksa tanpa cache agar ambil HTML terbaru
-                            try {
-                                const base = window.location.href.split('#')[0].split('?')[0];
-                                window.location.href = base + '?v=' + encodeURIComponent(targetVer) + '&t=' + Date.now();
-                            } catch (e) {
-                                window.location.reload();
-                            }
+                                var a = document.createElement('a');
+                                a.href = pendingUpdateDownloadUrl;
+                                a.target = '_blank';
+                                a.rel = 'noopener';
+                                document.body.appendChild(a);
+                                a.click();
+                                setTimeout(function() { try { document.body.removeChild(a); } catch (e) {} }, 500);
+                            } catch (e) {}
                         }
-                    }, 700);
+                    }, 600);
                 }
-            }, 80);
+            }, 60);
         }
 
         // ON APP INITIALIZATION (sekali saja)
@@ -3188,6 +3200,12 @@
                 `;
             }
 
+            if (window.__isPrintingRekap) {
+                showToast("Sedang memproses cetak...", "info");
+                return;
+            }
+            window.__isPrintingRekap = true;
+
             const logoUrl = (data.sekolah && data.sekolah.logo)
                 ? String(data.sekolah.logo).trim()
                 : 'https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg';
@@ -3197,194 +3215,121 @@
             const schoolKepsek = String((data.sekolah && data.sekolah.kepsek) || '................................').replace(/[<>]/g, '');
             const periodeUpper = String(data.periodeText || '').toUpperCase();
 
-            function imgToDataUrl(imgEl) {
-                try {
-                    if (!imgEl || !imgEl.naturalWidth) return '';
-                    const max = 140;
-                    let w = imgEl.naturalWidth, h = imgEl.naturalHeight;
-                    if (w > max || h > max) {
-                        const r = Math.min(max / w, max / h);
+            // Logo: coba data-URL kecil dari img yang sudah di halaman (tanpa load ulang / canvas besar)
+            var logoSrc = logoUrl;
+            try {
+                var cand = [
+                    document.getElementById('login-school-logo'),
+                    document.getElementById('social-share-img'),
+                    document.querySelector('#header-logo img')
+                ];
+                for (var ci = 0; ci < cand.length; ci++) {
+                    var el = cand[ci];
+                    if (!el || !el.complete || !el.naturalWidth) continue;
+                    try {
+                        var max = 96;
+                        var w = el.naturalWidth, h = el.naturalHeight;
+                        var r = Math.min(max / w, max / h, 1);
                         w = Math.max(1, Math.round(w * r));
                         h = Math.max(1, Math.round(h * r));
-                    }
-                    const c = document.createElement('canvas');
-                    c.width = w; c.height = h;
-                    const ctx = c.getContext('2d');
-                    if (!ctx) return '';
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, w, h);
-                    ctx.drawImage(imgEl, 0, 0, w, h);
-                    return c.toDataURL('image/png');
-                } catch (e) {
-                    return '';
+                        var c = document.createElement('canvas');
+                        c.width = w; c.height = h;
+                        var ctx = c.getContext('2d');
+                        if (!ctx) continue;
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, w, h);
+                        ctx.drawImage(el, 0, 0, w, h);
+                        var du = c.toDataURL('image/jpeg', 0.8);
+                        if (du && du.indexOf('data:image') === 0) { logoSrc = du; break; }
+                    } catch (ce) {}
                 }
-            }
+            } catch (le) {}
 
-            function resolveLogoThenPrint() {
-                let logoSrc = '';
-                // 1) Coba dari gambar yang sudah ada di halaman
-                try {
-                    const candidates = [
-                        document.getElementById('login-school-logo'),
-                        document.getElementById('social-share-img'),
-                        document.querySelector('#header-logo img'),
-                        document.querySelector('img[alt="Logo"]'),
-                        document.querySelector('img[alt="Logo Sekolah"]')
-                    ];
-                    for (let i = 0; i < candidates.length; i++) {
-                        const el = candidates[i];
-                        if (el && el.complete && el.naturalWidth > 0) {
-                            logoSrc = imgToDataUrl(el);
-                            if (logoSrc) break;
-                        }
-                    }
-                } catch (e) {}
+            var logoCell = '<img src="' + logoSrc + '" class="print-logo" alt="Logo" width="70" height="70" style="width:70px;height:70px;object-fit:contain;display:block;background:#fff;">';
 
-                function finishWithLogo(src) {
-                    const finalSrc = src || logoUrl;
-                    // Pakai class "print-kop" (BUKAN "header") agar tidak kena CSS hide Blogger
-                    const logoCell = finalSrc
-                        ? '<img src="' + finalSrc + '" class="print-logo" alt="Logo RA Al-Hidayah" width="70" height="70" style="width:70px;height:70px;object-fit:contain;display:block;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;">'
-                        : '';
+            var bodyInner =
+                '<table class="print-kop" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-bottom:2px solid #1e293b;margin-bottom:12px;border-collapse:collapse;">' +
+                '<tr>' +
+                '<td style="width:78px;vertical-align:middle;padding:4px 8px 8px 0;border:none;">' + logoCell + '</td>' +
+                '<td style="vertical-align:middle;text-align:center;padding:4px 0 8px 0;border:none;">' +
+                '<div style="font-size:15px;font-weight:800;text-transform:uppercase;color:#0f172a;margin:0;">' + schoolNama + '</div>' +
+                '<div style="font-size:10px;color:#334155;margin:2px 0;">' + schoolAlamat + '</div>' +
+                '<div style="font-size:10px;color:#334155;margin:2px 0;">Tahun Ajaran: ' + schoolTahun + '</div>' +
+                '</td>' +
+                '<td style="width:78px;border:none;"></td>' +
+                '</tr></table>' +
+                '<h3 style="font-size:12px;font-weight:800;text-align:center;margin:10px 0 4px;text-transform:uppercase;color:#0f172a;">LAPORAN REKAPITULASI TABUNGAN SISWA</h3>' +
+                '<p style="text-align:center;font-size:10px;margin-bottom:12px;color:#334155;font-weight:600;">PERIODE: ' + periodeUpper + ' | TANGGAL CETAK: ' + datePrinted + '</p>' +
+                contentHTML +
+                '<div style="margin-top:28px;">' +
+                '<table cellpadding="0" cellspacing="0" border="0" style="width:100%;border:none;"><tr>' +
+                '<td style="width:50%;text-align:center;vertical-align:top;border:none;padding:0;">' +
+                '<p style="margin:0;">Mengetahui,</p>' +
+                '<p style="margin:2px 0;font-weight:bold;">Kepala Sekolah ' + schoolNama + '</p>' +
+                '<div style="height:55px;"></div>' +
+                '<p style="margin:0;font-weight:bold;text-decoration:underline;">' + schoolKepsek + '</p>' +
+                '<p style="margin:2px 0;font-size:9px;color:#64748b;">NIP / ID: -</p>' +
+                '</td><td style="width:50%;text-align:center;vertical-align:top;border:none;padding:0;">' +
+                '<p style="margin:0;">Palalang, ' + datePrinted + '</p>' +
+                '<p style="margin:2px 0;font-weight:bold;">Bendahara Tabungan / Wali Kelas</p>' +
+                '<div style="height:55px;"></div>' +
+                '<p style="margin:0;font-weight:bold;text-decoration:underline;">(...............................................)</p>' +
+                '<p style="margin:2px 0;font-size:9px;color:#64748b;">Petugas Administrator</p>' +
+                '</td></tr></table></div>';
 
-                    const bodyInner =
-                        '<table class="print-kop" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-bottom:2px solid #1e293b;margin-bottom:12px;border-collapse:collapse;">' +
-                        '<tr>' +
-                        '<td style="width:78px;vertical-align:middle;padding:4px 8px 8px 0;border:none;">' + logoCell + '</td>' +
-                        '<td style="vertical-align:middle;text-align:center;padding:4px 0 8px 0;border:none;">' +
-                        '<div class="print-school-name" style="font-size:15px;font-weight:800;text-transform:uppercase;color:#0f172a;margin:0;">' + schoolNama + '</div>' +
-                        '<div class="print-school-addr" style="font-size:10px;color:#334155;margin:2px 0;">' + schoolAlamat + '</div>' +
-                        '<div class="print-school-addr" style="font-size:10px;color:#334155;margin:2px 0;">Tahun Ajaran: ' + schoolTahun + '</div>' +
-                        '</td>' +
-                        '<td style="width:78px;border:none;"></td>' +
-                        '</tr></table>' +
-                        '<h3 class="print-report-title" style="font-size:12px;font-weight:800;text-align:center;margin:10px 0 4px;text-transform:uppercase;color:#0f172a;">LAPORAN REKAPITULASI TABUNGAN SISWA</h3>' +
-                        '<p class="print-report-meta" style="text-align:center;font-size:10px;margin-bottom:12px;color:#334155;font-weight:600;">PERIODE: ' + periodeUpper + ' | TANGGAL CETAK: ' + datePrinted + '</p>' +
-                        contentHTML +
-                        '<div class="print-signature" style="margin-top:28px;">' +
-                        '<table class="print-signature-table" cellpadding="0" cellspacing="0" border="0" style="width:100%;border:none;"><tr>' +
-                        '<td style="width:50%;text-align:center;vertical-align:top;border:none;padding:0;">' +
-                        '<p style="margin:0;">Mengetahui,</p>' +
-                        '<p style="margin:2px 0;font-weight:bold;">Kepala Sekolah ' + schoolNama + '</p>' +
-                        '<div style="height:55px;"></div>' +
-                        '<p style="margin:0;font-weight:bold;text-decoration:underline;">' + schoolKepsek + '</p>' +
-                        '<p style="margin:2px 0;font-size:9px;color:#64748b;">NIP / ID: -</p>' +
-                        '</td><td style="width:50%;text-align:center;vertical-align:top;border:none;padding:0;">' +
-                        '<p style="margin:0;">Palalang, ' + datePrinted + '</p>' +
-                        '<p style="margin:2px 0;font-weight:bold;">Bendahara Tabungan / Wali Kelas</p>' +
-                        '<div style="height:55px;"></div>' +
-                        '<p style="margin:0;font-weight:bold;text-decoration:underline;">(...............................................)</p>' +
-                        '<p style="margin:2px 0;font-size:9px;color:#64748b;">Petugas Administrator</p>' +
-                        '</td></tr></table></div>';
+            var printCss =
+                '#print-area-rekap{display:none!important;}' +
+                '@media print{' +
+                'html,body{height:auto!important;overflow:visible!important;background:#fff!important;}' +
+                'body > *:not(#print-area-rekap){display:none!important;}' +
+                '.pc-wrapper,#blogger-app-root{display:none!important;}' +
+                '#print-area-rekap{display:block!important;position:static!important;width:100%!important;margin:0!important;padding:0!important;background:#fff!important;color:#111!important;font-family:Arial,sans-serif;font-size:11px;}' +
+                '#print-area-rekap *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}' +
+                '#print-area-rekap .print-kop{width:100%!important;border-bottom:2px solid #1e293b!important;margin-bottom:12px!important;page-break-after:avoid;}' +
+                '#print-area-rekap .print-logo{width:70px!important;height:70px!important;object-fit:contain!important;display:block!important;}' +
+                '#print-area-rekap table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:10px;page-break-inside:auto;}' +
+                '#print-area-rekap thead{display:table-header-group;}' +
+                '#print-area-rekap tr{page-break-inside:avoid;}' +
+                '#print-area-rekap th,#print-area-rekap td{border:1px solid #94a3b8;padding:4px 6px;}' +
+                '#print-area-rekap th{background:#e2e8f0!important;font-weight:700;text-align:center;font-size:9px;}' +
+                '@page{size:A4;margin:12mm;}' +
+                '}';
 
-                    // CSS cetak: sembunyikan app, tampilkan hanya area cetak
-                    const printCss =
-                        '#print-area-rekap{display:none!important;}' +
-                        '@media print{' +
-                        'html,body{height:auto!important;overflow:visible!important;background:#fff!important;}' +
-                        'body > *:not(#print-area-rekap){display:none!important;visibility:hidden!important;}' +
-                        '.pc-wrapper,#blogger-app-root{display:none!important;}' +
-                        '#print-area-rekap{display:block!important;visibility:visible!important;position:static!important;width:100%!important;padding:0!important;margin:0!important;background:#fff!important;color:#111!important;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.4;}' +
-                        '#print-area-rekap,#print-area-rekap *{visibility:visible!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}' +
-                        '#print-area-rekap .print-kop{width:100%!important;border-bottom:2px solid #1e293b!important;margin-bottom:12px!important;page-break-after:avoid;display:table!important;}' +
-                        '#print-area-rekap .print-logo{width:70px!important;height:70px!important;object-fit:contain!important;display:block!important;background:#fff!important;}' +
-                        '#print-area-rekap .print-report-title{page-break-after:avoid;}' +
-                        '#print-area-rekap table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:10px;background:#fff!important;page-break-inside:auto;}' +
-                        '#print-area-rekap thead{display:table-header-group;}' +
-                        '#print-area-rekap tfoot{display:table-footer-group;}' +
-                        '#print-area-rekap tr{page-break-inside:avoid;page-break-after:auto;}' +
-                        '#print-area-rekap th,#print-area-rekap td{border:1px solid #94a3b8;padding:4px 6px;background:#fff!important;color:#111!important;}' +
-                        '#print-area-rekap th{background:#e2e8f0!important;font-weight:700;text-align:center;font-size:9px;}' +
-                        '#print-area-rekap .print-signature{margin-top:28px;page-break-inside:avoid;}' +
-                        '#print-area-rekap .print-signature-table td{border:none!important;}' +
-                        '@page{size:A4;margin:12mm;}' +
-                        '}';
+            try {
+                var styleEl = document.getElementById('print-style-rekap');
+                if (!styleEl) {
+                    styleEl = document.createElement('style');
+                    styleEl.id = 'print-style-rekap';
+                    document.head.appendChild(styleEl);
+                }
+                styleEl.textContent = printCss;
 
+                var area = document.getElementById('print-area-rekap');
+                if (!area) {
+                    area = document.createElement('div');
+                    area.id = 'print-area-rekap';
+                    document.body.appendChild(area);
+                }
+                area.innerHTML = bodyInner;
+
+                showToast("Membuka dialog cetak / simpan PDF...", "info");
+                setTimeout(function() {
                     try {
-                        let styleEl = document.getElementById('print-style-rekap');
-                        if (!styleEl) {
-                            styleEl = document.createElement('style');
-                            styleEl.id = 'print-style-rekap';
-                            document.head.appendChild(styleEl);
-                        }
-                        styleEl.textContent = printCss;
-
-                        let area = document.getElementById('print-area-rekap');
-                        if (!area) {
-                            area = document.createElement('div');
-                            area.id = 'print-area-rekap';
-                            document.body.appendChild(area);
-                        }
-                        area.innerHTML = bodyInner;
-
-                        // Tunggu logo di area cetak termuat, lalu print
-                        const logoImg = area.querySelector('img.logo');
-                        function doPrint() {
-                            showToast("Membuka dialog cetak / simpan PDF...", "info");
-                            setTimeout(function() {
-                                try { window.print(); } catch (e) {
-                                    showToast("Gagal membuka cetak.", "error");
-                                }
-                                setTimeout(function() {
-                                    try { area.innerHTML = ''; } catch (e) {}
-                                }, 2000);
-                            }, 200);
-                        }
-                        if (logoImg) {
-                            if (logoImg.complete && logoImg.naturalWidth > 0) {
-                                doPrint();
-                            } else {
-                                logoImg.onload = doPrint;
-                                logoImg.onerror = doPrint;
-                                setTimeout(doPrint, 2000);
-                            }
-                        } else {
-                            doPrint();
-                        }
-                    } catch (printErr) {
-                        showToast("Gagal mencetak PDF.", "error");
+                        window.print();
+                    } catch (pe) {
+                        showToast("Gagal membuka cetak.", "error");
                     }
-                }
-
-                if (logoSrc) {
-                    finishWithLogo(logoSrc);
-                    return;
-                }
-
-                // 2) Muat logo dari URL lalu embed berwarna
-                showToast("Memuat logo untuk cetak...", "info");
-                let done = false;
-                function once(src) {
-                    if (done) return;
-                    done = true;
-                    finishWithLogo(src || logoUrl);
-                }
-                try {
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
-                    img.onload = function() {
-                        const d = imgToDataUrl(img);
-                        once(d || logoUrl);
-                    };
-                    img.onerror = function() {
-                        // Tanpa CORS
-                        const img2 = new Image();
-                        img2.onload = function() {
-                            const d = imgToDataUrl(img2);
-                            once(d || logoUrl);
-                        };
-                        img2.onerror = function() { once(logoUrl); };
-                        img2.src = logoUrl;
-                    };
-                    img.src = logoUrl + (logoUrl.indexOf('?') >= 0 ? '&' : '?') + 'v=' + Date.now();
-                } catch (e) {
-                    once(logoUrl);
-                }
-                setTimeout(function() { once(logoUrl); }, 2500);
+                    setTimeout(function() {
+                        try { area.innerHTML = ''; } catch (e) {}
+                        window.__isPrintingRekap = false;
+                    }, 1200);
+                }, 400);
+            } catch (printErr) {
+                window.__isPrintingRekap = false;
+                showToast("Gagal mencetak PDF.", "error");
             }
-
-            resolveLogoThenPrint();
             } catch (errOuter) {
+                window.__isPrintingRekap = false;
                 showToast("Gagal membuat laporan PDF. Coba lagi.", "error");
             }
         }
