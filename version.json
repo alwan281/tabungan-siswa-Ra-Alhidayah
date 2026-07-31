@@ -1,7 +1,8 @@
 {
   "version": "2.3.4",
   "changelog": [
-    "Notifikasi pembaruan remote via GitHub",
+    "Perbaikan keamanan data",
+    "Perbaikan tombol login dan keluar",
     "Perbaikan riwayat siswa"
   ],
   "downloadUrl": "",
