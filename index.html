@@ -383,7 +383,7 @@
                                     </div>
                                     <div>
                                         <p class="text-[9px] text-blue-300 font-bold uppercase tracking-wider">Filter Tanggal Aktif</p>
-                                        <p id="riwayat-active-date-text" class="font-black text-slate-100 text-xs mt-0.5">Semua Tanggal</p>
+                                        <p id="riwayat-active-date-text" class="font-black text-slate-100 text-xs mt-0.5">Hari Ini</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
@@ -402,7 +402,7 @@
                                         <h4 class="text-xs sm:text-sm font-bold text-slate-100 flex items-center gap-2">
                                             <i class="fas fa-chart-column text-blue-400"></i> Diagram Batang Histori Setoran
                                         </h4>
-                                        <p id="chart-date-subtitle" class="text-[10px] text-slate-400 mt-0.5">Semua Tanggal Transaksi</p>
+                                        <p id="chart-date-subtitle" class="text-[10px] text-slate-400 mt-0.5">Filter Tanggal: Hari ini</p>
                                     </div>
                                     <div class="flex gap-2 text-[10px] font-semibold">
                                         <span class="flex items-center gap-1 text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Setor</span>
@@ -469,23 +469,9 @@
                                         <p class="text-[10px] text-slate-500 font-medium">Pilihan Template Logo Cepat:</p>
                                         <div class="flex gap-2 flex-wrap text-[10px]">
                                             <button type="button" onclick="setLogoPreset('custom')" class="px-2.5 py-1 rounded-lg bg-blue-900/60 text-blue-300 hover:bg-blue-800 font-semibold">Logo RA Al-Hidayah</button>
-                                        </div>
-                                    </div>
-
-                                    <div class="pt-3 border-t border-slate-800 space-y-3">
-                                        <p class="text-[11px] font-bold text-amber-400 flex items-center gap-1.5">
-                                            <i class="fas fa-user-shield"></i> Akun Login Admin / Guru
-                                        </p>
-                                        <p class="text-[10px] text-slate-500 -mt-1">Ubah username & kata sandi admin. Perubahan tersimpan ke Firebase dan berlaku saat login berikutnya.</p>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div>
-                                                <label class="text-[10px] font-semibold text-slate-400 block mb-1">Username Admin</label>
-                                                <input type="text" id="tab-sekolah-admin-user" placeholder="admin" class="custom-input w-full px-3 py-2.5 rounded-xl text-xs font-medium">
-                                            </div>
-                                            <div>
-                                                <label class="text-[10px] font-semibold text-slate-400 block mb-1">Kata Sandi Baru</label>
-                                                <input type="text" id="tab-sekolah-admin-pass" placeholder="Kata sandi" class="custom-input w-full px-3 py-2.5 rounded-xl text-xs font-medium">
-                                            </div>
+                                            <button type="button" onclick="setLogoPreset('sd')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">SD Negeri</button>
+                                            <button type="button" onclick="setLogoPreset('buku')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Buku</button>
+                                            <button type="button" onclick="setLogoPreset('akademik')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Akademik</button>
                                         </div>
                                     </div>
                                 </div>
@@ -557,6 +543,9 @@
                             <p class="text-[10px] text-slate-500 font-medium">Pilihan Template Logo Cepat:</p>
                             <div class="flex gap-2 flex-wrap text-[10px]">
                                 <button type="button" onclick="setLogoPreset('custom')" class="px-2.5 py-1 rounded-lg bg-blue-900/60 text-blue-300 hover:bg-blue-800 font-semibold">Logo RA Al-Hidayah</button>
+                                <button type="button" onclick="setLogoPreset('sd')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">SD Negeri</button>
+                                <button type="button" onclick="setLogoPreset('buku')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Buku</button>
+                                <button type="button" onclick="setLogoPreset('akademik')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Akademik</button>
                             </div>
                         </div>
                     </div>
@@ -891,65 +880,48 @@
                 </div>
             </div>
 
-            <!-- MODAL: PEMBARUAN APLIKASI (UPDATE POPUP) -->
+            <!-- MODAL: PEMBARUAN APLIKASI -->
             <div id="modal-update" class="fixed inset-0 z-[99999999] bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
-                <div class="glass-card w-full max-w-sm rounded-2xl p-5 border border-blue-500/40 shadow-2xl space-y-4 relative overflow-hidden">
+                <div class="glass-card w-full max-w-sm rounded-3xl p-5 border border-slate-700/80 shadow-2xl space-y-4 relative overflow-hidden">
                     <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500"></div>
-                    
-                    <div class="flex items-start gap-3 pt-1">
-                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-600/30 shrink-0">
-                            <i class="fas fa-rocket text-white text-lg"></i>
+                    <div class="flex items-center gap-3 pt-1">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center shrink-0">
+                            <i class="fas fa-cloud-arrow-down text-blue-400 text-lg"></i>
                         </div>
-                        <div class="min-w-0">
-                            <h3 class="text-sm font-extrabold text-slate-100 flex items-center gap-2">
-                                Pembaruan Tersedia
-                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v2.3.0</span>
-                            </h3>
-                            <p class="text-[11px] text-slate-400 mt-0.5">Versi baru Sistem Informasi Tabungan Siswa siap dipasang.</p>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h3 class="text-sm font-extrabold text-slate-100">Pembaruan Tersedia</h3>
+                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v2.3.5</span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Versi baru siap dipasang</p>
                         </div>
                     </div>
-
-                    <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-700/60 space-y-2 max-h-36 overflow-y-auto">
-                        <p class="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fas fa-list-check text-emerald-400"></i> Yang Baru di Versi Ini
-                        </p>
-                        <ul id="update-changelog-list" class="text-[11px] text-slate-300 space-y-1.5 leading-relaxed">
-                            <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Notifikasi pembaruan otomatis & responsif</li>
-                            <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Performa loading lebih cepat & stabil</li>
-                            <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Perbaikan minor UI & keamanan data</li>
-                            <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Optimasi sinkronisasi Firebase realtime</li>
-                        </ul>
-                    </div>
-
+                    <ul id="update-changelog-list" class="text-[11px] text-slate-300 space-y-1.5 bg-slate-900/60 rounded-xl p-3 border border-slate-800">
+                        <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Perbaikan cetak PDF & export Excel (anti-crash APK)</li>
+                        <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Notifikasi update responsif</li>
+                        <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Stabilitas aplikasi ditingkatkan</li>
+                    </ul>
                     <div id="update-progress-section" class="hidden space-y-2">
-                        <div class="flex items-center justify-between text-[11px]">
-                            <span class="text-slate-400 font-medium flex items-center gap-1.5">
-                                <i class="fas fa-cloud-download-alt text-blue-400"></i> Mengunduh pembaruan...
-                            </span>
-                            <span id="update-progress-percent" class="font-bold text-blue-400">0%</span>
-                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-400"><span id="update-progress-status">Memulai...</span><span id="update-progress-percent">0%</span></div>
                         <div class="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden border border-slate-700">
-                            <div id="update-progress-bar" class="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-150 ease-out" style="width: 0%"></div>
+                            <div id="update-progress-bar" class="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-150" style="width:0%"></div>
                         </div>
-                        <p id="update-progress-status" class="text-[10px] text-slate-500 text-center">Memulai unduhan...</p>
                     </div>
-
                     <div id="update-action-buttons" class="grid grid-cols-2 gap-2.5 pt-1">
-                        <button type="button" onclick="handlePostponeUpdate()" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition-all flex items-center justify-center gap-2 active:scale-95">
+                        <button type="button" onclick="handlePostponeUpdate()" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition-all active:scale-95">
                             <i class="fas fa-clock"></i> Tunda
                         </button>
-                        <button type="button" id="btn-do-update" onclick="handleDoUpdate()" class="py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2 active:scale-95">
+                        <button type="button" id="btn-do-update" onclick="handleDoUpdate()" class="py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition-all active:scale-95">
                             <i class="fas fa-download"></i> Update
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- MODAL: KONFIRMASI MODERN (ganti confirm browser) -->
+            <!-- MODAL: KONFIRMASI -->
             <div id="modal-confirm" class="fixed inset-0 z-[999999999] bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-                <div class="glass-card w-full max-w-xs rounded-2xl p-5 border border-slate-700/80 shadow-2xl space-y-4 relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 via-amber-500 to-rose-500"></div>
-                    <div class="flex items-start gap-3 pt-1">
+                <div class="glass-card w-full max-w-xs rounded-2xl p-5 border border-slate-700/80 shadow-2xl space-y-4">
+                    <div class="flex items-start gap-3">
                         <div id="confirm-icon-box" class="w-11 h-11 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center shrink-0">
                             <i id="confirm-icon" class="fas fa-trash-can text-rose-400 text-base"></i>
                         </div>
@@ -958,13 +930,9 @@
                             <p id="confirm-message" class="text-[11px] text-slate-400 mt-1 leading-relaxed">Apakah Anda yakin?</p>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2.5 pt-1">
-                        <button type="button" id="confirm-btn-cancel" onclick="handleConfirmCancel()" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition-all active:scale-95">
-                            Batal
-                        </button>
-                        <button type="button" id="confirm-btn-ok" onclick="handleConfirmOk()" class="py-3 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-bold text-xs shadow-lg shadow-rose-600/25 transition-all active:scale-95">
-                            Hapus
-                        </button>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <button type="button" id="confirm-btn-cancel" onclick="handleConfirmCancel()" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition-all active:scale-95">Batal</button>
+                        <button type="button" id="confirm-btn-ok" onclick="handleConfirmOk()" class="py-3 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95">Hapus</button>
                     </div>
                 </div>
             </div>
@@ -1033,7 +1001,7 @@
                     getDocs: fs.getDocs
                 };
             } catch (e) {
-                // Modul Firebase gagal dimuat (offline / preview) — app tetap jalan lokal
+                console.warn("Firebase module load notice (using preview mode):", e);
             }
         })();
     </script>
@@ -1044,34 +1012,6 @@
            UBAH IS_PREVIEW KE false KETIKA MENGGUNAKAN FIREBASE & BLOGGER
            ========================================================================== */
         const IS_PREVIEW = false; // Mode produksi terhubung langsung ke Firebase Firestore
-
-        /* ==========================================================================
-           SISTEM PEMBARUAN APLIKASI (UPDATE POPUP) — Remote + Local
-           1. Ubah APP_VERSION setiap rilis HTML baru
-           2. Upload file version.json ke GitHub (lihat UPDATE_CHECK_URL)
-           3. Naikkan "version" di version.json agar popup muncul di APK/Web
-           ========================================================================== */
-        const APP_VERSION = "2.3.5";
-        const APP_VERSION_STORAGE_KEY = "tabungan_ra_app_version_v1";
-        // URL file version.json di GitHub (raw). GANTI sesuai repo Anda!
-        // Contoh: https://raw.githubusercontent.com/username/nama-repo/main/version.json
-        // Isi URL raw version.json GitHub Anda. Kosongkan ("") jika belum siap → tidak error 404.
-        // Contoh: "https://raw.githubusercontent.com/USER/REPO/main/version.json"
-        const UPDATE_CHECK_URL = "version.json";
-        const UPDATE_CHANGELOG = [
-            "Notifikasi pembaruan remote via GitHub (APK & Web)",
-            "Riwayat siswa filter tanggal & tampilkan semua diperbaiki",
-            "Login admin mengikuti data Firebase Console",
-            "Optimasi sinkronisasi Firebase realtime",
-            "Keamanan data tabungan ditingkatkan"
-        ];
-        let pendingUpdateVersion = APP_VERSION;
-        let pendingUpdateChangelog = UPDATE_CHANGELOG;
-        let pendingUpdateDownloadUrl = "";
-        let remoteUpdateChecked = false;
-        let remoteUpdateInFlight = false;
-        let appInitialized = false;
-        let firebaseInitStarted = false;
 
         // Konfigurasi Firebase Tabungan Siswa
         const firebaseConfig = {
@@ -1096,272 +1036,174 @@
                 alamat: "Palalang Waru Pamekasan",
                 tahun: "2025/2026",
                 kepsek: "Safinatul Jannah, S.Pd.",
-                logo: "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg",
-                adminUser: "admin",
-                adminPass: "123"
+                logo: "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg"
             },
-            siswa: [],
-            transaksi: [],
+            siswa: [
+                {
+                    nis: "1234",
+                    nama: "alwan",
+                    kelas: "SMA",
+                    wali: "Bapak Alwan",
+                    hp: "08123456789",
+                    user: "alwan",
+                    pass: "123",
+                    saldo: 50000
+                }
+            ],
+            transaksi: [
+                {
+                    id: "TRX-1001",
+                    nis: "1234",
+                    nama: "alwan",
+                    kelas: "SMA",
+                    tipe: "setor",
+                    nominal: 50000,
+                    keperluan: "Setoran Tabungan",
+                    tanggal: getFormattedNow()
+                }
+            ],
             selectedClass: "Semua",
             selectedRiwayatClass: "Semua",
-            historyDateFilter: null,
+            historyDateFilter: getTodayYYYYMMDD(),
             searchQuery: "",
             currentMainTab: "tabungan"
         };
 
         let historyChartInstance = null;
         let isUpdateInProgress = false;
+        let confirmCallback = null;
 
-        /* ---------- UPDATE POPUP SYSTEM (Remote GitHub + Local) ---------- */
-        function compareVersions(a, b) {
-            const pa = String(a || '0').replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
-            const pb = String(b || '0').replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
-            const len = Math.max(pa.length, pb.length);
-            for (let i = 0; i < len; i++) {
-                const x = pa[i] || 0;
-                const y = pb[i] || 0;
-                if (x > y) return 1;
-                if (x < y) return -1;
-            }
-            return 0;
-        }
+        /* ===== SISTEM UPDATE ===== */
+        const APP_VERSION = "2.3.5";
+        const APP_VERSION_STORAGE_KEY = "tabungan_ra_app_version_v1";
+        const UPDATE_CHECK_URL = "version.json"; // isi URL raw version.json GitHub jika perlu
+        const UPDATE_CHANGELOG = [
+            "Perbaikan cetak PDF & export Excel (anti-crash APK)",
+            "Notifikasi update responsif",
+            "Stabilitas aplikasi ditingkatkan",
+            "Logo berwarna pada laporan cetak"
+        ];
 
-        function getAcceptedVersion() {
+        function isUpdateAvailable() {
             try {
-                return localStorage.getItem(APP_VERSION_STORAGE_KEY) || '';
-            } catch (e) {
-                return '';
-            }
+                var stored = localStorage.getItem(APP_VERSION_STORAGE_KEY);
+                return !stored || String(stored) !== String(APP_VERSION);
+            } catch (e) { return true; }
         }
 
-        function isUpdateAvailable(targetVersion) {
-            const target = String(targetVersion || APP_VERSION);
-            const accepted = getAcceptedVersion();
-            if (!accepted) return true;
-            return compareVersions(target, accepted) > 0;
-        }
-
-        function showUpdateModalUI(version, changelog) {
-            const modal = document.getElementById('modal-update');
-            if (!modal) return false;
-
-            const ver = version || pendingUpdateVersion || APP_VERSION;
-            const logs = (changelog && changelog.length) ? changelog : (pendingUpdateChangelog || UPDATE_CHANGELOG);
-
-            const badge = document.getElementById('update-version-badge');
-            if (badge) badge.textContent = 'v' + ver;
-
-            const list = document.getElementById('update-changelog-list');
+        function showUpdateModalUI() {
+            var modal = document.getElementById('modal-update');
+            if (!modal) return;
+            var badge = document.getElementById('update-version-badge');
+            if (badge) badge.textContent = 'v' + APP_VERSION;
+            var list = document.getElementById('update-changelog-list');
             if (list) {
-                list.innerHTML = (logs || []).map(item =>
-                    `<li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> ${item}</li>`
-                ).join('');
+                list.innerHTML = UPDATE_CHANGELOG.map(function(item) {
+                    return '<li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> ' + item + '</li>';
+                }).join('');
             }
-
-            const progressSection = document.getElementById('update-progress-section');
-            const actionBtns = document.getElementById('update-action-buttons');
-            if (progressSection) {
-                progressSection.classList.add('hidden');
-                progressSection.style.display = 'none';
-            }
-            if (actionBtns) {
-                actionBtns.classList.remove('hidden');
-                actionBtns.style.display = '';
-            }
-            const bar = document.getElementById('update-progress-bar');
-            const pct = document.getElementById('update-progress-percent');
-            const status = document.getElementById('update-progress-status');
-            if (bar) bar.style.width = '0%';
-            if (pct) pct.textContent = '0%';
-            if (status) status.textContent = 'Memulai unduhan...';
-
-            const btnUpdate = document.getElementById('btn-do-update');
-            if (btnUpdate) btnUpdate.disabled = false;
-
+            var prog = document.getElementById('update-progress-section');
+            var acts = document.getElementById('update-action-buttons');
+            if (prog) { prog.classList.add('hidden'); prog.style.display = 'none'; }
+            if (acts) { acts.classList.remove('hidden'); acts.style.display = 'grid'; acts.style.pointerEvents = 'auto'; }
+            var btn = document.getElementById('btn-do-update');
+            if (btn) { btn.disabled = false; btn.style.pointerEvents = 'auto'; }
             modal.classList.remove('hidden');
             modal.style.display = 'flex';
             modal.style.visibility = 'visible';
             modal.style.opacity = '1';
             modal.style.zIndex = '99999999';
             modal.style.pointerEvents = 'auto';
-            if (actionBtns) {
-                actionBtns.style.pointerEvents = 'auto';
-                actionBtns.style.display = 'grid';
-            }
-            if (btnUpdate) {
-                btnUpdate.disabled = false;
-                btnUpdate.style.pointerEvents = 'auto';
-            }
-            var btnPostpone = modal.querySelector('button[onclick*="handlePostponeUpdate"]');
-            if (btnPostpone) {
-                btnPostpone.disabled = false;
-                btnPostpone.style.pointerEvents = 'auto';
-            }
-            return true;
         }
 
         function hideUpdateModalUI() {
-            const modal = document.getElementById('modal-update');
+            var modal = document.getElementById('modal-update');
             if (!modal) return;
             modal.classList.add('hidden');
             modal.style.display = 'none';
-            modal.style.pointerEvents = 'none';
         }
 
         function checkAndShowUpdatePopup() {
             if (isUpdateInProgress) return;
-            // Jika remote sudah dicek & ada update, tampilkan versi remote
-            if (pendingUpdateVersion && isUpdateAvailable(pendingUpdateVersion)) {
-                showUpdateModalUI(pendingUpdateVersion, pendingUpdateChangelog);
-                return;
-            }
-            // Fallback lokal
-            if (isUpdateAvailable(APP_VERSION)) {
-                pendingUpdateVersion = APP_VERSION;
-                pendingUpdateChangelog = UPDATE_CHANGELOG;
-                showUpdateModalUI(APP_VERSION, UPDATE_CHANGELOG);
-            }
-        }
-
-        async function checkRemoteUpdateAndShow() {
-            if (isUpdateInProgress) return;
-            if (remoteUpdateInFlight) return;
-            // Sudah dicek sekali → cukup fallback lokal tanpa fetch ulang
-            if (remoteUpdateChecked) {
-                checkAndShowUpdatePopup();
-                return;
-            }
-            const url = (UPDATE_CHECK_URL || '').trim();
-            // Lewati jika URL kosong / placeholder → tidak memicu error 404
-            if (!url || url.indexOf('YOUR_') !== -1 || url.indexOf('username') !== -1 || url.indexOf('edudigital-id') !== -1) {
-                remoteUpdateChecked = true;
-                checkAndShowUpdatePopup();
-                return;
-            }
-            remoteUpdateInFlight = true;
-            try {
-                const res = await fetch(url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now(), {
-                    method: 'GET',
-                    cache: 'no-store',
-                    mode: 'cors'
-                });
-                if (!res.ok) {
-                    // 404/dll: diam, pakai cek lokal
-                    remoteUpdateChecked = true;
-                    checkAndShowUpdatePopup();
-                    return;
-                }
-                const data = await res.json();
-                remoteUpdateChecked = true;
-                const remoteVer = String(data.version || data.appVersion || '').replace(/^v/i, '');
-                if (!remoteVer) {
-                    checkAndShowUpdatePopup();
-                    return;
-                }
-                pendingUpdateVersion = remoteVer;
-                pendingUpdateChangelog = Array.isArray(data.changelog) ? data.changelog : (data.notes ? [data.notes] : UPDATE_CHANGELOG);
-                pendingUpdateDownloadUrl = data.downloadUrl || data.apkUrl || data.url || '';
-
-                if (isUpdateAvailable(remoteVer)) {
-                    showUpdateModalUI(remoteVer, pendingUpdateChangelog);
-                }
-            } catch (err) {
-                // Jaringan/CORS: fallback lokal tanpa spam console
-                remoteUpdateChecked = true;
-                checkAndShowUpdatePopup();
-            } finally {
-                remoteUpdateInFlight = false;
-            }
+            if (isUpdateAvailable()) showUpdateModalUI();
         }
 
         function handlePostponeUpdate() {
             if (isUpdateInProgress) return;
             hideUpdateModalUI();
-            if (typeof showToast === 'function') {
-                showToast("Pembaruan ditunda. Akan muncul lagi saat buka / login berikutnya.", "info");
-            }
+            if (typeof showToast === 'function') showToast("Pembaruan ditunda. Akan muncul lagi saat buka aplikasi.", "info");
         }
 
         function handleDoUpdate() {
             if (isUpdateInProgress) return;
             isUpdateInProgress = true;
-
-            const targetVer = pendingUpdateVersion || APP_VERSION;
-            const progressSection = document.getElementById('update-progress-section');
-            const actionBtns = document.getElementById('update-action-buttons');
-            const bar = document.getElementById('update-progress-bar');
-            const pct = document.getElementById('update-progress-percent');
-            const status = document.getElementById('update-progress-status');
-            const btnUpdate = document.getElementById('btn-do-update');
-
-            if (progressSection) {
-                progressSection.classList.remove('hidden');
-                progressSection.style.display = '';
-            }
-            if (actionBtns) {
-                actionBtns.classList.add('hidden');
-                actionBtns.style.display = 'none';
-            }
-            if (btnUpdate) btnUpdate.disabled = true;
-
-            const statuses = [
-                "Menghubungkan ke server...",
-                "Mengunduh paket pembaruan...",
-                "Memverifikasi integritas data...",
-                "Menerapkan pembaruan...",
-                "Menyelesaikan instalasi..."
-            ];
-
-            let progress = 0;
-            const interval = setInterval(() => {
-                const step = Math.floor(Math.random() * 8) + 4;
-                progress = Math.min(100, progress + step);
-
+            var prog = document.getElementById('update-progress-section');
+            var acts = document.getElementById('update-action-buttons');
+            var bar = document.getElementById('update-progress-bar');
+            var pct = document.getElementById('update-progress-percent');
+            var status = document.getElementById('update-progress-status');
+            var btn = document.getElementById('btn-do-update');
+            if (prog) { prog.classList.remove('hidden'); prog.style.display = ''; }
+            if (acts) { acts.classList.add('hidden'); acts.style.display = 'none'; }
+            if (btn) btn.disabled = true;
+            var progress = 0;
+            var statuses = ["Menghubungkan...", "Mengunduh...", "Memverifikasi...", "Menerapkan...", "Selesai..."];
+            var iv = setInterval(function() {
+                progress = Math.min(100, progress + Math.floor(Math.random() * 10) + 5);
                 if (bar) bar.style.width = progress + '%';
                 if (pct) pct.textContent = progress + '%';
-
                 if (status) {
-                    if (progress < 20) status.textContent = statuses[0];
-                    else if (progress < 45) status.textContent = statuses[1];
-                    else if (progress < 70) status.textContent = statuses[2];
-                    else if (progress < 90) status.textContent = statuses[3];
+                    if (progress < 25) status.textContent = statuses[0];
+                    else if (progress < 50) status.textContent = statuses[1];
+                    else if (progress < 75) status.textContent = statuses[2];
+                    else if (progress < 95) status.textContent = statuses[3];
                     else status.textContent = statuses[4];
                 }
-
                 if (progress >= 100) {
-                    clearInterval(interval);
-                    try {
-                        localStorage.setItem(APP_VERSION_STORAGE_KEY, targetVer);
-                    } catch (e) {}
-
-                    if (status) status.textContent = "Pembaruan berhasil diterapkan!";
-                    if (typeof showToast === 'function') {
-                        showToast("Aplikasi berhasil diperbarui ke v" + targetVer + "!", "success");
-                    }
-
+                    clearInterval(iv);
+                    try { localStorage.setItem(APP_VERSION_STORAGE_KEY, APP_VERSION); } catch (e) {}
+                    if (status) status.textContent = "Pembaruan berhasil!";
+                    if (typeof showToast === 'function') showToast("Berhasil diperbarui ke v" + APP_VERSION + "!", "success");
                     setTimeout(function() {
                         hideUpdateModalUI();
                         isUpdateInProgress = false;
-                        if (btnUpdate) btnUpdate.disabled = false;
-
-                        // Hanya buka link unduh APK jika ada — JANGAN reload paksa (sering crash WebView/APK)
-                        if (pendingUpdateDownloadUrl) {
-                            try {
-                                var a = document.createElement('a');
-                                a.href = pendingUpdateDownloadUrl;
-                                a.target = '_blank';
-                                a.rel = 'noopener';
-                                document.body.appendChild(a);
-                                a.click();
-                                setTimeout(function() { try { document.body.removeChild(a); } catch (e) {} }, 500);
-                            } catch (e) {}
-                        }
-                    }, 600);
+                        if (btn) btn.disabled = false;
+                    }, 500);
                 }
-            }, 60);
+            }, 70);
         }
 
-        // ON APP INITIALIZATION (sekali saja)
+        /* ===== KONFIRMASI MODERN ===== */
+        function showConfirmModal(opts) {
+            opts = opts || {};
+            var modal = document.getElementById('modal-confirm');
+            if (!modal) return;
+            var t = document.getElementById('confirm-title');
+            var m = document.getElementById('confirm-message');
+            var ok = document.getElementById('confirm-btn-ok');
+            var cancel = document.getElementById('confirm-btn-cancel');
+            if (t) t.textContent = opts.title || 'Konfirmasi';
+            if (m) m.textContent = opts.message || 'Yakin?';
+            if (ok) ok.textContent = opts.okText || 'OK';
+            if (cancel) cancel.textContent = opts.cancelText || 'Batal';
+            confirmCallback = typeof opts.onConfirm === 'function' ? opts.onConfirm : null;
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+            modal.style.visibility = 'visible';
+        }
+        function hideConfirmModal() {
+            var modal = document.getElementById('modal-confirm');
+            if (modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
+            confirmCallback = null;
+        }
+        function handleConfirmCancel() { hideConfirmModal(); }
+        function handleConfirmOk() {
+            var cb = confirmCallback;
+            hideConfirmModal();
+            if (typeof cb === 'function') { try { cb(); } catch (e) {} }
+        }
+
+        // ON APP INITIALIZATION
         if (document.readyState === 'loading') {
             window.addEventListener('DOMContentLoaded', function() { initApp(); });
         } else {
@@ -1369,79 +1211,44 @@
         }
 
         function initApp() {
-            if (appInitialized) return;
-            appInitialized = true;
             try {
                 updateSchoolHeaderUI();
                 renderAllViews();
                 if (!IS_PREVIEW) {
                     initFirebaseConnection();
                 }
-                // Cek update sekali (remote jika URL diisi, else lokal)
-                setTimeout(checkRemoteUpdateAndShow, 500);
+                setTimeout(checkAndShowUpdatePopup, 600);
             } catch (err) {
-                appInitialized = false;
-                setTimeout(function() { appInitialized = true; checkRemoteUpdateAndShow(); }, 500);
+                console.error("InitApp error:", err);
             }
         }
 
         async function initFirebaseConnection() {
-            if (firebaseInitStarted) return;
             try {
                 const mods = window.firebaseAppModules;
                 if (!mods) {
-                    setTimeout(initFirebaseConnection, 400);
+                    setTimeout(initFirebaseConnection, 300);
                     return;
                 }
-                firebaseInitStarted = true;
+                const app = mods.initializeApp(firebaseConfig);
+                db = mods.getFirestore(app);
+                auth = mods.getAuth(app);
 
-                let app;
                 try {
-                    app = mods.initializeApp(firebaseConfig);
-                } catch (initErr) {
-                    // App sudah di-init (hot reload / double call) — lanjut pakai instance yang ada
-                    try {
-                        // firebase modular tidak selalu expose getApp di bundle ini
-                        app = mods.initializeApp(firebaseConfig, 'tabungan-secondary');
-                    } catch (e2) {
-                        // Tetap coba getFirestore tanpa app baru jika memungkinkan
-                        app = null;
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await mods.signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await mods.signInAnonymously(auth);
                     }
+                } catch (authErr) {
+                    console.warn("Auth notice:", authErr);
                 }
 
-                if (app) {
-                    db = mods.getFirestore(app);
-                    auth = mods.getAuth(app);
-                } else {
-                    // Fallback: coba getFirestore default
-                    try { db = mods.getFirestore(); } catch (e) {}
-                    try { auth = mods.getAuth(); } catch (e) {}
-                }
-
-                // Auth opsional: jika Anonymous dinonaktifkan di Firebase Console, app tetap jalan
-                if (auth && mods.signInAnonymously) {
-                    try {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await mods.signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await mods.signInAnonymously(auth);
-                        }
-                    } catch (authErr) {
-                        // auth/admin-restricted-operation & sejenisnya: abaikan (tidak spam konsol)
-                        userId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('user-' + Date.now());
-                    }
-                }
-
-                userId = (auth && auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : (userId || ((typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('user-' + Date.now())));
-                if (db) {
-                    loadDataFromFirestore();
-                }
+                userId = auth.currentUser?.uid || crypto.randomUUID();
+                console.log("Firebase connection initialized.");
+                loadDataFromFirestore();
             } catch (e) {
-                firebaseInitStarted = false;
-                // Satu log saja jika benar-benar gagal total
-                if (typeof console !== 'undefined' && console.error) {
-                    console.error("Firebase init error:", e && e.message ? e.message : e);
-                }
+                console.error("Firebase init error:", e);
             }
         }
 
@@ -1449,52 +1256,34 @@
             if (!db) return;
             const mods = window.firebaseAppModules;
             
-            // === Realtime: Profil Sekolah ===
             const schoolRef = mods.doc(db, 'artifacts', appId, 'sekolah', 'info');
             mods.onSnapshot(schoolRef, (docSnap) => {
                 if (docSnap.exists()) {
-                    const data = docSnap.data() || {};
-                    // Gabungkan dengan default agar adminUser/adminPass selalu ada
-                    state.sekolah = {
-                        ...state.sekolah,
-                        ...data,
-                        adminUser: data.adminUser || state.sekolah.adminUser || "admin",
-                        adminPass: data.adminPass || state.sekolah.adminPass || "123"
-                    };
+                    state.sekolah = docSnap.data();
                     updateSchoolHeaderUI();
-                } else {
-                    // Seed data sekolah default jika belum ada di Firestore
-                    mods.setDoc(schoolRef, state.sekolah).catch(err => console.error("Seed sekolah error:", err));
                 }
             }, (err) => console.error("Firestore School error:", err));
 
-            // === Realtime: Data Siswa ===
             const siswaCol = mods.collection(db, 'artifacts', appId, 'siswa');
             mods.onSnapshot(siswaCol, (snapshot) => {
                 let loadedSiswa = [];
-                snapshot.forEach(d => {
-                    const data = d.data();
-                    // Pastikan field nis selalu ada (pakai id dokumen jika perlu)
-                    if (!data.nis) data.nis = d.id;
-                    loadedSiswa.push(data);
-                });
-                // Selalu sync (termasuk jika kosong) agar data realtime akurat
-                state.siswa = loadedSiswa;
+                snapshot.forEach(d => loadedSiswa.push(d.data()));
+                if (loadedSiswa.length > 0) state.siswa = loadedSiswa;
                 renderAllViews();
             }, (err) => console.error("Firestore Siswa error:", err));
 
-            // === Realtime: Jurnal Transaksi ===
             const trxCol = mods.collection(db, 'artifacts', appId, 'transaksi');
             mods.onSnapshot(trxCol, (snapshot) => {
                 let loadedTrx = [];
-                snapshot.forEach(d => {
-                    const data = d.data();
-                    if (!data.id) data.id = d.id;
-                    loadedTrx.push(data);
-                });
-                sortTransaksiTerbaru(loadedTrx);
-                // Selalu sync (termasuk jika kosong)
-                state.transaksi = loadedTrx;
+                snapshot.forEach(d => loadedTrx.push(d.data()));
+                if (loadedTrx.length > 0) {
+                    loadedTrx.sort((a, b) => {
+                        const timeA = Number((a.id || '').replace(/\D/g, '')) || 0;
+                        const timeB = Number((b.id || '').replace(/\D/g, '')) || 0;
+                        return timeB - timeA;
+                    });
+                    state.transaksi = loadedTrx;
+                }
                 renderAllViews();
             }, (err) => console.error("Firestore Trx error:", err));
         }
@@ -1584,7 +1373,7 @@
                     return;
                 }
 
-                // Verify Siswa Credential (dari data Firebase / state.siswa)
+                // Verify Siswa Credential
                 const s = state.siswa.find(x => (x.nis === nis || x.user === nis) && x.pass === pass);
                 if (s) {
                     state.currentUser = {
@@ -1594,6 +1383,15 @@
                         nis: s.nis
                     };
                     showToast(`Selamat datang, ${s.nama}!`, "success");
+                    enterDashboard();
+                } else if (IS_PREVIEW && (nis === "peserta" && pass === "edudigital")) {
+                    state.currentUser = {
+                        role: 'siswa',
+                        name: "Siswa RA AL-HIDAYAH",
+                        username: "peserta",
+                        nis: "1234"
+                    };
+                    showToast("Login Siswa Berhasil!", "success");
                     enterDashboard();
                 } else {
                     showToast("NIS / Username atau Password Siswa Salah!", "error");
@@ -1608,15 +1406,12 @@
                     return;
                 }
 
-                // Kredensial admin dari Firebase (state.sekolah) — bisa diubah di Info Sekolah
-                const adminUser = (state.sekolah.adminUser || "admin").trim();
-                const adminPass = (state.sekolah.adminPass || "123").trim();
-
-                if (user === adminUser && pass === adminPass) {
+                // Verify Admin Credential
+                if ((user === "admin" && (pass === "123" || pass === "edudigital")) || (user === "admin" && pass === "admin2026")) {
                     state.currentUser = {
                         role: 'admin',
                         name: "Pengelola Sekolah",
-                        username: adminUser
+                        username: "admin"
                     };
                     showToast("Login Admin Berhasil!", "success");
                     enterDashboard();
@@ -1635,48 +1430,32 @@
 
             updateRoleBadgeUI();
             renderAllViews();
-
-            // Tampilkan lagi popup update jika user sebelumnya menunda
-            setTimeout(checkRemoteUpdateAndShow, 500);
         }
 
         function handleLogout() {
-            const role = (state.currentUser && state.currentUser.role) ? state.currentUser.role : '';
-            const isAdmin = role === 'admin';
             showConfirmModal({
                 title: 'Keluar Aplikasi',
-                message: isAdmin
-                    ? 'Yakin ingin keluar dari akun Guru / Admin? Anda perlu login ulang untuk mengakses dashboard.'
-                    : 'Yakin ingin keluar dari akun Siswa? Anda perlu login ulang untuk melihat tabungan.',
+                message: 'Yakin ingin keluar? Anda perlu login ulang untuk mengakses dashboard.',
                 okText: 'Keluar',
                 cancelText: 'Batal',
-                icon: 'fas fa-right-from-bracket',
-                danger: true,
                 onConfirm: function() {
-                    doLogout();
+                    state.currentUser = null;
+                    var vd = document.getElementById('view-dashboard');
+                    var vl = document.getElementById('view-login');
+                    if (vd) vd.classList.add('hidden');
+                    if (vl) vl.classList.remove('hidden');
+                    var siswaNis = document.getElementById('siswa-nis');
+                    var siswaPass = document.getElementById('siswa-pass');
+                    var adminUser = document.getElementById('admin-user');
+                    var adminPass = document.getElementById('admin-pass');
+                    if (siswaNis) siswaNis.value = '';
+                    if (siswaPass) siswaPass.value = '';
+                    if (adminUser) adminUser.value = '';
+                    if (adminPass) adminPass.value = '';
+                    state.currentMainTab = "tabungan";
+                    showToast("Anda telah keluar. Silakan masukkan ulang akun.", "info");
                 }
             });
-        }
-
-        function doLogout() {
-            state.currentUser = null;
-            const viewDash = document.getElementById('view-dashboard');
-            const viewLogin = document.getElementById('view-login');
-            if (viewDash) viewDash.classList.add('hidden');
-            if (viewLogin) viewLogin.classList.remove('hidden');
-
-            const siswaNis = document.getElementById('siswa-nis');
-            const siswaPass = document.getElementById('siswa-pass');
-            const adminUser = document.getElementById('admin-user');
-            const adminPass = document.getElementById('admin-pass');
-
-            if (siswaNis) siswaNis.value = '';
-            if (siswaPass) siswaPass.value = '';
-            if (adminUser) adminUser.value = '';
-            if (adminPass) adminPass.value = '';
-
-            state.currentMainTab = "tabungan";
-            showToast("Anda telah keluar. Silakan masukkan ulang akun.", "info");
         }
 
         function updateSchoolHeaderUI() {
@@ -1713,8 +1492,6 @@
             if (document.getElementById('tab-sekolah-tahun')) document.getElementById('tab-sekolah-tahun').value = state.sekolah.tahun;
             if (document.getElementById('tab-sekolah-kepsek')) document.getElementById('tab-sekolah-kepsek').value = state.sekolah.kepsek;
             if (document.getElementById('tab-sekolah-logo')) document.getElementById('tab-sekolah-logo').value = state.sekolah.logo;
-            if (document.getElementById('tab-sekolah-admin-user')) document.getElementById('tab-sekolah-admin-user').value = state.sekolah.adminUser || "admin";
-            if (document.getElementById('tab-sekolah-admin-pass')) document.getElementById('tab-sekolah-admin-pass').value = state.sekolah.adminPass || "123";
         }
 
         function updateRoleBadgeUI() {
@@ -1840,17 +1617,16 @@
 
             const todayFormatted = getFormattedNow().split(' ')[0]; // DD/MM/YYYY
             const isSiswa = state.currentUser && state.currentUser.role === 'siswa';
-            const myNis = isSiswa ? String(state.currentUser.nis || '') : '';
 
             state.siswa.forEach(s => {
-                if (!isSiswa || String(s.nis || '') === myNis) {
+                if (!isSiswa || s.nis === state.currentUser.nis) {
                     totalSaldo += Number(s.saldo) || 0;
                     countSiswa++;
                 }
             });
 
             state.transaksi.forEach(t => {
-                if (!isSiswa || String(t.nis || '') === myNis) {
+                if (!isSiswa || t.nis === state.currentUser.nis) {
                     if (t.tanggal && t.tanggal.includes(todayFormatted)) {
                         if (t.tipe === 'setor') totalSetorHariIni += Number(t.nominal);
                         if (t.tipe === 'tarik') totalTarikHariIni += Number(t.nominal);
@@ -1916,8 +1692,7 @@
             const isSiswa = state.currentUser && state.currentUser.role === 'siswa';
 
             if (isSiswa) {
-                const myNis = String(state.currentUser.nis || '');
-                filtered = filtered.filter(s => String(s.nis || '') === myNis);
+                filtered = filtered.filter(s => s.nis === state.currentUser.nis);
             }
 
             if (state.selectedClass !== 'Semua') {
@@ -1995,15 +1770,17 @@
 
         function renderRiwayatList() {
             const listContainer = document.getElementById('transaksi-cards-list');
-            if (!listContainer) return;
-            let filtered = [...(state.transaksi || [])];
+            let filtered = [...state.transaksi];
 
-            // Urutkan terbaru di atas berdasarkan tanggal & jam transaksi
-            sortTransaksiTerbaru(filtered);
+            // Sort transactions descending by ID/timestamp so newest appears first
+            filtered.sort((a, b) => {
+                const timeA = Number((a.id || '').replace(/\D/g, '')) || 0;
+                const timeB = Number((b.id || '').replace(/\D/g, '')) || 0;
+                return timeB - timeA;
+            });
 
             if (state.currentUser && state.currentUser.role === 'siswa') {
-                const myNis = String(state.currentUser.nis || '');
-                filtered = filtered.filter(t => String(t.nis || '') === myNis);
+                filtered = filtered.filter(t => t.nis === state.currentUser.nis);
             }
 
             if (state.selectedRiwayatClass !== 'Semua') {
@@ -2011,10 +1788,9 @@
             }
 
             if (state.historyDateFilter) {
-                const filterKey = toDateKey(state.historyDateFilter);
-                filtered = filtered.filter(function(t) {
-                    return isTrxInDateRange(t.tanggal, filterKey, filterKey);
-                });
+                const [y, m, d] = state.historyDateFilter.split('-');
+                const formattedFilterDate = `${d}/${m}/${y}`;
+                filtered = filtered.filter(t => t.tanggal && t.tanggal.includes(formattedFilterDate));
             }
 
             let totalSetorCls = 0;
@@ -2080,33 +1856,22 @@
         }
 
         function applyHistoryDateFilter() {
-            const datePicker = document.getElementById('history-date-picker');
-            const dateVal = datePicker ? datePicker.value : '';
+            const dateVal = document.getElementById('history-date-picker').value;
             if (dateVal) {
                 state.historyDateFilter = dateVal;
-                const elText = document.getElementById('riwayat-active-date-text');
-                const elSub = document.getElementById('chart-date-subtitle');
-                if (elText) elText.textContent = dateVal;
-                if (elSub) elSub.textContent = `Filter Tanggal: ${dateVal}`;
-            } else {
-                state.historyDateFilter = null;
-                const elText = document.getElementById('riwayat-active-date-text');
-                const elSub = document.getElementById('chart-date-subtitle');
-                if (elText) elText.textContent = "Semua Tanggal";
-                if (elSub) elSub.textContent = "Semua Tanggal Transaksi";
+                document.getElementById('riwayat-active-date-text').textContent = dateVal;
+                document.getElementById('chart-date-subtitle').textContent = `Filter Tanggal: ${dateVal}`;
+                renderRiwayatList();
+                renderHistoryChart();
             }
-            renderRiwayatList();
-            renderHistoryChart();
         }
 
         function resetHistoryDateFilter() {
             state.historyDateFilter = null;
             const datePicker = document.getElementById('history-date-picker');
             if (datePicker) datePicker.value = '';
-            const elText = document.getElementById('riwayat-active-date-text');
-            const elSub = document.getElementById('chart-date-subtitle');
-            if (elText) elText.textContent = "Semua Tanggal";
-            if (elSub) elSub.textContent = "Semua Tanggal Transaksi";
+            document.getElementById('riwayat-active-date-text').textContent = "Semua Tanggal";
+            document.getElementById('chart-date-subtitle').textContent = "Semua Tanggal Transaksi";
             renderRiwayatList();
             renderHistoryChart();
         }
@@ -2120,19 +1885,9 @@
                 historyChartInstance.destroy();
             }
 
-            let filtered = [...(state.transaksi || [])];
-            if (state.currentUser && state.currentUser.role === 'siswa') {
-                const myNis = String(state.currentUser.nis || '');
-                filtered = filtered.filter(t => String(t.nis || '') === myNis);
-            }
+            let filtered = state.transaksi;
             if (state.selectedRiwayatClass !== 'Semua') {
                 filtered = filtered.filter(t => t.kelas === state.selectedRiwayatClass);
-            }
-            if (state.historyDateFilter) {
-                const filterKey = toDateKey(state.historyDateFilter);
-                filtered = filtered.filter(function(t) {
-                    return isTrxInDateRange(t.tanggal, filterKey, filterKey);
-                });
             }
 
             const studentTotals = {};
@@ -2277,103 +2032,30 @@
             openModal('modal-siswa');
         }
 
-        let confirmCallback = null;
-
-        function showConfirmModal(options) {
-            const opts = options || {};
-            const title = opts.title || 'Konfirmasi';
-            const message = opts.message || 'Apakah Anda yakin?';
-            const okText = opts.okText || 'Hapus';
-            const cancelText = opts.cancelText || 'Batal';
-            const iconClass = opts.icon || 'fas fa-trash-can';
-            const danger = opts.danger !== false;
-
-            const modal = document.getElementById('modal-confirm');
-            const elTitle = document.getElementById('confirm-title');
-            const elMsg = document.getElementById('confirm-message');
-            const elIcon = document.getElementById('confirm-icon');
-            const elIconBox = document.getElementById('confirm-icon-box');
-            const btnOk = document.getElementById('confirm-btn-ok');
-            const btnCancel = document.getElementById('confirm-btn-cancel');
-
-            if (elTitle) elTitle.textContent = title;
-            if (elMsg) elMsg.textContent = message;
-            if (elIcon) elIcon.className = iconClass + (danger ? ' text-rose-400 text-base' : ' text-blue-400 text-base');
-            if (elIconBox) {
-                elIconBox.className = danger
-                    ? 'w-11 h-11 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center shrink-0'
-                    : 'w-11 h-11 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center shrink-0';
-            }
-            if (btnOk) {
-                btnOk.textContent = okText;
-                btnOk.className = danger
-                    ? 'py-3 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-bold text-xs shadow-lg shadow-rose-600/25 transition-all active:scale-95'
-                    : 'py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-600/25 transition-all active:scale-95';
-            }
-            if (btnCancel) btnCancel.textContent = cancelText;
-
-            confirmCallback = typeof opts.onConfirm === 'function' ? opts.onConfirm : null;
-
-            if (modal) {
-                modal.classList.remove('hidden');
-                modal.style.display = 'flex';
-                modal.style.visibility = 'visible';
-                modal.style.opacity = '1';
-            }
-        }
-
-        function hideConfirmModal() {
-            const modal = document.getElementById('modal-confirm');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.style.display = 'none';
-            }
-            confirmCallback = null;
-        }
-
-        function handleConfirmCancel() {
-            hideConfirmModal();
-        }
-
-        function handleConfirmOk() {
-            const cb = confirmCallback;
-            hideConfirmModal();
-            if (typeof cb === 'function') {
-                try { cb(); } catch (e) { console.error(e); }
-            }
-        }
-
         function deleteSiswa(nis) {
-            showConfirmModal({
-                title: 'Hapus Data Siswa',
-                message: 'Yakin ingin menghapus data siswa NIS: ' + nis + '? Tindakan ini tidak dapat dibatalkan.',
-                okText: 'Hapus',
-                cancelText: 'Batal',
-                icon: 'fas fa-user-minus',
-                danger: true,
-                onConfirm: function() {
-                    state.siswa = state.siswa.filter(function(x) { return String(x.nis) !== String(nis); });
-                    showToast("Siswa Berhasil Dihapus!", "info");
-                    if (!IS_PREVIEW && db) {
-                        const mods = window.firebaseAppModules;
-                        mods.deleteDoc(mods.doc(db, 'artifacts', appId, 'siswa', nis))
-                            .catch(function(err) { console.error("Firestore delete siswa error:", err); });
-                    }
-                    renderAllViews();
+            if (confirm(`Yakin ingin menghapus data siswa NIS: ${nis}?`)) {
+                state.siswa = state.siswa.filter(x => x.nis !== nis);
+                showToast("Siswa Berhasil Dihapus!", "info");
+
+                if (!IS_PREVIEW && db) {
+                    const mods = window.firebaseAppModules;
+                    mods.deleteDoc(mods.doc(db, 'artifacts', appId, 'siswa', nis))
+                        .catch(err => console.error("Firestore delete siswa error:", err));
                 }
-            });
+
+                renderAllViews();
+            }
         }
 
         let currentDetailSiswaNis = null;
 
         function openModalRiwayatSiswa(nis) {
-            const targetNis = String(nis || '');
-            const s = state.siswa.find(x => String(x.nis) === targetNis);
+            const s = state.siswa.find(x => x.nis === nis);
             if (!s) return;
 
-            currentDetailSiswaNis = targetNis;
+            currentDetailSiswaNis = nis;
             document.getElementById('detail-siswa-nama').textContent = s.nama;
-            document.getElementById('detail-siswa-info').textContent = 'NIS: ' + s.nis + ' | Kelas: ' + s.kelas + ' | Wali: ' + (s.wali || '-');
+            document.getElementById('detail-siswa-info').textContent = `NIS: ${s.nis} • Kelas: ${s.kelas} • Wali: ${s.wali || '-'}`;
             document.getElementById('detail-siswa-saldo-saat-ini').textContent = formatRp(s.saldo);
 
             const isAdmin = state.currentUser && state.currentUser.role === 'admin';
@@ -2388,92 +2070,73 @@
                 }
             }
 
-            // Default: tampilkan semua tanggal
-            const elMulai = document.getElementById('detail-tgl-mulai');
-            const elSelesai = document.getElementById('detail-tgl-selesai');
-            const elTipe = document.getElementById('detail-tipe-filter');
-            if (elMulai) elMulai.value = "";
-            if (elSelesai) elSelesai.value = "";
-            if (elTipe) elTipe.value = "semua";
+            document.getElementById('detail-tgl-mulai').value = "";
+            document.getElementById('detail-tgl-selesai').value = "";
+            document.getElementById('detail-tipe-filter').value = "semua";
 
-            openModal('modal-riwayat-siswa');
-            // Render segera + retry agar list pasti muncul di WebView/APK
             renderDetailRiwayatSiswaList();
-            setTimeout(function() { renderDetailRiwayatSiswaList(); }, 100);
-            setTimeout(function() { renderDetailRiwayatSiswaList(); }, 400);
+            openModal('modal-riwayat-siswa');
         }
 
         function setDetailPresetDate(preset) {
-            try {
-                const today = new Date();
-                const yyyy = today.getFullYear();
-                const mm = String(today.getMonth() + 1).padStart(2, '0');
-                const dd = String(today.getDate()).padStart(2, '0');
-                const todayStr = yyyy + '-' + mm + '-' + dd;
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const todayStr = getTodayYYYYMMDD();
 
-                const tglMulai = document.getElementById('detail-tgl-mulai');
-                const tglSelesai = document.getElementById('detail-tgl-selesai');
+            const tglMulai = document.getElementById('detail-tgl-mulai');
+            const tglSelesai = document.getElementById('detail-tgl-selesai');
 
-                if (preset === 'hari_ini' || preset === 'today') {
-                    if (tglMulai) tglMulai.value = todayStr;
-                    if (tglSelesai) tglSelesai.value = todayStr;
-                } else if (preset === 'bulan_ini') {
-                    if (tglMulai) tglMulai.value = yyyy + '-' + mm + '-01';
-                    if (tglSelesai) tglSelesai.value = todayStr;
-                } else if (preset === 'bulan_lalu') {
-                    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                    const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
-                    const lmY = lastMonth.getFullYear();
-                    const lmM = String(lastMonth.getMonth() + 1).padStart(2, '0');
-                    const lmD = String(lastMonthEnd.getDate()).padStart(2, '0');
-                    if (tglMulai) tglMulai.value = lmY + '-' + lmM + '-01';
-                    if (tglSelesai) tglSelesai.value = lmY + '-' + lmM + '-' + lmD;
-                } else if (preset === 'semua') {
-                    if (tglMulai) tglMulai.value = '';
-                    if (tglSelesai) tglSelesai.value = '';
-                }
-
-                renderDetailRiwayatSiswaList();
-            } catch (e) {
-                console.error('setDetailPresetDate error:', e);
-                renderDetailRiwayatSiswaList();
+            if (preset === 'bulan_ini') {
+                if (tglMulai) tglMulai.value = `${yyyy}-${mm}-01`;
+                if (tglSelesai) tglSelesai.value = todayStr;
+            } else if (preset === 'bulan_lalu') {
+                const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+                const lmY = lastMonth.getFullYear();
+                const lmM = String(lastMonth.getMonth() + 1).padStart(2, '0');
+                const lmD = String(lastMonthEnd.getDate()).padStart(2, '0');
+                if (tglMulai) tglMulai.value = `${lmY}-${lmM}-01`;
+                if (tglSelesai) tglSelesai.value = `${lmY}-${lmM}-${lmD}`;
+            } else if (preset === 'semua') {
+                if (tglMulai) tglMulai.value = '';
+                if (tglSelesai) tglSelesai.value = '';
             }
+
+            renderDetailRiwayatSiswaList();
         }
 
         function renderDetailRiwayatSiswaList() {
-            try {
             if (!currentDetailSiswaNis) return;
             const container = document.getElementById('detail-transaksi-list');
             if (!container) return;
 
-            const elMulai = document.getElementById('detail-tgl-mulai');
-            const elSelesai = document.getElementById('detail-tgl-selesai');
-            const elTipe = document.getElementById('detail-tipe-filter');
-            const tglMulaiVal = elMulai ? String(elMulai.value || '').trim() : '';
-            const tglSelesaiVal = elSelesai ? String(elSelesai.value || '').trim() : '';
-            const tipeFilter = elTipe ? String(elTipe.value || 'semua') : 'semua';
+            const tglMulaiVal = document.getElementById('detail-tgl-mulai').value;
+            const tglSelesaiVal = document.getElementById('detail-tgl-selesai').value;
+            const tipeFilter = document.getElementById('detail-tipe-filter').value;
 
-            const startKey = tglMulaiVal ? toDateKey(tglMulaiVal) : null;
-            const endKey = tglSelesaiVal ? toDateKey(tglSelesaiVal) : null;
+            let startDate = tglMulaiVal ? new Date(tglMulaiVal + 'T00:00:00') : null;
+            let endDate = tglSelesaiVal ? new Date(tglSelesaiVal + 'T23:59:59') : null;
 
-            const targetNis = String(currentDetailSiswaNis);
-            let filtered = (state.transaksi || []).filter(function(t) {
-                return String(t.nis || '') === targetNis;
+            let filtered = state.transaksi.filter(t => t.nis === currentDetailSiswaNis);
+
+            if (tipeFilter !== 'semua') {
+                filtered = filtered.filter(t => t.tipe === tipeFilter);
+            }
+
+            filtered = filtered.filter(t => {
+                const dt = parseIndoDate(t.tanggal);
+                if (!dt) return true;
+                if (startDate && dt < startDate) return false;
+                if (endDate && dt > endDate) return false;
+                return true;
             });
 
-            if (tipeFilter && tipeFilter !== 'semua') {
-                filtered = filtered.filter(function(t) { return t.tipe === tipeFilter; });
-            }
-
-            // Filter tanggal: kosong = semua tanggal
-            if (startKey || endKey) {
-                filtered = filtered.filter(function(t) {
-                    return isTrxInDateRange(t.tanggal, startKey, endKey);
-                });
-            }
-
-            // Urutkan terbaru di atas berdasarkan tanggal & jam
-            sortTransaksiTerbaru(filtered);
+            filtered.sort((a, b) => {
+                const timeA = Number((a.id || '').replace(/\D/g, '')) || 0;
+                const timeB = Number((b.id || '').replace(/\D/g, '')) || 0;
+                return timeB - timeA;
+            });
 
             let totalSetor = 0;
             let totalTarik = 0;
@@ -2523,13 +2186,6 @@
                     </div>
                 </div>
             `).join('');
-            } catch (err) {
-                console.error('renderDetailRiwayatSiswaList error:', err);
-                const container = document.getElementById('detail-transaksi-list');
-                if (container) {
-                    container.innerHTML = '<div class="p-6 text-center text-slate-500"><p class="text-xs">Gagal memuat riwayat. Coba tutup lalu buka lagi.</p></div>';
-                }
-            }
         }
 
         function openModalSetor(nis) {
@@ -2688,55 +2344,54 @@
         }
 
         function deleteTransaksi(id) {
-            showConfirmModal({
-                title: 'Hapus Transaksi',
-                message: 'Yakin ingin menghapus catatan transaksi ini? Saldo siswa akan disesuaikan otomatis.',
-                okText: 'Hapus',
-                cancelText: 'Batal',
-                icon: 'fas fa-trash-can',
-                danger: true,
-                onConfirm: function() {
-                    const trx = state.transaksi.find(function(t) { return t.id === id; });
-                    if (trx) {
-                        const s = state.siswa.find(function(x) { return String(x.nis) === String(trx.nis); });
-                        if (s) {
-                            if (trx.tipe === 'setor') {
-                                s.saldo = Math.max(0, (Number(s.saldo) || 0) - Number(trx.nominal));
-                            } else if (trx.tipe === 'tarik') {
-                                s.saldo = (Number(s.saldo) || 0) + Number(trx.nominal);
-                            }
-                            if (!IS_PREVIEW && db) {
-                                const mods = window.firebaseAppModules;
-                                mods.setDoc(mods.doc(db, 'artifacts', appId, 'siswa', s.nis), s)
-                                    .catch(function(err) { console.error("Firestore update saldo error:", err); });
-                            }
+            if (confirm("Yakin ingin menghapus catatan transaksi ini?")) {
+                const trx = state.transaksi.find(t => t.id === id);
+                if (trx) {
+                    const s = state.siswa.find(x => x.nis === trx.nis);
+                    if (s) {
+                        if (trx.tipe === 'setor') {
+                            s.saldo = Math.max(0, (Number(s.saldo) || 0) - Number(trx.nominal));
+                        } else if (trx.tipe === 'tarik') {
+                            s.saldo = (Number(s.saldo) || 0) + Number(trx.nominal);
+                        }
+                        if (!IS_PREVIEW && db) {
+                            const mods = window.firebaseAppModules;
+                            mods.setDoc(mods.doc(db, 'artifacts', appId, 'siswa', s.nis), s)
+                                .catch(err => console.error("Firestore update saldo error:", err));
                         }
                     }
-
-                    state.transaksi = state.transaksi.filter(function(t) { return t.id !== id; });
-                    showToast("Catatan Transaksi Dihapus!", "info");
-
-                    if (!IS_PREVIEW && db) {
-                        const mods = window.firebaseAppModules;
-                        mods.deleteDoc(mods.doc(db, 'artifacts', appId, 'transaksi', id))
-                            .catch(function(err) { console.error("Firestore delete trx error:", err); });
-                    }
-
-                    if (currentDetailSiswaNis) {
-                        renderDetailRiwayatSiswaList();
-                        const sObj = state.siswa.find(function(x) { return String(x.nis) === String(currentDetailSiswaNis); });
-                        if (sObj) {
-                            const el = document.getElementById('detail-siswa-saldo-saat-ini');
-                            if (el) el.textContent = formatRp(sObj.saldo);
-                        }
-                    }
-                    renderAllViews();
                 }
-            });
+
+                state.transaksi = state.transaksi.filter(t => t.id !== id);
+                showToast("Catatan Transaksi Dihapus!", "info");
+
+                if (!IS_PREVIEW && db) {
+                    const mods = window.firebaseAppModules;
+                    mods.deleteDoc(mods.doc(db, 'artifacts', appId, 'transaksi', id))
+                        .catch(err => console.error("Firestore delete trx error:", err));
+                }
+
+                if (currentDetailSiswaNis) {
+                    renderDetailRiwayatSiswaList();
+                    const sObj = state.siswa.find(x => x.nis === currentDetailSiswaNis);
+                    if (sObj) document.getElementById('detail-siswa-saldo-saat-ini').textContent = formatRp(sObj.saldo);
+                }
+                renderAllViews();
+            }
         }
 
         function setLogoPreset(type) {
-            const url = "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg";
+            let url = "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg";
+            if (type === 'custom') {
+                url = "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg";
+            } else if (type === 'sd') {
+                url = "https://cdn-icons-png.flaticon.com/512/2991/2991148.png";
+            } else if (type === 'buku') {
+                url = "https://cdn-icons-png.flaticon.com/512/2232/2232688.png";
+            } else if (type === 'akademik') {
+                url = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+            }
+
             if (document.getElementById('sekolah-logo')) document.getElementById('sekolah-logo').value = url;
             if (document.getElementById('tab-sekolah-logo')) document.getElementById('tab-sekolah-logo').value = url;
         }
@@ -2762,19 +2417,14 @@
             const modalLogo = document.getElementById('sekolah-logo')?.value.trim();
             const logo = (state.currentMainTab === 'sekolah' ? tabLogo : modalLogo) || tabLogo || modalLogo;
 
-            const adminUser = (document.getElementById('tab-sekolah-admin-user')?.value || "").trim() || "admin";
-            const adminPass = (document.getElementById('tab-sekolah-admin-pass')?.value || "").trim() || "123";
-
             state.sekolah.nama = nama;
             state.sekolah.alamat = alamat;
             state.sekolah.tahun = tahun;
             state.sekolah.kepsek = kepsek;
             state.sekolah.logo = logo;
-            state.sekolah.adminUser = adminUser;
-            state.sekolah.adminPass = adminPass;
 
             updateSchoolHeaderUI();
-            showToast("Profil Sekolah & Akun Admin Berhasil Disimpan!", "success");
+            showToast("Profil Sekolah Berhasil Disimpan!", "success");
 
             if (!IS_PREVIEW && db) {
                 const mods = window.firebaseAppModules;
@@ -2851,130 +2501,14 @@
             }
         }
 
-        // Normalisasi tanggal transaksi → { y, m, d, key:'YYYY-MM-DD', timeMs } atau null
-        function parseTrxDateParts(str) {
-            if (str == null || str === '') return null;
-            try {
-                // Jika sudah Date object
-                if (Object.prototype.toString.call(str) === '[object Date]' && !isNaN(str.getTime())) {
-                    const y = str.getFullYear(), m = str.getMonth() + 1, d = str.getDate();
-                    return {
-                        y: y, m: m, d: d,
-                        key: y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0'),
-                        timeMs: new Date(y, m - 1, d, str.getHours(), str.getMinutes(), str.getSeconds()).getTime()
-                    };
-                }
-                let raw = String(str).trim();
-                // Ambil bagian waktu jika ada (HH:MM atau HH:MM:SS)
-                let hour = 0, minute = 0, second = 0;
-                const spaceIdx = raw.search(/\s+/);
-                let datePart = raw;
-                if (spaceIdx > 0) {
-                    datePart = raw.substring(0, spaceIdx);
-                    const timePart = raw.substring(spaceIdx).trim();
-                    const tp = timePart.split(':');
-                    hour = parseInt(tp[0], 10) || 0;
-                    minute = parseInt(tp[1], 10) || 0;
-                    second = parseInt(tp[2], 10) || 0;
-                }
-                // Buang karakter selain angka, /, -
-                datePart = datePart.replace(/[^\d\/\-]/g, '');
-                let y = 0, m = 0, d = 0;
-                if (datePart.indexOf('/') !== -1) {
-                    const p = datePart.split('/');
-                    if (p.length >= 3) {
-                        // DD/MM/YYYY (standar app)
-                        d = parseInt(p[0], 10);
-                        m = parseInt(p[1], 10);
-                        y = parseInt(p[2], 10);
-                        // Jika tahun di depan (YYYY/MM/DD)
-                        if (p[0].length === 4) {
-                            y = parseInt(p[0], 10);
-                            m = parseInt(p[1], 10);
-                            d = parseInt(p[2], 10);
-                        }
-                    }
-                } else if (datePart.indexOf('-') !== -1) {
-                    const p = datePart.split('-');
-                    if (p.length >= 3) {
-                        if (p[0].length === 4) {
-                            // YYYY-MM-DD
-                            y = parseInt(p[0], 10);
-                            m = parseInt(p[1], 10);
-                            d = parseInt(p[2], 10);
-                        } else {
-                            // DD-MM-YYYY
-                            d = parseInt(p[0], 10);
-                            m = parseInt(p[1], 10);
-                            y = parseInt(p[2], 10);
-                        }
-                    }
-                } else if (/^\d{8}$/.test(datePart)) {
-                    // YYYYMMDD atau DDMMYYYY
-                    if (parseInt(datePart.substring(0, 4), 10) > 1900) {
-                        y = parseInt(datePart.substring(0, 4), 10);
-                        m = parseInt(datePart.substring(4, 6), 10);
-                        d = parseInt(datePart.substring(6, 8), 10);
-                    } else {
-                        d = parseInt(datePart.substring(0, 2), 10);
-                        m = parseInt(datePart.substring(2, 4), 10);
-                        y = parseInt(datePart.substring(4, 8), 10);
-                    }
-                }
-                if (!y || !m || !d || m < 1 || m > 12 || d < 1 || d > 31) return null;
-                if (y < 100) y += 2000;
-                const timeMs = new Date(y, m - 1, d, hour, minute, second).getTime();
-                if (isNaN(timeMs)) return null;
-                return {
-                    y: y, m: m, d: d,
-                    key: y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0'),
-                    timeMs: timeMs
-                };
-            } catch (e) {
-                return null;
-            }
-        }
-
         function parseIndoDate(str) {
-            const p = parseTrxDateParts(str);
-            if (!p) return null;
-            return new Date(p.y, p.m - 1, p.d, 0, 0, 0, 0);
-        }
-
-        function parseIndoDateFromISO(isoStr) {
-            if (!isoStr) return null;
-            const p = parseTrxDateParts(String(isoStr).trim());
-            if (!p) return null;
-            return new Date(p.y, p.m - 1, p.d, 0, 0, 0, 0);
-        }
-
-        // Key YYYY-MM-DD dari input type=date atau string tanggal
-        function toDateKey(val) {
-            if (!val) return null;
-            const p = parseTrxDateParts(val);
-            return p ? p.key : null;
-        }
-
-        // Cek apakah tanggal transaksi berada di rentang [startKey, endKey] (inklusif)
-        function isTrxInDateRange(tanggalStr, startKey, endKey) {
-            const p = parseTrxDateParts(tanggalStr);
-            if (!p) return true; // tidak bisa parse → tetap tampilkan
-            if (startKey && p.key < startKey) return false;
-            if (endKey && p.key > endKey) return false;
-            return true;
-        }
-
-        // Ambil timestamp dari tanggal+jam transaksi agar riwayat urut terbaru di atas
-        function getTrxSortTime(t) {
-            if (!t) return 0;
-            const p = parseTrxDateParts(t.tanggal);
-            if (p && p.timeMs) return p.timeMs;
-            return Number(String(t.id || '').replace(/\D/g, '')) || 0;
-        }
-
-        function sortTransaksiTerbaru(list) {
-            if (!list || !list.length) return list || [];
-            return list.sort(function(a, b) { return getTrxSortTime(b) - getTrxSortTime(a); });
+            if (!str) return null;
+            const clean = str.trim().split(' ')[0];
+            const p = clean.split('/');
+            if (p.length === 3) {
+                return new Date(parseInt(p[2], 10), parseInt(p[1], 10) - 1, parseInt(p[0], 10));
+            }
+            return null;
         }
 
         function getFilteredRekapData() {
@@ -2984,20 +2518,23 @@
             const selectedNis = document.getElementById('rekap-select-siswa') ? document.getElementById('rekap-select-siswa').value : '';
             const selectedKelas = document.getElementById('rekap-select-kelas') ? document.getElementById('rekap-select-kelas').value : 'Semua';
 
-            const startKey = tglMulaiVal ? toDateKey(tglMulaiVal) : null;
-            const endKey = tglSelesaiVal ? toDateKey(tglSelesaiVal) : null;
+            let startDate = tglMulaiVal ? new Date(tglMulaiVal + 'T00:00:00') : null;
+            let endDate = tglSelesaiVal ? new Date(tglSelesaiVal + 'T23:59:59') : null;
 
-            let filteredTrx = (state.transaksi || []).filter(function(t) {
-                if (!startKey && !endKey) return true;
-                return isTrxInDateRange(t.tanggal, startKey, endKey);
+            let filteredTrx = state.transaksi.filter(t => {
+                const dt = parseIndoDate(t.tanggal);
+                if (!dt) return true;
+                if (startDate && dt < startDate) return false;
+                if (endDate && dt > endDate) return false;
+                return true;
             });
 
-            let targetSiswaList = [...(state.siswa || [])];
+            let targetSiswaList = [...state.siswa];
             let selectedSiswaObj = null;
 
             if (tipe === 'per_siswa') {
-                selectedSiswaObj = state.siswa.find(function(s) { return String(s.nis) === String(selectedNis); });
-                filteredTrx = filteredTrx.filter(function(t) { return String(t.nis) === String(selectedNis); });
+                selectedSiswaObj = state.siswa.find(s => s.nis === selectedNis);
+                filteredTrx = filteredTrx.filter(t => t.nis === selectedNis);
                 targetSiswaList = selectedSiswaObj ? [selectedSiswaObj] : [];
             } else if (tipe === 'per_kelas') {
                 if (selectedKelas !== 'Semua') {
@@ -3033,12 +2570,7 @@
         }
 
         function exportRekapPDF() {
-            try {
             const data = getFilteredRekapData();
-            if (!data) {
-                showToast("Data rekap tidak tersedia.", "error");
-                return;
-            }
             const datePrinted = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
             let contentHTML = "";
@@ -3201,371 +2733,236 @@
                 `;
             }
 
-            if (window.__isPrintingRekap) {
-                showToast("Sedang memproses laporan...", "info");
-                return;
-            }
-            window.__isPrintingRekap = true;
-
-            var logoUrl = (data.sekolah && data.sekolah.logo)
-                ? String(data.sekolah.logo).trim()
-                : 'https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg';
-            var schoolNama = String((data.sekolah && data.sekolah.nama) || 'RA AL-HIDAYAH').replace(/[<>]/g, '');
-            var schoolAlamat = String((data.sekolah && data.sekolah.alamat) || 'Palalang').replace(/[<>]/g, '');
-            var schoolTahun = String((data.sekolah && data.sekolah.tahun) || '2025/2026').replace(/[<>]/g, '');
-            var schoolKepsek = String((data.sekolah && data.sekolah.kepsek) || '................................').replace(/[<>]/g, '');
-            var periodeUpper = String(data.periodeText || '').toUpperCase();
-
-            // Di APK: jangan pakai canvas (bisa crash). Langsung URL logo.
-            var isAndroid = false;
             try {
-                isAndroid = /Android/i.test(navigator.userAgent || '') ||
-                    (typeof window.Android !== 'undefined') ||
-                    (typeof window.AndroidInterface !== 'undefined');
-            } catch (e) {}
+                var logoUrl = (data.sekolah && data.sekolah.logo) ? String(data.sekolah.logo) : 'https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg';
+                var schoolNama = String((data.sekolah && data.sekolah.nama) || 'RA AL-HIDAYAH').replace(/[<>]/g, '');
+                var schoolAlamat = String((data.sekolah && data.sekolah.alamat) || 'Palalang').replace(/[<>]/g, '');
+                var schoolTahun = String((data.sekolah && data.sekolah.tahun) || '2025/2026').replace(/[<>]/g, '');
+                var schoolKepsek = String((data.sekolah && data.sekolah.kepsek) || '................................').replace(/[<>]/g, '');
+                var periodeTxt = String(data.periodeText || '').toUpperCase();
+                var isAndroid = false;
+                try { isAndroid = /Android/i.test(navigator.userAgent || ''); } catch (e) {}
 
-            var logoSrc = logoUrl;
-            if (!isAndroid) {
-                try {
-                    var cand = [
-                        document.getElementById('login-school-logo'),
-                        document.getElementById('social-share-img'),
-                        document.querySelector('#header-logo img')
-                    ];
-                    for (var ci = 0; ci < cand.length; ci++) {
-                        var el = cand[ci];
-                        if (!el || !el.complete || !el.naturalWidth) continue;
-                        try {
-                            var max = 96;
-                            var w = el.naturalWidth, h = el.naturalHeight;
-                            var rr = Math.min(max / w, max / h, 1);
-                            w = Math.max(1, Math.round(w * rr));
-                            h = Math.max(1, Math.round(h * rr));
-                            var cv = document.createElement('canvas');
-                            cv.width = w; cv.height = h;
-                            var ctx = cv.getContext('2d');
-                            if (!ctx) continue;
-                            ctx.fillStyle = '#ffffff';
-                            ctx.fillRect(0, 0, w, h);
-                            ctx.drawImage(el, 0, 0, w, h);
-                            var du = cv.toDataURL('image/jpeg', 0.8);
-                            if (du && du.indexOf('data:image') === 0) { logoSrc = du; break; }
-                        } catch (ce) {}
-                    }
-                } catch (le) {}
-            }
+                // Class print-kop (bukan .header) agar tidak kena CSS hide Blogger
+                var bodyInner =
+                    '<table class="print-kop" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-bottom:2px solid #0f172a;margin-bottom:12px;border-collapse:collapse;">' +
+                    '<tr><td style="width:75px;vertical-align:middle;border:none;padding:4px 8px 8px 0;">' +
+                    '<img src="' + logoUrl + '" alt="Logo" width="68" height="68" style="width:68px;height:68px;object-fit:contain;display:block;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;">' +
+                    '</td><td style="text-align:center;vertical-align:middle;border:none;padding:4px 0 8px;">' +
+                    '<div style="font-size:16px;font-weight:800;text-transform:uppercase;color:#0f172a;margin:0;">' + schoolNama + '</div>' +
+                    '<div style="font-size:10px;color:#475569;margin:3px 0;">' + schoolAlamat + '</div>' +
+                    '<div style="font-size:10px;color:#475569;margin:3px 0;">Tahun Ajaran: ' + schoolTahun + '</div>' +
+                    '</td><td style="width:75px;border:none;"></td></tr></table>' +
+                    '<h3 style="font-size:13px;font-weight:800;text-align:center;margin:12px 0 4px;text-transform:uppercase;color:#0f172a;">LAPORAN REKAPITULASI TABUNGAN SISWA</h3>' +
+                    '<p style="text-align:center;font-size:10px;margin-bottom:14px;color:#334155;font-weight:600;">PERIODE: ' + periodeTxt + ' | TANGGAL CETAK: ' + datePrinted + '</p>' +
+                    contentHTML +
+                    '<div style="margin-top:28px;"><table cellpadding="0" cellspacing="0" border="0" style="width:100%;border:none;"><tr>' +
+                    '<td style="width:50%;text-align:center;vertical-align:top;border:none;">' +
+                    '<p style="margin:0;">Mengetahui,</p><p style="margin:2px 0;font-weight:bold;">Kepala Sekolah ' + schoolNama + '</p>' +
+                    '<div style="height:55px;"></div>' +
+                    '<p style="margin:0;font-weight:bold;text-decoration:underline;">' + schoolKepsek + '</p>' +
+                    '<p style="margin:2px 0;font-size:9px;color:#64748b;">NIP / ID: -</p></td>' +
+                    '<td style="width:50%;text-align:center;vertical-align:top;border:none;">' +
+                    '<p style="margin:0;">Palalang, ' + datePrinted + '</p>' +
+                    '<p style="margin:2px 0;font-weight:bold;">Bendahara Tabungan / Wali Kelas</p>' +
+                    '<div style="height:55px;"></div>' +
+                    '<p style="margin:0;font-weight:bold;text-decoration:underline;">(...............................................)</p>' +
+                    '<p style="margin:2px 0;font-size:9px;color:#64748b;">Petugas Administrator</p></td></tr></table></div>';
 
-            var logoCell = '<img src="' + logoSrc + '" alt="Logo" width="70" height="70" style="width:70px;height:70px;object-fit:contain;display:block;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;">';
-
-            var bodyInner =
-                '<table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-bottom:2px solid #1e293b;margin-bottom:12px;border-collapse:collapse;">' +
-                '<tr>' +
-                '<td style="width:78px;vertical-align:middle;padding:4px 8px 8px 0;border:none;">' + logoCell + '</td>' +
-                '<td style="vertical-align:middle;text-align:center;padding:4px 0 8px 0;border:none;">' +
-                '<div style="font-size:15px;font-weight:800;text-transform:uppercase;color:#0f172a;margin:0;">' + schoolNama + '</div>' +
-                '<div style="font-size:10px;color:#334155;margin:2px 0;">' + schoolAlamat + '</div>' +
-                '<div style="font-size:10px;color:#334155;margin:2px 0;">Tahun Ajaran: ' + schoolTahun + '</div>' +
-                '</td>' +
-                '<td style="width:78px;border:none;"></td>' +
-                '</tr></table>' +
-                '<h3 style="font-size:12px;font-weight:800;text-align:center;margin:10px 0 4px;text-transform:uppercase;color:#0f172a;">LAPORAN REKAPITULASI TABUNGAN SISWA</h3>' +
-                '<p style="text-align:center;font-size:10px;margin-bottom:12px;color:#334155;font-weight:600;">PERIODE: ' + periodeUpper + ' | TANGGAL CETAK: ' + datePrinted + '</p>' +
-                contentHTML +
-                '<div style="margin-top:28px;">' +
-                '<table cellpadding="0" cellspacing="0" border="0" style="width:100%;border:none;"><tr>' +
-                '<td style="width:50%;text-align:center;vertical-align:top;border:none;padding:0;">' +
-                '<p style="margin:0;">Mengetahui,</p>' +
-                '<p style="margin:2px 0;font-weight:bold;">Kepala Sekolah ' + schoolNama + '</p>' +
-                '<div style="height:55px;"></div>' +
-                '<p style="margin:0;font-weight:bold;text-decoration:underline;">' + schoolKepsek + '</p>' +
-                '<p style="margin:2px 0;font-size:9px;color:#64748b;">NIP / ID: -</p>' +
-                '</td><td style="width:50%;text-align:center;vertical-align:top;border:none;padding:0;">' +
-                '<p style="margin:0;">Palalang, ' + datePrinted + '</p>' +
-                '<p style="margin:2px 0;font-weight:bold;">Bendahara Tabungan / Wali Kelas</p>' +
-                '<div style="height:55px;"></div>' +
-                '<p style="margin:0;font-weight:bold;text-decoration:underline;">(...............................................)</p>' +
-                '<p style="margin:2px 0;font-size:9px;color:#64748b;">Petugas Administrator</p>' +
-                '</td></tr></table></div>';
-
-            // Dokumen HTML lengkap (aman dibuka di browser / diunduh)
-            var fullHtml = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
-                '<title>Rekap_Tabungan_' + schoolNama.replace(/\s+/g, '_') + '</title>' +
-                '<style>' +
-                '*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}' +
-                'html,body{margin:0;padding:16px;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.4;}' +
-                'table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:10px;}' +
-                'th,td{border:1px solid #94a3b8;padding:4px 6px;}' +
-                'th{background:#e2e8f0;font-weight:700;text-align:center;font-size:9px;}' +
-                'thead{display:table-header-group;} tr{page-break-inside:avoid;}' +
-                '@page{size:A4;margin:12mm;}' +
-                '@media print{body{padding:0;}}' +
-                '</style></head><body>' + bodyInner +
-                '<script>window.onload=function(){setTimeout(function(){try{window.print();}catch(e){}},600);};<\/script>' +
-                '</body></html>';
-
-            function resetPrintFlag() {
-                window.__isPrintingRekap = false;
-            }
-
-            function downloadReportHtml() {
-                try {
-                    var blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
-                    var ok = triggerBlobDownload(blob, 'Laporan_Tabungan_' + Date.now() + '.html');
-                    if (ok) {
-                        showToast("Laporan diunduh (.html). Buka file → menu Cetak / Share PDF.", "success");
-                    } else {
-                        showToast("Gagal mengunduh laporan.", "error");
-                    }
-                } catch (e) {
-                    showToast("Gagal menyimpan laporan.", "error");
-                }
-                resetPrintFlag();
-            }
-
-            try {
-                // ===== APK / Android: JANGAN window.print() (sering crash WebView) =====
-                if (isAndroid) {
-                    showToast("Menyiapkan laporan untuk diunduh...", "info");
-                    setTimeout(downloadReportHtml, 150);
-                    return;
-                }
-
-                // ===== Browser / Blogger: coba cetak di halaman =====
-                var printCss =
-                    '#print-area-rekap{display:none!important;}' +
-                    '@media print{' +
-                    'html,body{height:auto!important;overflow:visible!important;background:#fff!important;}' +
-                    'body > *:not(#print-area-rekap){display:none!important;}' +
-                    '.pc-wrapper,#blogger-app-root{display:none!important;}' +
-                    '#print-area-rekap{display:block!important;position:static!important;width:100%!important;margin:0!important;padding:0!important;background:#fff!important;color:#111!important;font-family:Arial,sans-serif;font-size:11px;}' +
-                    '#print-area-rekap *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}' +
-                    '#print-area-rekap table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:10px;}' +
-                    '#print-area-rekap th,#print-area-rekap td{border:1px solid #94a3b8;padding:4px 6px;}' +
-                    '#print-area-rekap th{background:#e2e8f0!important;font-weight:700;text-align:center;font-size:9px;}' +
+                var styleBlock = 'html,body{margin:0;padding:16px;background:#fff!important;color:#1e293b;font-family:Segoe UI,Arial,sans-serif;font-size:11px;line-height:1.4;}' +
+                    'table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:10px;}' +
+                    'th,td{border:1px solid #cbd5e1;padding:5px 7px;}' +
+                    'th{background:#f1f5f9;font-weight:700;text-align:center;font-size:9px;text-transform:uppercase;}' +
+                    '.print-kop td{border:none!important;}' +
                     '@page{size:A4;margin:12mm;}' +
-                    '}';
+                    '@media print{body{padding:0;background:#fff!important;}}';
 
-                var styleEl = document.getElementById('print-style-rekap');
-                if (!styleEl) {
-                    styleEl = document.createElement('style');
-                    styleEl.id = 'print-style-rekap';
-                    document.head.appendChild(styleEl);
-                }
-                styleEl.textContent = printCss;
+                var fullHtml = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+                    '<title>Rekap_Tabungan</title><style>' + styleBlock + '</style></head><body style="background:#fff;">' + bodyInner +
+                    '<script>window.onload=function(){setTimeout(function(){try{window.focus();window.print();}catch(e){}},400);};<\/script></body></html>';
 
-                var area = document.getElementById('print-area-rekap');
-                if (!area) {
-                    area = document.createElement('div');
-                    area.id = 'print-area-rekap';
-                    document.body.appendChild(area);
-                }
-                area.innerHTML = bodyInner;
-
-                showToast("Membuka dialog cetak...", "info");
-                setTimeout(function() {
+                // Browser/Blogger: buka jendela cetak langsung
+                // Android APK: unduh HTML (window.open/print sering crash WebView)
+                if (isAndroid) {
                     try {
-                        window.print();
-                    } catch (pe) {
-                        downloadReportHtml();
-                        return;
+                        var blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+                        var url = URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'Laporan_Tabungan.html';
+                        a.style.display = 'none';
+                        document.body.appendChild(a);
+                        a.click();
+                        setTimeout(function() { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) {} }, 1200);
+                        showToast("Laporan diunduh. Buka file → Cetak / Simpan PDF.", "success");
+                    } catch (e) {
+                        showToast("Gagal menyimpan laporan.", "error");
                     }
-                    setTimeout(function() {
-                        try { area.innerHTML = ''; } catch (e) {}
-                        resetPrintFlag();
-                    }, 1000);
-                }, 300);
-            } catch (printErr) {
-                try { downloadReportHtml(); } catch (e2) {
-                    resetPrintFlag();
-                    showToast("Gagal membuat laporan.", "error");
+                } else {
+                    try {
+                        var win = window.open('', '_blank');
+                        if (win) {
+                            win.document.open();
+                            win.document.write(fullHtml);
+                            win.document.close();
+                            showToast("Membuka dialog cetak...", "info");
+                        } else {
+                            // Fallback unduh
+                            var blob2 = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+                            var url2 = URL.createObjectURL(blob2);
+                            var a2 = document.createElement('a');
+                            a2.href = url2; a2.download = 'Laporan_Tabungan.html';
+                            document.body.appendChild(a2); a2.click();
+                            setTimeout(function() { try { document.body.removeChild(a2); URL.revokeObjectURL(url2); } catch (e) {} }, 1200);
+                            showToast("Pop-up diblokir. Laporan diunduh sebagai file.", "info");
+                        }
+                    } catch (e) {
+                        showToast("Gagal membuka cetak.", "error");
+                    }
                 }
-            }
-            } catch (errOuter) {
-                window.__isPrintingRekap = false;
-                showToast("Gagal membuat laporan PDF. Coba lagi.", "error");
-            }
-        }
-
-        function triggerBlobDownload(blob, fileName) {
-            try {
-                const safeName = String(fileName || 'file').replace(/[^\w.\-]+/g, '_');
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = safeName;
-                a.style.display = 'none';
-                a.setAttribute('target', '_blank');
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(function() {
-                    try { document.body.removeChild(a); } catch (e) {}
-                    try { URL.revokeObjectURL(url); } catch (e) {}
-                }, 2000);
-                return true;
-            } catch (e) {
-                return false;
+            } catch (err) {
+                showToast("Gagal membuat laporan.", "error");
             }
         }
 
         function saveAndDownloadExcel(wb, fileName) {
             try {
                 if (typeof XLSX === 'undefined') return false;
-                const safeName = String(fileName || 'Rekap.xlsx').replace(/[^\w.\-]+/g, '_');
-                let out = null;
-                try {
-                    out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                } catch (e1) {
+                var out = null;
+                try { out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' }); }
+                catch (e1) {
                     try {
-                        const bin = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-                        const buf = new ArrayBuffer(bin.length);
-                        const view = new Uint8Array(buf);
-                        for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i) & 0xFF;
+                        var bin = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+                        var buf = new ArrayBuffer(bin.length);
+                        var view = new Uint8Array(buf);
+                        for (var i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i) & 0xFF;
                         out = buf;
-                    } catch (e2) {
-                        return false;
-                    }
+                    } catch (e2) { return false; }
                 }
                 if (!out) return false;
-                const blob = new Blob([out], {
-                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                });
-                if (!triggerBlobDownload(blob, safeName)) return false;
+                var blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = String(fileName || 'Rekap.xlsx').replace(/[^\w.\-]+/g, '_');
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(function() { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) {} }, 1200);
                 showToast("File Excel berhasil diunduh!", "success");
                 return true;
-            } catch (err) {
+            } catch (e) {
                 return false;
             }
         }
 
         function exportRekapExcel() {
-            // Tunda sedikit agar UI tidak freeze / crash di WebView
-            showToast("Menyiapkan export...", "info");
-            setTimeout(function() {
+            try {
+                var data = getFilteredRekapData();
+                if (!data) { showToast("Data tidak tersedia.", "error"); return; }
+
+                var isAndroid = false;
+                try { isAndroid = /Android/i.test(navigator.userAgent || ''); } catch (e) {}
+
+                // Di APK: langsung CSV (aman, tidak crash)
+                if (isAndroid) {
+                    downloadCSVFallback(data);
+                    return;
+                }
+
+                if (typeof XLSX === 'undefined') {
+                    downloadCSVFallback(data);
+                    return;
+                }
+
                 try {
-                    const data = getFilteredRekapData();
-                    if (!data) {
-                        showToast("Data rekap tidak tersedia.", "error");
-                        return;
-                    }
-
-                    // APK Android: CSV lebih aman (XLSX sering crash WebView)
-                    var isAndroidApk = false;
-                    try {
-                        isAndroidApk = /Android/i.test(navigator.userAgent || '');
-                    } catch (e) {}
-                    if (isAndroidApk && typeof XLSX === 'undefined') {
-                        downloadCSVFallback(data);
-                        return;
-                    }
-
-                    if (typeof XLSX === 'undefined') {
-                        const existing = document.querySelector('script[data-xlsx-loader]');
-                        if (!existing) {
-                            const script = document.createElement('script');
-                            script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
-                            script.setAttribute('data-xlsx-loader', '1');
-                            script.onload = function() { setTimeout(exportRekapExcel, 300); };
-                            script.onerror = function() { downloadCSVFallback(data); };
-                            document.head.appendChild(script);
-                            showToast("Memuat library Excel...", "info");
-                            return;
-                        }
-                        downloadCSVFallback(data);
-                        return;
-                    }
-
-                    const wb = XLSX.utils.book_new();
-
+                    var wb = XLSX.utils.book_new();
                     if (data.tipe === 'per_siswa' && data.selectedSiswaObj) {
-                        const s = data.selectedSiswaObj;
-                        const rows = [
+                        var s = data.selectedSiswaObj;
+                        var rows = [
                             ["LAPORAN TABUNGAN INDIVIDUAL SISWA"],
                             ["Sekolah", (data.sekolah && data.sekolah.nama) || 'RA AL-HIDAYAH'],
                             ["Periode", data.periodeText || ''],
-                            ["Nama Siswa", s.nama || ''],
-                            ["NIS", String(s.nis || '')],
-                            ["Kelas", s.kelas || ''],
-                            ["Wali Murid", s.wali || '-'],
-                            ["No HP", s.hp || '-'],
-                            ["Saldo Saat Ini", Number(s.saldo) || 0],
+                            ["Nama", s.nama || ''], ["NIS", s.nis || ''], ["Kelas", s.kelas || ''],
+                            ["Saldo", Number(s.saldo) || 0],
                             [],
-                            ["No", "Tanggal", "Jenis", "Keperluan", "Setoran", "Penarikan", "Saldo"]
+                            ["No", "Tanggal", "Jenis", "Keperluan", "Setor", "Tarik", "Saldo"]
                         ];
-                        let rSaldo = 0, totSetor = 0, totTarik = 0;
-                        const sorted = (data.transaksiList || []).slice().reverse();
-                        for (let i = 0; i < sorted.length; i++) {
-                            const t = sorted[i];
-                            const nom = Number(t.nominal) || 0;
+                        var rSaldo = 0, totSetor = 0, totTarik = 0;
+                        var sorted = (data.transaksiList || []).slice().reverse();
+                        for (var i = 0; i < sorted.length; i++) {
+                            var t = sorted[i];
+                            var nom = Number(t.nominal) || 0;
                             if (t.tipe === 'setor') { totSetor += nom; rSaldo += nom; }
                             else { totTarik += nom; rSaldo -= nom; }
                             rows.push([i + 1, t.tanggal || '', String(t.tipe || '').toUpperCase(), t.keperluan || '-', t.tipe === 'setor' ? nom : 0, t.tipe === 'tarik' ? nom : 0, rSaldo]);
                         }
-                        rows.push([]);
                         rows.push(["TOTAL", "", "", "", totSetor, totTarik, totSetor - totTarik]);
-                        const ws = XLSX.utils.aoa_to_sheet(rows);
-                        XLSX.utils.book_append_sheet(wb, ws, "Tabungan");
-                        const safeName = String(s.nama || 'Siswa').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
-                        if (!saveAndDownloadExcel(wb, 'Tabungan_' + safeName + '.xlsx')) downloadCSVFallback(data);
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "Tabungan");
+                        if (!saveAndDownloadExcel(wb, 'Tabungan.xlsx')) downloadCSVFallback(data);
                     } else {
-                        const rowsSiswa = [
-                            ["REKAPITULASI TABUNGAN SISWA"],
-                            ["Periode", data.periodeText || ''],
-                            [],
-                            ["No", "NIS", "Nama", "Kelas", "Total Setor", "Total Tarik", "Saldo"]
-                        ];
-                        let gSetor = 0, gTarik = 0, gSaldo = 0;
-                        const siswaList = data.siswaList || [];
-                        for (let i = 0; i < siswaList.length; i++) {
-                            const s = siswaList[i];
-                            let sSetor = 0, sTarik = 0;
-                            const snis = String(s.nis || '');
-                            const trxList = data.transaksiList || [];
-                            for (let j = 0; j < trxList.length; j++) {
-                                const t = trxList[j];
-                                if (String(t.nis || '') !== snis) continue;
-                                const nom = Number(t.nominal) || 0;
-                                if (t.tipe === 'setor') sSetor += nom;
-                                if (t.tipe === 'tarik') sTarik += nom;
+                        var rowsSiswa = [["REKAPITULASI"], ["Periode", data.periodeText || ''], [], ["No", "NIS", "Nama", "Kelas", "Setor", "Tarik", "Saldo"]];
+                        var gSetor = 0, gTarik = 0, gSaldo = 0;
+                        var siswaList = data.siswaList || [];
+                        for (var si = 0; si < siswaList.length; si++) {
+                            var ss = siswaList[si];
+                            var sSetor = 0, sTarik = 0;
+                            var snis = String(ss.nis || '');
+                            var trx = data.transaksiList || [];
+                            for (var ti = 0; ti < trx.length; ti++) {
+                                if (String(trx[ti].nis || '') !== snis) continue;
+                                var n = Number(trx[ti].nominal) || 0;
+                                if (trx[ti].tipe === 'setor') sSetor += n;
+                                if (trx[ti].tipe === 'tarik') sTarik += n;
                             }
-                            gSetor += sSetor; gTarik += sTarik; gSaldo += Number(s.saldo) || 0;
-                            rowsSiswa.push([i + 1, snis, s.nama || '', s.kelas || '', sSetor, sTarik, Number(s.saldo) || 0]);
+                            gSetor += sSetor; gTarik += sTarik; gSaldo += Number(ss.saldo) || 0;
+                            rowsSiswa.push([si + 1, snis, ss.nama || '', ss.kelas || '', sSetor, sTarik, Number(ss.saldo) || 0]);
                         }
-                        rowsSiswa.push([]);
                         rowsSiswa.push(["TOTAL", "", "", "", gSetor, gTarik, gSaldo]);
-
-                        const rowsJurnal = [["JURNAL TRANSAKSI"], ["No", "Tanggal", "NIS", "Nama", "Kelas", "Jenis", "Nominal", "Keperluan"]];
-                        const trxAll = data.transaksiList || [];
-                        for (let i = 0; i < trxAll.length; i++) {
-                            const t = trxAll[i];
-                            rowsJurnal.push([i + 1, t.tanggal || '', String(t.nis || ''), t.nama || '', t.kelas || '', String(t.tipe || '').toUpperCase(), Number(t.nominal) || 0, t.keperluan || '-']);
+                        var rowsJurnal = [["JURNAL"], ["No", "Tanggal", "NIS", "Nama", "Kelas", "Jenis", "Nominal", "Keperluan"]];
+                        var trxAll = data.transaksiList || [];
+                        for (var j = 0; j < trxAll.length; j++) {
+                            var tt = trxAll[j];
+                            rowsJurnal.push([j + 1, tt.tanggal || '', tt.nis || '', tt.nama || '', tt.kelas || '', String(tt.tipe || '').toUpperCase(), Number(tt.nominal) || 0, tt.keperluan || '-']);
                         }
                         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsSiswa), "Rekap");
                         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsJurnal), "Jurnal");
                         if (!saveAndDownloadExcel(wb, 'Rekap_Tabungan.xlsx')) downloadCSVFallback(data);
                     }
-                } catch (err) {
-                    try { downloadCSVFallback(getFilteredRekapData()); }
-                    catch (e2) { showToast("Gagal export. Coba lagi.", "error"); }
+                } catch (inner) {
+                    downloadCSVFallback(data);
                 }
-            }, 200);
+            } catch (err) {
+                try { downloadCSVFallback(getFilteredRekapData()); }
+                catch (e2) { showToast("Gagal export.", "error"); }
+            }
         }
 
         function downloadCSVFallback(data) {
             try {
                 if (!data) data = getFilteredRekapData();
-                let csv = '\uFEFFTanggal,NIS,Nama,Kelas,Jenis,Nominal,Keperluan\n';
-                const list = (data && data.transaksiList) ? data.transaksiList : [];
-                for (let i = 0; i < list.length; i++) {
-                    const t = list[i];
-                    const cells = [t.tanggal || '', t.nis || '', t.nama || '', t.kelas || '', t.tipe || '', t.nominal || 0, (t.keperluan || '-').replace(/"/g, "'")];
-                    csv += cells.map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(',') + '\n';
+                var lines = ['Tanggal,NIS,Nama,Kelas,Jenis,Nominal,Keperluan'];
+                var list = (data && data.transaksiList) ? data.transaksiList : [];
+                for (var i = 0; i < list.length; i++) {
+                    var t = list[i];
+                    lines.push([t.tanggal || '', t.nis || '', t.nama || '', t.kelas || '', t.tipe || '', t.nominal || 0, String(t.keperluan || '-').replace(/"/g, "'")]
+                        .map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(','));
                 }
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                if (triggerBlobDownload(blob, 'Rekap_Tabungan.csv')) {
-                    showToast("File CSV berhasil diunduh!", "success");
-                } else {
-                    showToast("Gagal mengunduh file.", "error");
+                lines.push('');
+                lines.push('No,NIS,Nama,Kelas,Saldo');
+                var siswaList = (data && data.siswaList) ? data.siswaList : [];
+                for (var j = 0; j < siswaList.length; j++) {
+                    var s = siswaList[j];
+                    lines.push([j + 1, s.nis || '', s.nama || '', s.kelas || '', s.saldo || 0]
+                        .map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(','));
                 }
+                var blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url; a.download = 'Rekap_Tabungan.csv'; a.style.display = 'none';
+                document.body.appendChild(a); a.click();
+                setTimeout(function() { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) {} }, 1200);
+                showToast("File CSV berhasil diunduh!", "success");
             } catch (err) {
                 showToast("Gagal mengunduh file.", "error");
             }
