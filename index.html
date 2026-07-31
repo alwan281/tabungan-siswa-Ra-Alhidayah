@@ -437,7 +437,7 @@
                                         <h3 class="text-xs font-bold text-slate-100 flex items-center gap-2">
                                             <i class="fas fa-graduation-cap text-blue-400 text-sm"></i> Info & Profil Sekolah
                                         </h3>
-                                        <p class="text-[10px] text-slate-400 mt-0.5">Kelola nama sekolah, alamat, kepala sekolah, & logo instansi</p>
+                                        <p class="text-[10px] text-slate-400 mt-0.5">Kelola nama sekolah, alamat, kepala sekolah, logo & akun login guru</p>
                                     </div>
                                     <span class="px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold">Menu Guru</span>
                                 </div>
@@ -469,6 +469,23 @@
                                         <p class="text-[10px] text-slate-500 font-medium">Pilihan Template Logo Cepat:</p>
                                         <div class="flex gap-2 flex-wrap text-[10px]">
                                             <button type="button" onclick="setLogoPreset('custom')" class="px-2.5 py-1 rounded-lg bg-blue-900/60 text-blue-300 hover:bg-blue-800 font-semibold">Logo RA Al-Hidayah</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-2 border-t border-slate-800 space-y-2">
+                                        <label class="text-[11px] font-semibold text-amber-400 block flex items-center gap-1">
+                                            <i class="fas fa-user-shield text-xs"></i> Akun Login Guru / Admin
+                                        </label>
+                                        <p class="text-[10px] text-slate-500">Ubah username & kata sandi khusus untuk login Admin/Guru (tersimpan di Firebase)</p>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label class="text-[9px] text-slate-400 block mb-0.5">Username Admin</label>
+                                                <input type="text" id="tab-sekolah-admin-user" placeholder="admin" class="custom-input w-full px-3 py-2 rounded-xl text-xs font-medium">
+                                            </div>
+                                            <div>
+                                                <label class="text-[9px] text-slate-400 block mb-0.5">Kata Sandi Admin</label>
+                                                <input type="text" id="tab-sekolah-admin-pass" placeholder="Kata sandi" class="custom-input w-full px-3 py-2 rounded-xl text-xs font-medium">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -540,6 +557,23 @@
                             <p class="text-[10px] text-slate-500 font-medium">Pilihan Template Logo Cepat:</p>
                             <div class="flex gap-2 flex-wrap text-[10px]">
                                 <button type="button" onclick="setLogoPreset('custom')" class="px-2.5 py-1 rounded-lg bg-blue-900/60 text-blue-300 hover:bg-blue-800 font-semibold">Logo RA Al-Hidayah</button>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-slate-800 space-y-2">
+                            <label class="text-[11px] font-semibold text-amber-400 block flex items-center gap-1">
+                                <i class="fas fa-user-shield text-xs"></i> Akun Login Guru / Admin
+                            </label>
+                            <p class="text-[10px] text-slate-500">Ubah username & kata sandi khusus untuk login Admin/Guru (tersimpan di Firebase)</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-[9px] text-slate-400 block mb-0.5">Username Admin</label>
+                                    <input type="text" id="sekolah-admin-user" placeholder="admin" class="custom-input w-full px-3 py-2 rounded-xl text-xs font-medium">
+                                </div>
+                                <div>
+                                    <label class="text-[9px] text-slate-400 block mb-0.5">Kata Sandi Admin</label>
+                                    <input type="text" id="sekolah-admin-pass" placeholder="Kata sandi" class="custom-input w-full px-3 py-2 rounded-xl text-xs font-medium">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1014,7 +1048,9 @@
                 alamat: "Palalang Waru Pamekasan",
                 tahun: "2025/2026",
                 kepsek: "Safinatul Jannah, S.Pd.",
-                logo: "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg"
+                logo: "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg",
+                adminUser: "admin",
+                adminPass: "123"
             },
             siswa: [
                 {
@@ -1232,7 +1268,16 @@
             const schoolRef = mods.doc(db, 'artifacts', appId, 'sekolah', 'info');
             mods.onSnapshot(schoolRef, (docSnap) => {
                 if (docSnap.exists()) {
-                    state.sekolah = docSnap.data();
+                    const data = docSnap.data() || {};
+                    state.sekolah = {
+                        nama: data.nama || "RA AL-HIDAYAH PALALANG",
+                        alamat: data.alamat || "Palalang Waru Pamekasan",
+                        tahun: data.tahun || "2025/2026",
+                        kepsek: data.kepsek || "Safinatul Jannah, S.Pd.",
+                        logo: data.logo || "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg",
+                        adminUser: data.adminUser || "admin",
+                        adminPass: data.adminPass || "123"
+                    };
                     updateSchoolHeaderUI();
                 }
             }, (err) => console.error("Firestore School error:", err));
@@ -1379,12 +1424,14 @@
                     return;
                 }
 
-                // Verify Admin Credential
-                if ((user === "admin" && (pass === "123" || pass === "edudigital")) || (user === "admin" && pass === "admin2026")) {
+                // Verify Admin Credential — hanya dari data Firebase / pengaturan sekolah
+                const adminU = (state.sekolah && state.sekolah.adminUser) ? String(state.sekolah.adminUser).trim() : "admin";
+                const adminP = (state.sekolah && state.sekolah.adminPass != null) ? String(state.sekolah.adminPass) : "123";
+                if (user === adminU && pass === adminP) {
                     state.currentUser = {
                         role: 'admin',
                         name: "Pengelola Sekolah",
-                        username: "admin"
+                        username: user
                     };
                     showToast("Login Admin Berhasil!", "success");
                     enterDashboard();
@@ -1453,6 +1500,8 @@
             if (document.getElementById('sekolah-tahun')) document.getElementById('sekolah-tahun').value = state.sekolah.tahun;
             if (document.getElementById('sekolah-kepsek')) document.getElementById('sekolah-kepsek').value = state.sekolah.kepsek;
             if (document.getElementById('sekolah-logo')) document.getElementById('sekolah-logo').value = state.sekolah.logo;
+            if (document.getElementById('sekolah-admin-user')) document.getElementById('sekolah-admin-user').value = state.sekolah.adminUser || "admin";
+            if (document.getElementById('sekolah-admin-pass')) document.getElementById('sekolah-admin-pass').value = state.sekolah.adminPass || "123";
 
             // Tab Inputs (Menu Guru)
             if (document.getElementById('tab-sekolah-nama')) document.getElementById('tab-sekolah-nama').value = state.sekolah.nama;
@@ -1460,6 +1509,8 @@
             if (document.getElementById('tab-sekolah-tahun')) document.getElementById('tab-sekolah-tahun').value = state.sekolah.tahun;
             if (document.getElementById('tab-sekolah-kepsek')) document.getElementById('tab-sekolah-kepsek').value = state.sekolah.kepsek;
             if (document.getElementById('tab-sekolah-logo')) document.getElementById('tab-sekolah-logo').value = state.sekolah.logo;
+            if (document.getElementById('tab-sekolah-admin-user')) document.getElementById('tab-sekolah-admin-user').value = state.sekolah.adminUser || "admin";
+            if (document.getElementById('tab-sekolah-admin-pass')) document.getElementById('tab-sekolah-admin-pass').value = state.sekolah.adminPass || "123";
         }
 
         function updateRoleBadgeUI() {
@@ -2385,14 +2436,24 @@
             const modalLogo = document.getElementById('sekolah-logo')?.value.trim();
             const logo = (state.currentMainTab === 'sekolah' ? tabLogo : modalLogo) || tabLogo || modalLogo;
 
+            const tabAdminUser = document.getElementById('tab-sekolah-admin-user')?.value.trim();
+            const modalAdminUser = document.getElementById('sekolah-admin-user')?.value.trim();
+            const adminUser = (state.currentMainTab === 'sekolah' ? tabAdminUser : modalAdminUser) || tabAdminUser || modalAdminUser || "admin";
+
+            const tabAdminPass = document.getElementById('tab-sekolah-admin-pass')?.value.trim();
+            const modalAdminPass = document.getElementById('sekolah-admin-pass')?.value.trim();
+            const adminPass = (state.currentMainTab === 'sekolah' ? tabAdminPass : modalAdminPass) || tabAdminPass || modalAdminPass || "123";
+
             state.sekolah.nama = nama;
             state.sekolah.alamat = alamat;
             state.sekolah.tahun = tahun;
             state.sekolah.kepsek = kepsek;
             state.sekolah.logo = logo;
+            state.sekolah.adminUser = adminUser;
+            state.sekolah.adminPass = adminPass;
 
             updateSchoolHeaderUI();
-            showToast("Profil Sekolah Berhasil Disimpan!", "success");
+            showToast("Profil Sekolah & Akun Guru Berhasil Disimpan!", "success");
 
             if (!IS_PREVIEW && db) {
                 const mods = window.firebaseAppModules;
@@ -2710,22 +2771,54 @@
                     <meta charset="utf-8">
                     <title>Rekap_Tabungan_${data.sekolah.nama ? data.sekolah.nama.replace(/\s+/g, '_') : 'Sekolah'}</title>
                     <style>
-                        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; color: #1e293b; font-size: 11px; line-height: 1.4; }
-                        .header { position: relative; border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 15px; text-align: center; }
-                        .logo { position: absolute; left: 10px; top: 0; width: 65px; height: 65px; object-fit: contain; }
-                        .school-name { font-size: 16px; font-weight: 800; text-transform: uppercase; margin: 0; color: #0f172a; }
-                        .school-address { font-size: 10px; margin: 3px 0; color: #475569; }
-                        .report-title { font-size: 13px; font-weight: 800; text-align: center; margin-top: 15px; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
-                        .report-meta { text-align: center; font-size: 10px; margin-bottom: 15px; color: #334155; font-weight: 600; }
-                        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 10px; }
-                        th, td { border: 1px solid #cbd5e1; padding: 5px 7px; text-align: left; }
-                        th { background-color: #f1f5f9; font-weight: 700; text-align: center; color: #0f172a; text-transform: uppercase; font-size: 9px; }
-                        .signature-container { width: 100%; margin-top: 30px; page-break-inside: avoid; }
-                        .signature-table { width: 100%; border: none; }
-                        .signature-table td { border: none; text-align: center; vertical-align: top; width: 50%; padding-top: 5px; font-size: 10px; }
+                        * { box-sizing: border-box; }
+                        html, body {
+                            font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+                            margin: 0;
+                            padding: 0;
+                            background: #ffffff !important;
+                            color: #1e293b;
+                            font-size: 11px;
+                            line-height: 1.45;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        body { margin: 18px; background: #ffffff !important; }
+                        .header {
+                            position: relative;
+                            border-bottom: 2.5px solid #0f172a;
+                            padding: 8px 0 12px 80px;
+                            margin-bottom: 16px;
+                            text-align: center;
+                            min-height: 72px;
+                            background: #ffffff;
+                        }
+                        .logo {
+                            position: absolute;
+                            left: 0;
+                            top: 4px;
+                            width: 68px;
+                            height: 68px;
+                            object-fit: contain;
+                            object-position: center;
+                            background: #ffffff;
+                        }
+                        .school-name { font-size: 16px; font-weight: 800; text-transform: uppercase; margin: 0 0 2px 0; color: #0f172a; letter-spacing: 0.3px; }
+                        .school-address { font-size: 10px; margin: 2px 0; color: #475569; }
+                        .report-title { font-size: 13px; font-weight: 800; text-align: center; margin: 14px 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px; color: #0f172a; }
+                        .report-meta { text-align: center; font-size: 10px; margin-bottom: 14px; color: #334155; font-weight: 600; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 10px; background: #ffffff; }
+                        th, td { border: 1px solid #94a3b8; padding: 5px 7px; text-align: left; background: #ffffff; }
+                        th { background-color: #f1f5f9 !important; font-weight: 700; text-align: center; color: #0f172a; text-transform: uppercase; font-size: 9px; }
+                        .signature-container { width: 100%; margin-top: 28px; page-break-inside: avoid; background: #ffffff; }
+                        .signature-table { width: 100%; border: none; background: #ffffff; }
+                        .signature-table td { border: none; text-align: center; vertical-align: top; width: 50%; padding-top: 5px; font-size: 10px; background: #ffffff; }
                         @media print {
                             @page { margin: 12mm; size: A4; }
-                            body { margin: 0; }
+                            html, body { margin: 0; padding: 0; background: #ffffff !important; }
+                            body { margin: 0; background: #ffffff !important; }
+                            .header, table, th, td, .signature-container { background: #ffffff !important; }
+                            th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                         }
                     </style>
                 </head>
@@ -2785,42 +2878,55 @@
         }
 
         function saveAndDownloadExcel(wb, fileName) {
+            // Metode Blob stabil — tidak menyebabkan reload/navigasi di Blogger & browser modern
             try {
-                if (typeof XLSX !== 'undefined' && XLSX.writeFile) {
-                    XLSX.writeFile(wb, fileName);
-                    showToast("File Excel Berhasil Diunduh!", "success");
+                if (typeof XLSX === 'undefined') {
+                    showToast("Library Excel belum siap. Coba lagi sebentar.", "error");
                     return;
                 }
-            } catch (e) {
-                console.warn("XLSX.writeFile direct download error, trying blob download:", e);
-            }
-
-            try {
-                if (typeof XLSX !== 'undefined') {
-                    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = fileName || ('Rekap_Tabungan_' + Date.now() + '.xlsx');
+                a.setAttribute('download', a.download);
+                document.body.appendChild(a);
+                a.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+                setTimeout(function () {
+                    try {
+                        if (a.parentNode) document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    } catch (e) {}
+                }, 1500);
+                showToast("File Excel Berhasil Diunduh!", "success");
+            } catch (err) {
+                console.error("Excel download error:", err);
+                try {
+                    const wbout2 = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
                     function s2ab(s) {
                         const buf = new ArrayBuffer(s.length);
                         const view = new Uint8Array(buf);
                         for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
                         return buf;
                     }
-                    const blob = new Blob([s2ab(wbout)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = fileName;
-                    document.body.appendChild(a);
-                    a.click();
-                    setTimeout(() => {
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                    }, 1000);
+                    const blob2 = new Blob([s2ab(wbout2)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    const url2 = URL.createObjectURL(blob2);
+                    const a2 = document.createElement('a');
+                    a2.style.display = 'none';
+                    a2.href = url2;
+                    a2.download = fileName || ('Rekap_Tabungan_' + Date.now() + '.xlsx');
+                    document.body.appendChild(a2);
+                    a2.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+                    setTimeout(function () {
+                        try { if (a2.parentNode) document.body.removeChild(a2); URL.revokeObjectURL(url2); } catch (e) {}
+                    }, 1500);
                     showToast("File Excel Berhasil Diunduh!", "success");
-                    return;
+                } catch (err2) {
+                    console.error("Excel fallback error:", err2);
+                    showToast("Gagal mengunduh Excel. Coba gunakan mode Cetak PDF.", "error");
                 }
-            } catch (err) {
-                console.error("Blob download error:", err);
-                showToast("Gagal mengunduh Excel: " + err.message, "error");
             }
         }
 
