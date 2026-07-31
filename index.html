@@ -1059,10 +1059,8 @@
         // Contoh: "https://raw.githubusercontent.com/USER/REPO/main/version.json"
         const UPDATE_CHECK_URL = "https://raw.githubusercontent.com/alwan281/tabungan-siswa-Ra-Alhidayah/main/version.json";
         const UPDATE_CHANGELOG = [
-            "Notifikasi pembaruan remote via GitHub (APK & Web)",
             "Riwayat siswa filter tanggal & tampilkan semua diperbaiki",
-            "Login admin mengikuti data Firebase Console",
-            "Optimasi sinkronisasi Firebase realtime",
+            "Login admin siwa atau guru lebih baru",
             "Keamanan data tabungan ditingkatkan"
         ];
         let pendingUpdateVersion = APP_VERSION;
@@ -3024,6 +3022,10 @@
         function exportRekapPDF() {
             try {
             const data = getFilteredRekapData();
+            if (!data) {
+                showToast("Data rekap tidak tersedia.", "error");
+                return;
+            }
             const datePrinted = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
             let contentHTML = "";
@@ -3186,375 +3188,378 @@
                 `;
             }
 
-            const logoUrl = (data.sekolah && data.sekolah.logo) ? String(data.sekolah.logo).trim() : '';
-            const safeSchoolTitle = (data.sekolah.nama || 'Sekolah').replace(/[<>]/g, '');
-            const schoolNama = data.sekolah.nama || 'RA AL-HIDAYAH';
-            const schoolAlamat = data.sekolah.alamat || 'Palalang';
-            const schoolTahun = data.sekolah.tahun || '2025/2026';
-            const schoolKepsek = data.sekolah.kepsek || '................................';
-            const periodeUpper = (data.periodeText || '').toUpperCase();
+            const logoUrl = (data.sekolah && data.sekolah.logo)
+                ? String(data.sekolah.logo).trim()
+                : 'https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg';
+            const schoolNama = String((data.sekolah && data.sekolah.nama) || 'RA AL-HIDAYAH').replace(/[<>]/g, '');
+            const schoolAlamat = String((data.sekolah && data.sekolah.alamat) || 'Palalang').replace(/[<>]/g, '');
+            const schoolTahun = String((data.sekolah && data.sekolah.tahun) || '2025/2026').replace(/[<>]/g, '');
+            const schoolKepsek = String((data.sekolah && data.sekolah.kepsek) || '................................').replace(/[<>]/g, '');
+            const periodeUpper = String(data.periodeText || '').toUpperCase();
 
-            // Konversi logo ke data-URL agar tampil penuh berwarna saat cetak/PDF
-            function canvasFromImg(imgEl) {
+            function imgToDataUrl(imgEl) {
                 try {
                     if (!imgEl || !imgEl.naturalWidth) return '';
+                    const max = 140;
+                    let w = imgEl.naturalWidth, h = imgEl.naturalHeight;
+                    if (w > max || h > max) {
+                        const r = Math.min(max / w, max / h);
+                        w = Math.max(1, Math.round(w * r));
+                        h = Math.max(1, Math.round(h * r));
+                    }
                     const c = document.createElement('canvas');
-                    c.width = imgEl.naturalWidth;
-                    c.height = imgEl.naturalHeight;
+                    c.width = w; c.height = h;
                     const ctx = c.getContext('2d');
+                    if (!ctx) return '';
                     ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, c.width, c.height);
-                    ctx.drawImage(imgEl, 0, 0);
+                    ctx.fillRect(0, 0, w, h);
+                    ctx.drawImage(imgEl, 0, 0, w, h);
                     return c.toDataURL('image/png');
                 } catch (e) {
                     return '';
                 }
             }
 
-            function resolveLogoDataUrl(url, callback) {
-                if (!url) { callback(''); return; }
-                // 1) Ambil dari logo yang sudah tampil di halaman (paling andal)
-                const candidates = [
-                    document.getElementById('login-school-logo'),
-                    document.querySelector('#dash-header-logo img'),
-                    document.querySelector('#header-logo-box img'),
-                    document.querySelector('img[alt="Logo"]')
-                ];
-                for (let i = 0; i < candidates.length; i++) {
-                    const el = candidates[i];
-                    if (el && el.complete && el.naturalWidth > 0) {
-                        const data = canvasFromImg(el);
-                        if (data) { callback(data); return; }
+            function resolveLogoThenPrint() {
+                let logoSrc = '';
+                // 1) Coba dari gambar yang sudah ada di halaman
+                try {
+                    const candidates = [
+                        document.getElementById('login-school-logo'),
+                        document.getElementById('social-share-img'),
+                        document.querySelector('#header-logo img'),
+                        document.querySelector('img[alt="Logo"]'),
+                        document.querySelector('img[alt="Logo Sekolah"]')
+                    ];
+                    for (let i = 0; i < candidates.length; i++) {
+                        const el = candidates[i];
+                        if (el && el.complete && el.naturalWidth > 0) {
+                            logoSrc = imgToDataUrl(el);
+                            if (logoSrc) break;
+                        }
+                    }
+                } catch (e) {}
+
+                function finishWithLogo(src) {
+                    const finalSrc = src || logoUrl;
+                    // Pakai class "print-kop" (BUKAN "header") agar tidak kena CSS hide Blogger
+                    const logoCell = finalSrc
+                        ? '<img src="' + finalSrc + '" class="print-logo" alt="Logo RA Al-Hidayah" width="70" height="70" style="width:70px;height:70px;object-fit:contain;display:block;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;">'
+                        : '';
+
+                    const bodyInner =
+                        '<table class="print-kop" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-bottom:2px solid #1e293b;margin-bottom:12px;border-collapse:collapse;">' +
+                        '<tr>' +
+                        '<td style="width:78px;vertical-align:middle;padding:4px 8px 8px 0;border:none;">' + logoCell + '</td>' +
+                        '<td style="vertical-align:middle;text-align:center;padding:4px 0 8px 0;border:none;">' +
+                        '<div class="print-school-name" style="font-size:15px;font-weight:800;text-transform:uppercase;color:#0f172a;margin:0;">' + schoolNama + '</div>' +
+                        '<div class="print-school-addr" style="font-size:10px;color:#334155;margin:2px 0;">' + schoolAlamat + '</div>' +
+                        '<div class="print-school-addr" style="font-size:10px;color:#334155;margin:2px 0;">Tahun Ajaran: ' + schoolTahun + '</div>' +
+                        '</td>' +
+                        '<td style="width:78px;border:none;"></td>' +
+                        '</tr></table>' +
+                        '<h3 class="print-report-title" style="font-size:12px;font-weight:800;text-align:center;margin:10px 0 4px;text-transform:uppercase;color:#0f172a;">LAPORAN REKAPITULASI TABUNGAN SISWA</h3>' +
+                        '<p class="print-report-meta" style="text-align:center;font-size:10px;margin-bottom:12px;color:#334155;font-weight:600;">PERIODE: ' + periodeUpper + ' | TANGGAL CETAK: ' + datePrinted + '</p>' +
+                        contentHTML +
+                        '<div class="print-signature" style="margin-top:28px;">' +
+                        '<table class="print-signature-table" cellpadding="0" cellspacing="0" border="0" style="width:100%;border:none;"><tr>' +
+                        '<td style="width:50%;text-align:center;vertical-align:top;border:none;padding:0;">' +
+                        '<p style="margin:0;">Mengetahui,</p>' +
+                        '<p style="margin:2px 0;font-weight:bold;">Kepala Sekolah ' + schoolNama + '</p>' +
+                        '<div style="height:55px;"></div>' +
+                        '<p style="margin:0;font-weight:bold;text-decoration:underline;">' + schoolKepsek + '</p>' +
+                        '<p style="margin:2px 0;font-size:9px;color:#64748b;">NIP / ID: -</p>' +
+                        '</td><td style="width:50%;text-align:center;vertical-align:top;border:none;padding:0;">' +
+                        '<p style="margin:0;">Palalang, ' + datePrinted + '</p>' +
+                        '<p style="margin:2px 0;font-weight:bold;">Bendahara Tabungan / Wali Kelas</p>' +
+                        '<div style="height:55px;"></div>' +
+                        '<p style="margin:0;font-weight:bold;text-decoration:underline;">(...............................................)</p>' +
+                        '<p style="margin:2px 0;font-size:9px;color:#64748b;">Petugas Administrator</p>' +
+                        '</td></tr></table></div>';
+
+                    // CSS cetak: sembunyikan app, tampilkan hanya area cetak
+                    const printCss =
+                        '#print-area-rekap{display:none!important;}' +
+                        '@media print{' +
+                        'html,body{height:auto!important;overflow:visible!important;background:#fff!important;}' +
+                        'body > *:not(#print-area-rekap){display:none!important;visibility:hidden!important;}' +
+                        '.pc-wrapper,#blogger-app-root{display:none!important;}' +
+                        '#print-area-rekap{display:block!important;visibility:visible!important;position:static!important;width:100%!important;padding:0!important;margin:0!important;background:#fff!important;color:#111!important;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.4;}' +
+                        '#print-area-rekap,#print-area-rekap *{visibility:visible!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}' +
+                        '#print-area-rekap .print-kop{width:100%!important;border-bottom:2px solid #1e293b!important;margin-bottom:12px!important;page-break-after:avoid;display:table!important;}' +
+                        '#print-area-rekap .print-logo{width:70px!important;height:70px!important;object-fit:contain!important;display:block!important;background:#fff!important;}' +
+                        '#print-area-rekap .print-report-title{page-break-after:avoid;}' +
+                        '#print-area-rekap table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:10px;background:#fff!important;page-break-inside:auto;}' +
+                        '#print-area-rekap thead{display:table-header-group;}' +
+                        '#print-area-rekap tfoot{display:table-footer-group;}' +
+                        '#print-area-rekap tr{page-break-inside:avoid;page-break-after:auto;}' +
+                        '#print-area-rekap th,#print-area-rekap td{border:1px solid #94a3b8;padding:4px 6px;background:#fff!important;color:#111!important;}' +
+                        '#print-area-rekap th{background:#e2e8f0!important;font-weight:700;text-align:center;font-size:9px;}' +
+                        '#print-area-rekap .print-signature{margin-top:28px;page-break-inside:avoid;}' +
+                        '#print-area-rekap .print-signature-table td{border:none!important;}' +
+                        '@page{size:A4;margin:12mm;}' +
+                        '}';
+
+                    try {
+                        let styleEl = document.getElementById('print-style-rekap');
+                        if (!styleEl) {
+                            styleEl = document.createElement('style');
+                            styleEl.id = 'print-style-rekap';
+                            document.head.appendChild(styleEl);
+                        }
+                        styleEl.textContent = printCss;
+
+                        let area = document.getElementById('print-area-rekap');
+                        if (!area) {
+                            area = document.createElement('div');
+                            area.id = 'print-area-rekap';
+                            document.body.appendChild(area);
+                        }
+                        area.innerHTML = bodyInner;
+
+                        // Tunggu logo di area cetak termuat, lalu print
+                        const logoImg = area.querySelector('img.logo');
+                        function doPrint() {
+                            showToast("Membuka dialog cetak / simpan PDF...", "info");
+                            setTimeout(function() {
+                                try { window.print(); } catch (e) {
+                                    showToast("Gagal membuka cetak.", "error");
+                                }
+                                setTimeout(function() {
+                                    try { area.innerHTML = ''; } catch (e) {}
+                                }, 2000);
+                            }, 200);
+                        }
+                        if (logoImg) {
+                            if (logoImg.complete && logoImg.naturalWidth > 0) {
+                                doPrint();
+                            } else {
+                                logoImg.onload = doPrint;
+                                logoImg.onerror = doPrint;
+                                setTimeout(doPrint, 2000);
+                            }
+                        } else {
+                            doPrint();
+                        }
+                    } catch (printErr) {
+                        showToast("Gagal mencetak PDF.", "error");
                     }
                 }
-                // 2) Muat ulang gambar dengan crossOrigin
+
+                if (logoSrc) {
+                    finishWithLogo(logoSrc);
+                    return;
+                }
+
+                // 2) Muat logo dari URL lalu embed berwarna
+                showToast("Memuat logo untuk cetak...", "info");
                 let done = false;
-                function finish(val) {
+                function once(src) {
                     if (done) return;
                     done = true;
-                    callback(val || url);
+                    finishWithLogo(src || logoUrl);
                 }
                 try {
                     const img = new Image();
                     img.crossOrigin = 'anonymous';
                     img.onload = function() {
-                        const data = canvasFromImg(img);
-                        finish(data || url);
+                        const d = imgToDataUrl(img);
+                        once(d || logoUrl);
                     };
                     img.onerror = function() {
-                        // 3) Tanpa crossOrigin
+                        // Tanpa CORS
                         const img2 = new Image();
                         img2.onload = function() {
-                            const data = canvasFromImg(img2);
-                            finish(data || url);
+                            const d = imgToDataUrl(img2);
+                            once(d || logoUrl);
                         };
-                        img2.onerror = function() { finish(url); };
-                        img2.src = url;
+                        img2.onerror = function() { once(logoUrl); };
+                        img2.src = logoUrl;
                     };
-                    img.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'print=1';
+                    img.src = logoUrl + (logoUrl.indexOf('?') >= 0 ? '&' : '?') + 'v=' + Date.now();
                 } catch (e) {
-                    finish(url);
+                    once(logoUrl);
                 }
-                setTimeout(function() { finish(url); }, 2800);
+                setTimeout(function() { once(logoUrl); }, 2500);
             }
 
-            function buildPrintHTML(logoSrc) {
-                const logoHtml = logoSrc
-                    ? '<img src="' + logoSrc + '" class="logo" alt="Logo RA Al-Hidayah" style="-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;">'
-                    : '';
-                return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
-                    '<title>Rekap_Tabungan_' + safeSchoolTitle.replace(/\s+/g, '_') + '</title><style>' +
-                    '*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}' +
-                    'html,body{margin:0!important;padding:0!important;background:#ffffff!important;color:#111111!important;font-family:"Segoe UI",Arial,Helvetica,sans-serif;font-size:11px;line-height:1.45;}' +
-                    'body{padding:18px 20px;background:#ffffff!important;}' +
-                    '.header{position:relative;border-bottom:2px solid #1e293b;padding:8px 0 12px 80px;margin-bottom:14px;text-align:center;background:#ffffff!important;min-height:72px;}' +
-                    '.logo{position:absolute;left:4px;top:2px;width:70px;height:70px;object-fit:contain;background:#ffffff!important;border:0;}' +
-                    '.school-name{font-size:16px;font-weight:800;text-transform:uppercase;margin:0;color:#0f172a!important;}' +
-                    '.school-address{font-size:10px;margin:3px 0;color:#334155!important;}' +
-                    '.report-title{font-size:13px;font-weight:800;text-align:center;margin:12px 0 4px;text-transform:uppercase;color:#0f172a!important;letter-spacing:0.4px;}' +
-                    '.report-meta{text-align:center;font-size:10px;margin-bottom:14px;color:#334155!important;font-weight:600;}' +
-                    'table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:10px;background:#ffffff!important;}' +
-                    'th,td{border:1px solid #94a3b8;padding:5px 6px;text-align:left;background:#ffffff!important;color:#111111!important;}' +
-                    'th{background-color:#e2e8f0!important;font-weight:700;text-align:center;color:#0f172a!important;text-transform:uppercase;font-size:9px;}' +
-                    'tfoot td{background-color:#f1f5f9!important;}' +
-                    '.signature-container{width:100%;margin-top:28px;page-break-inside:avoid;background:#ffffff!important;}' +
-                    '.signature-table{width:100%;border:none;}' +
-                    '.signature-table td{border:none!important;text-align:center;vertical-align:top;width:50%;padding-top:6px;font-size:10px;background:transparent!important;color:#111111!important;}' +
-                    '@media print{@page{margin:12mm;size:A4;}html,body{background:#ffffff!important;color:#111111!important;margin:0!important;}body{padding:0;}' +
-                    'img.logo{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;max-width:70px!important;}}' +
-                    '</style></head><body style="background:#ffffff!important;color:#111111!important;">' +
-                    '<div class="header">' + logoHtml +
-                    '<h2 class="school-name">' + schoolNama + '</h2>' +
-                    '<p class="school-address">' + schoolAlamat + '</p>' +
-                    '<p class="school-address">Tahun Ajaran: ' + schoolTahun + '</p></div>' +
-                    '<h3 class="report-title">LAPORAN REKAPITULASI TABUNGAN SISWA</h3>' +
-                    '<p class="report-meta">PERIODE: ' + periodeUpper + ' | TANGGAL CETAK: ' + datePrinted + '</p>' +
-                    contentHTML +
-                    '<div class="signature-container"><table class="signature-table"><tr><td>' +
-                    '<p>Mengetahui,</p><p style="font-weight:bold;">Kepala Sekolah ' + schoolNama + '</p>' +
-                    '<div style="height:55px;"></div>' +
-                    '<p style="font-weight:bold;text-decoration:underline;">' + schoolKepsek + '</p>' +
-                    '<p style="font-size:9px;color:#64748b;">NIP / ID: -</p></td><td>' +
-                    '<p>Palalang, ' + datePrinted + '</p>' +
-                    '<p style="font-weight:bold;">Bendahara Tabungan / Wali Kelas</p>' +
-                    '<div style="height:55px;"></div>' +
-                    '<p style="font-weight:bold;text-decoration:underline;">(...............................................)</p>' +
-                    '<p style="font-size:9px;color:#64748b;">Petugas Administrator</p></td></tr></table></div>' +
-                    '<script>(function(){function doPrint(){try{window.focus();window.print();}catch(e){}}' +
-                    'var imgs=document.querySelectorAll("img");if(!imgs.length){setTimeout(doPrint,400);return;}' +
-                    'var left=imgs.length;function done(){left--;if(left<=0)setTimeout(doPrint,400);}' +
-                    'for(var i=0;i<imgs.length;i++){if(imgs[i].complete&&imgs[i].naturalWidth)done();else{imgs[i].onload=done;imgs[i].onerror=done;}}' +
-                    'setTimeout(doPrint,3000);})();<\/script></body></html>';
-            }
-
-            function openPrintDoc(html) {
-                try {
-                    let frame = document.getElementById('print-frame-rekap');
-                    if (frame) { try { frame.parentNode.removeChild(frame); } catch (e) {} }
-                    frame = document.createElement('iframe');
-                    frame.id = 'print-frame-rekap';
-                    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none;';
-                    document.body.appendChild(frame);
-                    const doc = frame.contentDocument || frame.contentWindow.document;
-                    doc.open();
-                    doc.write(html);
-                    doc.close();
-                    showToast("Menyiapkan cetak PDF (logo berwarna)...", "info");
-                } catch (err) {
-                    try {
-                        const win = window.open('', '_blank');
-                        if (win) {
-                            win.document.open();
-                            win.document.write(html);
-                            win.document.close();
-                        } else {
-                            showToast("Gagal membuka jendela cetak. Izinkan pop-up.", "error");
-                        }
-                    } catch (e2) {
-                        showToast("Gagal mencetak PDF.", "error");
-                    }
-                }
-            }
-
-            showToast("Memuat logo untuk cetak...", "info");
-            resolveLogoDataUrl(logoUrl, function(logoSrc) {
-                openPrintDoc(buildPrintHTML(logoSrc));
-            });
+            resolveLogoThenPrint();
             } catch (errOuter) {
-                console.error("exportRekapPDF error:", errOuter);
                 showToast("Gagal membuat laporan PDF. Coba lagi.", "error");
             }
         }
 
-        function saveAndDownloadExcel(wb, fileName) {
-            const safeName = String(fileName || 'Rekap.xlsx').replace(/[^\w.\-]+/g, '_');
+        function triggerBlobDownload(blob, fileName) {
             try {
-                if (typeof XLSX === 'undefined') {
-                    showToast("Library Excel belum siap.", "error");
-                    return false;
-                }
-                // Array buffer paling stabil di Android WebView
-                let out;
-                try {
-                    out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                } catch (e1) {
-                    // Fallback binary
-                    const bin = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-                    const buf = new ArrayBuffer(bin.length);
-                    const view = new Uint8Array(buf);
-                    for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i) & 0xFF;
-                    out = buf;
-                }
-                const blob = new Blob([out], {
-                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                });
+                const safeName = String(fileName || 'file').replace(/[^\w.\-]+/g, '_');
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = safeName;
                 a.style.display = 'none';
+                a.setAttribute('target', '_blank');
                 document.body.appendChild(a);
                 a.click();
                 setTimeout(function() {
                     try { document.body.removeChild(a); } catch (e) {}
                     try { URL.revokeObjectURL(url); } catch (e) {}
-                }, 1500);
+                }, 2000);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function saveAndDownloadExcel(wb, fileName) {
+            try {
+                if (typeof XLSX === 'undefined') return false;
+                const safeName = String(fileName || 'Rekap.xlsx').replace(/[^\w.\-]+/g, '_');
+                let out = null;
+                try {
+                    out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                } catch (e1) {
+                    try {
+                        const bin = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+                        const buf = new ArrayBuffer(bin.length);
+                        const view = new Uint8Array(buf);
+                        for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i) & 0xFF;
+                        out = buf;
+                    } catch (e2) {
+                        return false;
+                    }
+                }
+                if (!out) return false;
+                const blob = new Blob([out], {
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
+                if (!triggerBlobDownload(blob, safeName)) return false;
                 showToast("File Excel berhasil diunduh!", "success");
                 return true;
             } catch (err) {
-                console.error("Excel download error:", err);
-                showToast("Gagal unduh Excel. Mencoba CSV...", "error");
                 return false;
             }
         }
 
         function exportRekapExcel() {
-            try {
-                const data = getFilteredRekapData();
-
-                if (typeof XLSX === 'undefined') {
-                    showToast("Memuat library Excel...", "info");
-                    const existing = document.querySelector('script[data-xlsx-loader]');
-                    if (existing) {
-                        setTimeout(exportRekapExcel, 800);
+            // Tunda sedikit agar UI tidak freeze / crash di WebView
+            showToast("Menyiapkan export...", "info");
+            setTimeout(function() {
+                try {
+                    const data = getFilteredRekapData();
+                    if (!data) {
+                        showToast("Data rekap tidak tersedia.", "error");
                         return;
                     }
-                    const script = document.createElement('script');
-                    script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
-                    script.setAttribute('data-xlsx-loader', '1');
-                    script.onload = function() { setTimeout(exportRekapExcel, 200); };
-                    script.onerror = function() {
-                        showToast("Library Excel gagal dimuat. Mengunduh CSV...", "info");
-                        downloadCSVFallback(data);
-                    };
-                    document.head.appendChild(script);
-                    return;
-                }
 
-                const wb = XLSX.utils.book_new();
-
-                if (data.tipe === 'per_siswa' && data.selectedSiswaObj) {
-                    const s = data.selectedSiswaObj;
-                    const rows = [
-                        ["LAPORAN TABUNGAN INDIVIDUAL SISWA"],
-                        ["Sekolah", data.sekolah.nama || 'RA AL-HIDAYAH'],
-                        ["Periode", data.periodeText],
-                        ["Nama Siswa", s.nama || ''],
-                        ["NIS", String(s.nis || '')],
-                        ["Kelas", s.kelas || ''],
-                        ["Wali Murid", s.wali || '-'],
-                        ["No HP", s.hp || '-'],
-                        ["Saldo Saat Ini", Number(s.saldo) || 0],
-                        [],
-                        ["No", "Tanggal", "Jenis Transaksi", "Keperluan / Catatan", "Setoran (Rp)", "Penarikan (Rp)", "Saldo Berjalan (Rp)"]
-                    ];
-
-                    let rSaldo = 0;
-                    let totSetor = 0;
-                    let totTarik = 0;
-                    const sorted = [...(data.transaksiList || [])].reverse();
-                    sorted.forEach(function(t, idx) {
-                        const nom = Number(t.nominal) || 0;
-                        if (t.tipe === 'setor') {
-                            totSetor += nom;
-                            rSaldo += nom;
-                        } else {
-                            totTarik += nom;
-                            rSaldo -= nom;
+                    if (typeof XLSX === 'undefined') {
+                        const existing = document.querySelector('script[data-xlsx-loader]');
+                        if (!existing) {
+                            const script = document.createElement('script');
+                            script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+                            script.setAttribute('data-xlsx-loader', '1');
+                            script.onload = function() { setTimeout(exportRekapExcel, 300); };
+                            script.onerror = function() { downloadCSVFallback(data); };
+                            document.head.appendChild(script);
+                            showToast("Memuat library Excel...", "info");
+                            return;
                         }
-                        rows.push([
-                            idx + 1,
-                            t.tanggal || '',
-                            String(t.tipe || '').toUpperCase(),
-                            t.keperluan || '-',
-                            t.tipe === 'setor' ? nom : 0,
-                            t.tipe === 'tarik' ? nom : 0,
-                            rSaldo
-                        ]);
-                    });
-                    rows.push([]);
-                    rows.push(["TOTAL PERIODE INI", "", "", "", totSetor, totTarik, totSetor - totTarik]);
-
-                    const ws = XLSX.utils.aoa_to_sheet(rows);
-                    ws['!cols'] = [{wch: 6}, {wch: 16}, {wch: 16}, {wch: 30}, {wch: 18}, {wch: 18}, {wch: 22}];
-                    XLSX.utils.book_append_sheet(wb, ws, "Tabungan_Siswa");
-                    const safeName = String(s.nama || 'Siswa').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 40);
-                    if (!saveAndDownloadExcel(wb, 'Tabungan_' + safeName + '_' + String(s.nis || '') + '.xlsx')) {
                         downloadCSVFallback(data);
+                        return;
                     }
-                } else {
-                    const rowsSiswa = [
-                        ["REKAPITULASI TABUNGAN SISWA - " + ((data.sekolah.nama || "SEKOLAH") + "").toUpperCase()],
-                        ["Periode", data.periodeText || ''],
-                        [],
-                        ["No", "NIS", "Nama Siswa", "Kelas", "Total Setoran (Rp)", "Total Penarikan (Rp)", "Saldo Akhir (Rp)"]
-                    ];
-                    let gSetor = 0, gTarik = 0, gSaldo = 0;
-                    (data.siswaList || []).forEach(function(s, idx) {
-                        let sSetor = 0, sTarik = 0;
-                        const snis = String(s.nis || '');
-                        (data.transaksiList || []).filter(function(t) { return String(t.nis || '') === snis; }).forEach(function(t) {
+
+                    const wb = XLSX.utils.book_new();
+
+                    if (data.tipe === 'per_siswa' && data.selectedSiswaObj) {
+                        const s = data.selectedSiswaObj;
+                        const rows = [
+                            ["LAPORAN TABUNGAN INDIVIDUAL SISWA"],
+                            ["Sekolah", (data.sekolah && data.sekolah.nama) || 'RA AL-HIDAYAH'],
+                            ["Periode", data.periodeText || ''],
+                            ["Nama Siswa", s.nama || ''],
+                            ["NIS", String(s.nis || '')],
+                            ["Kelas", s.kelas || ''],
+                            ["Wali Murid", s.wali || '-'],
+                            ["No HP", s.hp || '-'],
+                            ["Saldo Saat Ini", Number(s.saldo) || 0],
+                            [],
+                            ["No", "Tanggal", "Jenis", "Keperluan", "Setoran", "Penarikan", "Saldo"]
+                        ];
+                        let rSaldo = 0, totSetor = 0, totTarik = 0;
+                        const sorted = (data.transaksiList || []).slice().reverse();
+                        for (let i = 0; i < sorted.length; i++) {
+                            const t = sorted[i];
                             const nom = Number(t.nominal) || 0;
-                            if (t.tipe === 'setor') sSetor += nom;
-                            if (t.tipe === 'tarik') sTarik += nom;
-                        });
-                        gSetor += sSetor;
-                        gTarik += sTarik;
-                        gSaldo += Number(s.saldo) || 0;
-                        rowsSiswa.push([idx + 1, snis, s.nama || '', s.kelas || '', sSetor, sTarik, Number(s.saldo) || 0]);
-                    });
-                    rowsSiswa.push([]);
-                    rowsSiswa.push(["TOTAL KESELURUHAN", "", "", "", gSetor, gTarik, gSaldo]);
+                            if (t.tipe === 'setor') { totSetor += nom; rSaldo += nom; }
+                            else { totTarik += nom; rSaldo -= nom; }
+                            rows.push([i + 1, t.tanggal || '', String(t.tipe || '').toUpperCase(), t.keperluan || '-', t.tipe === 'setor' ? nom : 0, t.tipe === 'tarik' ? nom : 0, rSaldo]);
+                        }
+                        rows.push([]);
+                        rows.push(["TOTAL", "", "", "", totSetor, totTarik, totSetor - totTarik]);
+                        const ws = XLSX.utils.aoa_to_sheet(rows);
+                        XLSX.utils.book_append_sheet(wb, ws, "Tabungan");
+                        const safeName = String(s.nama || 'Siswa').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
+                        if (!saveAndDownloadExcel(wb, 'Tabungan_' + safeName + '.xlsx')) downloadCSVFallback(data);
+                    } else {
+                        const rowsSiswa = [
+                            ["REKAPITULASI TABUNGAN SISWA"],
+                            ["Periode", data.periodeText || ''],
+                            [],
+                            ["No", "NIS", "Nama", "Kelas", "Total Setor", "Total Tarik", "Saldo"]
+                        ];
+                        let gSetor = 0, gTarik = 0, gSaldo = 0;
+                        const siswaList = data.siswaList || [];
+                        for (let i = 0; i < siswaList.length; i++) {
+                            const s = siswaList[i];
+                            let sSetor = 0, sTarik = 0;
+                            const snis = String(s.nis || '');
+                            const trxList = data.transaksiList || [];
+                            for (let j = 0; j < trxList.length; j++) {
+                                const t = trxList[j];
+                                if (String(t.nis || '') !== snis) continue;
+                                const nom = Number(t.nominal) || 0;
+                                if (t.tipe === 'setor') sSetor += nom;
+                                if (t.tipe === 'tarik') sTarik += nom;
+                            }
+                            gSetor += sSetor; gTarik += sTarik; gSaldo += Number(s.saldo) || 0;
+                            rowsSiswa.push([i + 1, snis, s.nama || '', s.kelas || '', sSetor, sTarik, Number(s.saldo) || 0]);
+                        }
+                        rowsSiswa.push([]);
+                        rowsSiswa.push(["TOTAL", "", "", "", gSetor, gTarik, gSaldo]);
 
-                    const rowsJurnal = [
-                        ["JURNAL DETAIL TRANSAKSI"],
-                        ["No", "Tanggal", "NIS", "Nama Siswa", "Kelas", "Jenis", "Nominal (Rp)", "Keperluan / Catatan"]
-                    ];
-                    (data.transaksiList || []).forEach(function(t, idx) {
-                        rowsJurnal.push([
-                            idx + 1,
-                            t.tanggal || '',
-                            String(t.nis || ''),
-                            t.nama || '',
-                            t.kelas || '',
-                            String(t.tipe || '').toUpperCase(),
-                            Number(t.nominal) || 0,
-                            t.keperluan || '-'
-                        ]);
-                    });
-
-                    const ws1 = XLSX.utils.aoa_to_sheet(rowsSiswa);
-                    ws1['!cols'] = [{wch: 6}, {wch: 14}, {wch: 28}, {wch: 16}, {wch: 20}, {wch: 20}, {wch: 22}];
-                    const ws2 = XLSX.utils.aoa_to_sheet(rowsJurnal);
-                    ws2['!cols'] = [{wch: 6}, {wch: 16}, {wch: 14}, {wch: 28}, {wch: 14}, {wch: 12}, {wch: 18}, {wch: 30}];
-                    XLSX.utils.book_append_sheet(wb, ws1, "Rekap_Saldo");
-                    XLSX.utils.book_append_sheet(wb, ws2, "Jurnal_Transaksi");
-                    if (!saveAndDownloadExcel(wb, 'Rekap_Tabungan_' + Date.now() + '.xlsx')) {
-                        downloadCSVFallback(data);
+                        const rowsJurnal = [["JURNAL TRANSAKSI"], ["No", "Tanggal", "NIS", "Nama", "Kelas", "Jenis", "Nominal", "Keperluan"]];
+                        const trxAll = data.transaksiList || [];
+                        for (let i = 0; i < trxAll.length; i++) {
+                            const t = trxAll[i];
+                            rowsJurnal.push([i + 1, t.tanggal || '', String(t.nis || ''), t.nama || '', t.kelas || '', String(t.tipe || '').toUpperCase(), Number(t.nominal) || 0, t.keperluan || '-']);
+                        }
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsSiswa), "Rekap");
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsJurnal), "Jurnal");
+                        if (!saveAndDownloadExcel(wb, 'Rekap_Tabungan.xlsx')) downloadCSVFallback(data);
                     }
+                } catch (err) {
+                    try { downloadCSVFallback(getFilteredRekapData()); }
+                    catch (e2) { showToast("Gagal export. Coba lagi.", "error"); }
                 }
-            } catch (err) {
-                console.error("exportRekapExcel error:", err);
-                try {
-                    downloadCSVFallback(getFilteredRekapData());
-                } catch (e2) {
-                    showToast("Gagal export. Coba lagi.", "error");
-                }
-            }
+            }, 200);
         }
 
         function downloadCSVFallback(data) {
             try {
                 if (!data) data = getFilteredRekapData();
-                let csv = '\uFEFF'; // BOM agar Excel baca UTF-8
-                csv += 'Tanggal,NIS,Nama,Kelas,Jenis,Nominal,Keperluan\n';
-                (data.transaksiList || []).forEach(function(t) {
-                    const row = [
-                        t.tanggal || '',
-                        t.nis || '',
-                        t.nama || '',
-                        t.kelas || '',
-                        t.tipe || '',
-                        t.nominal || 0,
-                        (t.keperluan || '-').replace(/"/g, "'")
-                    ].map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(',');
-                    csv += row + '\n';
-                });
+                let csv = '\uFEFFTanggal,NIS,Nama,Kelas,Jenis,Nominal,Keperluan\n';
+                const list = (data && data.transaksiList) ? data.transaksiList : [];
+                for (let i = 0; i < list.length; i++) {
+                    const t = list[i];
+                    const cells = [t.tanggal || '', t.nis || '', t.nama || '', t.kelas || '', t.tipe || '', t.nominal || 0, (t.keperluan || '-').replace(/"/g, "'")];
+                    csv += cells.map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(',') + '\n';
+                }
                 const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'Rekap_Tabungan_' + Date.now() + '.csv';
-                link.style.display = 'none';
-                document.body.appendChild(link);
-                link.click();
-                setTimeout(function() {
-                    try { document.body.removeChild(link); } catch (e) {}
-                    try { URL.revokeObjectURL(url); } catch (e) {}
-                }, 1000);
-                showToast("File CSV berhasil diunduh!", "success");
+                if (triggerBlobDownload(blob, 'Rekap_Tabungan.csv')) {
+                    showToast("File CSV berhasil diunduh!", "success");
+                } else {
+                    showToast("Gagal mengunduh file.", "error");
+                }
             } catch (err) {
-                console.error("CSV fallback error:", err);
                 showToast("Gagal mengunduh file.", "error");
             }
         }
