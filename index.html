@@ -925,29 +925,42 @@
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <div class="px-4 py-2 bg-emerald-50 border-b border-emerald-100 flex flex-col gap-2 shrink-0">
-                        <button type="button" id="btn-excel-share" onclick="shareExcelData()"
-                           class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2">
-                            <i class="fas fa-share-alt"></i> Bagikan / Simpan ke File
+                    <div class="px-4 py-2 bg-emerald-50 border-b border-emerald-100 flex gap-2 shrink-0">
+                        <button type="button" id="btn-excel-download" onclick="doExcelFileDownload()"
+                           class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2">
+                            <i class="fas fa-download"></i> Unduh File Excel
                         </button>
-                        <div class="flex gap-2">
-                            <button type="button" id="btn-excel-copy" onclick="copyExcelData()"
-                               class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-2">
-                                <i class="fas fa-copy"></i> Salin Data
-                            </button>
-                            <button type="button" onclick="closeModal('modal-excel-download')" class="px-4 py-2 rounded-xl bg-slate-200 text-slate-700 font-bold text-xs">
-                                Tutup
-                            </button>
-                        </div>
+                        <button type="button" onclick="closeModal('modal-excel-download')" class="px-4 py-2.5 rounded-xl bg-slate-200 text-slate-700 font-bold text-xs">
+                            Tutup
+                        </button>
                     </div>
                     <p class="px-4 pt-2 text-[10px] text-slate-500 shrink-0">
-                        Tekan <b>Bagikan / Simpan ke File</b> untuk membuka menu bagikan sistem.
-                        Jika tidak muncul, tekan <b>Salin Data</b> lalu tempel di Excel / Google Sheets.
+                        Tekan <b>Unduh File Excel</b> untuk menyimpan file ke folder Unduhan / Berkas Android.
                     </p>
                     <div id="excel-preview-body" class="flex-1 overflow-auto p-3 text-[11px] text-slate-800 leading-relaxed">
                         <!-- diisi JS -->
                     </div>
-                    <textarea id="excel-raw-text" readonly class="sr-only" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" aria-hidden="true"></textarea>
+                </div>
+            </div>
+
+            <!-- MODAL: KONFIRMASI KELUAR -->
+            <div id="modal-logout-confirm" class="fixed inset-0 z-[99999999] bg-slate-950/85 backdrop-blur-sm hidden flex items-center justify-center p-4">
+                <div class="glass-card w-full max-w-xs rounded-3xl p-5 border border-slate-700/80 shadow-2xl space-y-4 text-center">
+                    <div class="w-14 h-14 mx-auto rounded-2xl bg-red-500/15 border border-red-500/30 flex items-center justify-center">
+                        <i class="fas fa-arrow-right-from-bracket text-red-400 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-extrabold text-slate-100">Keluar dari Aplikasi?</h3>
+                        <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">Anda akan kembali ke halaman login. Data tabungan tetap tersimpan aman.</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2.5 pt-1">
+                        <button type="button" onclick="closeModal('modal-logout-confirm')" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition-all active:scale-95">
+                            Batal
+                        </button>
+                        <button type="button" onclick="confirmLogout()" class="py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold text-xs shadow-lg shadow-red-600/25 transition-all active:scale-95">
+                            OK, Keluar
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -962,7 +975,7 @@
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <h3 class="text-sm font-extrabold text-slate-100">Pembaruan Tersedia</h3>
-                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v3.0.3</span>
+                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v3.1.0</span>
                             </div>
                             <p class="text-[11px] text-slate-400 mt-0.5">Versi baru siap dipasang</p>
                         </div>
@@ -1130,14 +1143,14 @@
         let isUpdateInProgress = false;
 
         /* ===== SISTEM UPDATE ===== */
-        const APP_VERSION = "3.0.4";
+        const APP_VERSION = "3.1.0";
         const APP_VERSION_STORAGE_KEY = "tabungan_ra_app_version_v1";
         const UPDATE_CHECK_URL = "https://raw.githubusercontent.com/alwan281/tabungan-siswa-Ra-Alhidayah/main/version.json";
         const UPDATE_CHANGELOG = [
-            "Hapus intent URL (perbaiki ERR_UNKNOWN_URL_SCHEME AppCreator24)",
-            "Bagikan hanya Web Share API + Salin Data",
-            "Cetak PDF lewat iframe — tombol Kembali tidak keluar app",
-            "Logo cetak & fitur lain tetap utuh"
+            "Unduh Excel langsung ke Berkas Android (App Inventor)",
+            "Cetak/Save PDF kembali ke printer langsung",
+            "Update membersihkan cache otomatis tanpa hapus manual",
+            "Popup konfirmasi Keluar (Batal / OK) untuk guru & siswa"
         ];
         let remoteUpdateVersion = null;
         let remoteUpdateChangelog = null;
@@ -1268,18 +1281,33 @@
                     if (typeof showToast === "function") {
                         showToast("Berhasil diperbarui ke v" + targetVer + "! Memuat halaman terbaru...", "success");
                     }
-                    // Hard reload + cache-bust agar halaman terbaru tampil tanpa bersihkan cache manual
+                    // Bersihkan cache total lalu hard reload (tanpa hapus cache manual)
                     setTimeout(function () {
+                        var goReload = function () {
+                            var url = window.location.href.split("#")[0].split("?")[0];
+                            window.location.replace(url + "?v=" + encodeURIComponent(targetVer) + "&t=" + Date.now());
+                        };
                         try {
+                            // Hapus Cache API
+                            var p = Promise.resolve();
                             if ("caches" in window) {
-                                caches.keys().then(function (names) {
-                                    names.forEach(function (n) { caches.delete(n); });
-                                }).catch(function () {});
+                                p = caches.keys().then(function (names) {
+                                    return Promise.all(names.map(function (n) { return caches.delete(n); }));
+                                });
                             }
-                        } catch (e) {}
-                        var url = window.location.href.split("#")[0].split("?")[0];
-                        window.location.replace(url + "?v=" + encodeURIComponent(targetVer) + "&t=" + Date.now());
-                    }, 600);
+                            // Unregister service worker agar tidak menyimpan HTML lama
+                            if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+                                p = p.then(function () {
+                                    return navigator.serviceWorker.getRegistrations().then(function (regs) {
+                                        return Promise.all(regs.map(function (r) { return r.unregister(); }));
+                                    });
+                                });
+                            }
+                            p.then(goReload).catch(goReload);
+                        } catch (e) {
+                            goReload();
+                        }
+                    }, 500);
                 }
             }, 70);
         }
@@ -1527,22 +1555,25 @@
         }
 
         function handleLogout() {
+            /* Tampilkan popup modern Batal / OK */
+            openModal('modal-logout-confirm');
+        }
+
+        function confirmLogout() {
+            try { closeModal('modal-logout-confirm'); } catch (e) {}
             state.currentUser = null;
             document.getElementById('view-dashboard').classList.add('hidden');
             document.getElementById('view-login').classList.remove('hidden');
-            
-            // Clear inputs manually so credentials are required again
+
             const siswaNis = document.getElementById('siswa-nis');
             const siswaPass = document.getElementById('siswa-pass');
             const adminUser = document.getElementById('admin-user');
             const adminPass = document.getElementById('admin-pass');
-            
             if (siswaNis) siswaNis.value = '';
             if (siswaPass) siswaPass.value = '';
             if (adminUser) adminUser.value = '';
             if (adminPass) adminPass.value = '';
 
-            // Reset to default main tab state for next session
             state.currentMainTab = "tabungan";
             showToast("Anda telah keluar. Silakan masukkan ulang akun.", "info");
         }
@@ -2959,7 +2990,7 @@
                                 document.body.style.color = '#1e293b';
                             } catch(e) {}
                             setTimeout(function() {
-                                try { window.print(); } catch(e2) {}
+                                try { window.focus(); window.print(); } catch(e2) {}
                             }, 400);
                         };
                     <\/script>
@@ -2967,73 +2998,60 @@
                 </html>
             `;
 
-            /* Cetak lewat iframe tersembunyi — tombol Kembali TIDAK keluar dari aplikasi (AppCreator24) */
+            /* Cetak langsung lewat jendela pratinjau + printer (seperti semula) */
             try {
-                var iframe = document.getElementById('print-frame-ra');
-                if (!iframe) {
-                    iframe = document.createElement('iframe');
-                    iframe.id = 'print-frame-ra';
-                    iframe.setAttribute('title', 'Cetak');
-                    iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;left:-9999px;top:0;visibility:hidden;';
-                    document.body.appendChild(iframe);
+                const win = window.open('', '_blank');
+                if (win) {
+                    win.document.open();
+                    win.document.write(printHTML);
+                    win.document.close();
+                    try { closeModal('modal-rekap'); } catch (e) {}
+                    showToast("Pratinjau cetak dibuka...", "success");
+                } else {
+                    showToast("Izinkan pop-up untuk mencetak.", "error");
                 }
-                var idoc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
-                if (!idoc) {
-                    showToast("Gagal membuka pratinjau cetak.", "error");
-                    return;
-                }
-                idoc.open();
-                idoc.write(printHTML);
-                idoc.close();
-                setTimeout(function () {
-                    try {
-                        iframe.contentWindow.focus();
-                        iframe.contentWindow.print();
-                    } catch (ePrint) {
-                        showToast("Gagal mencetak. Coba lagi.", "error");
-                    }
-                }, 500);
-                showToast("Pratinjau cetak dibuka...", "success");
-                try { closeModal('modal-rekap'); } catch (e) {}
             } catch (err) {
                 console.error('exportRekapPDF error:', err);
-                showToast("Gagal cetak PDF.", "error");
+                showToast("Gagal membuka cetak.", "error");
             }
         }
 
-        /* Data teks Excel untuk Share / Salin — TANPA Blob / data-URI / a.click (aman AppCreator24) */
-        var _excelShareText = '';
-        var _excelShareName = 'Rekap_Tabungan.csv';
+        /* ===== UNDUH EXCEL LANGSUNG KE BERKAS (App Inventor WebView) ===== */
+        var _excelLastData = null;
+        var _excelLastName = 'Rekap_Tabungan.xlsx';
 
-        function buildExcelCsvText(data) {
-            function cell(v) {
-                return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
-            }
-            var lines = [];
+        function buildExcelAoaSheets(data) {
+            var sheets = [];
             if (data.tipe === 'per_siswa' && data.selectedSiswaObj) {
                 var s = data.selectedSiswaObj;
-                lines.push(cell('LAPORAN TABUNGAN INDIVIDUAL'));
-                lines.push(cell('Sekolah') + ',' + cell(data.sekolah.nama));
-                lines.push(cell('Periode') + ',' + cell(data.periodeText));
-                lines.push(cell('Nama') + ',' + cell(s.nama));
-                lines.push(cell('NIS') + ',' + cell(s.nis));
-                lines.push(cell('Kelas') + ',' + cell(s.kelas));
-                lines.push(cell('Saldo') + ',' + cell(Number(s.saldo) || 0));
-                lines.push('');
-                lines.push([cell('No'), cell('Tanggal'), cell('Jenis'), cell('Keperluan'), cell('Setoran'), cell('Penarikan'), cell('Saldo')].join(','));
+                var aoa = [
+                    ['LAPORAN TABUNGAN INDIVIDUAL SISWA'],
+                    ['Sekolah', data.sekolah.nama || ''],
+                    ['Periode', data.periodeText || ''],
+                    ['Nama', s.nama || ''],
+                    ['NIS', s.nis || ''],
+                    ['Kelas', s.kelas || ''],
+                    ['Saldo Saat Ini', Number(s.saldo) || 0],
+                    [],
+                    ['No', 'Tanggal', 'Jenis', 'Keperluan', 'Setoran', 'Penarikan', 'Saldo Berjalan']
+                ];
                 var totSetor = 0, totTarik = 0, rSaldo = 0;
                 (data.transaksiList || []).slice().reverse().forEach(function (t, idx) {
                     var nom = Number(t.nominal) || 0;
                     if (t.tipe === 'setor') { totSetor += nom; rSaldo += nom; }
                     else { totTarik += nom; rSaldo -= nom; }
-                    lines.push([cell(idx + 1), cell(t.tanggal), cell((t.tipe || '').toUpperCase()), cell(t.keperluan || '-'), cell(t.tipe === 'setor' ? nom : 0), cell(t.tipe === 'tarik' ? nom : 0), cell(rSaldo)].join(','));
+                    aoa.push([idx + 1, t.tanggal || '', (t.tipe || '').toUpperCase(), t.keperluan || '-', t.tipe === 'setor' ? nom : 0, t.tipe === 'tarik' ? nom : 0, rSaldo]);
                 });
-                lines.push([cell('TOTAL'), '', '', '', cell(totSetor), cell(totTarik), cell(totSetor - totTarik)].join(','));
+                aoa.push(['TOTAL', '', '', '', totSetor, totTarik, totSetor - totTarik]);
+                sheets.push({ name: 'Tabungan', aoa: aoa });
             } else {
-                lines.push(cell('REKAPITULASI TABUNGAN - ' + (data.sekolah.nama || '')));
-                lines.push(cell('Periode') + ',' + cell(data.periodeText));
-                lines.push('');
-                lines.push([cell('No'), cell('NIS'), cell('Nama'), cell('Kelas'), cell('Total Setor'), cell('Total Tarik'), cell('Saldo')].join(','));
+                var aoa1 = [
+                    ['REKAPITULASI TABUNGAN SISWA'],
+                    ['Sekolah', data.sekolah.nama || ''],
+                    ['Periode', data.periodeText || ''],
+                    [],
+                    ['No', 'NIS', 'Nama', 'Kelas', 'Total Setor', 'Total Tarik', 'Saldo Akhir']
+                ];
                 var gSetor = 0, gTarik = 0, gSaldo = 0;
                 (data.siswaList || []).forEach(function (s, idx) {
                     var sSetor = 0, sTarik = 0;
@@ -3044,17 +3062,17 @@
                         if (t.tipe === 'tarik') sTarik += nom;
                     });
                     gSetor += sSetor; gTarik += sTarik; gSaldo += Number(s.saldo) || 0;
-                    lines.push([cell(idx + 1), cell(s.nis), cell(s.nama), cell(s.kelas), cell(sSetor), cell(sTarik), cell(Number(s.saldo) || 0)].join(','));
+                    aoa1.push([idx + 1, s.nis, s.nama, s.kelas, sSetor, sTarik, Number(s.saldo) || 0]);
                 });
-                lines.push([cell('TOTAL'), '', '', '', cell(gSetor), cell(gTarik), cell(gSaldo)].join(','));
-                lines.push('');
-                lines.push(cell('JURNAL TRANSAKSI'));
-                lines.push([cell('No'), cell('Tanggal'), cell('NIS'), cell('Nama'), cell('Kelas'), cell('Jenis'), cell('Nominal'), cell('Keperluan')].join(','));
+                aoa1.push(['TOTAL', '', '', '', gSetor, gTarik, gSaldo]);
+                sheets.push({ name: 'Rekapitulasi', aoa: aoa1 });
+                var aoa2 = [['JURNAL TRANSAKSI'], ['No', 'Tanggal', 'NIS', 'Nama', 'Kelas', 'Jenis', 'Nominal', 'Keperluan']];
                 (data.transaksiList || []).forEach(function (t, idx) {
-                    lines.push([cell(idx + 1), cell(t.tanggal), cell(t.nis), cell(t.nama), cell(t.kelas), cell((t.tipe || '').toUpperCase()), cell(Number(t.nominal) || 0), cell(t.keperluan || '-')].join(','));
+                    aoa2.push([idx + 1, t.tanggal || '', t.nis || '', t.nama || '', t.kelas || '', (t.tipe || '').toUpperCase(), Number(t.nominal) || 0, t.keperluan || '-']);
                 });
+                sheets.push({ name: 'Jurnal', aoa: aoa2 });
             }
-            return lines.join('\r\n');
+            return sheets;
         }
 
         function buildExcelPreviewHtml(data) {
@@ -3098,104 +3116,79 @@
                 (trxTr || '<tr><td colspan="8">Kosong</td></tr>') + '</table>';
         }
 
+        function downloadBlobFile(blob, fileName) {
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function () {
+                try { document.body.removeChild(a); } catch (e) {}
+                try { URL.revokeObjectURL(url); } catch (e2) {}
+            }, 2000);
+        }
+
         function exportRekapExcel() {
-            /* AppCreator24: JANGAN Blob / data-URI / a.click — hanya siapkan data + modal Share */
+            /* Siapkan pratinjau + data, lalu user tekan Unduh File Excel */
             try {
                 var data = getFilteredRekapData();
-                _excelShareText = buildExcelCsvText(data);
-                _excelShareName = 'Rekap_Tabungan_' + Date.now() + '.csv';
+                _excelLastData = data;
+                _excelLastName = 'Rekap_Tabungan_' + Date.now() + '.xlsx';
                 if (data.tipe === 'per_siswa' && data.selectedSiswaObj) {
                     var sn = (data.selectedSiswaObj.nama || 'Siswa').replace(/[^a-zA-Z0-9_-]/g, '_');
-                    _excelShareName = 'Tabungan_' + sn + '_' + data.selectedSiswaObj.nis + '.csv';
+                    _excelLastName = 'Tabungan_' + sn + '_' + data.selectedSiswaObj.nis + '.xlsx';
                 }
-
                 var preview = document.getElementById('excel-preview-body');
                 if (preview) preview.innerHTML = buildExcelPreviewHtml(data);
-
-                var ta = document.getElementById('excel-raw-text');
-                if (ta) ta.value = _excelShareText;
-
                 try { closeModal('modal-rekap'); } catch (e) {}
                 openModal('modal-excel-download');
-                showToast("Tekan Bagikan / Simpan ke File.", "success");
+                showToast("Tekan Unduh File Excel.", "success");
             } catch (err) {
                 console.error('exportRekapExcel error:', err);
-                showToast("Gagal menyiapkan data. Gunakan Cetak PDF.", "error");
-            }
-        }
-
-        function shareExcelData() {
-            /* Hanya Web Share API + salin. JANGAN intent: URL (AppCreator24 → ERR_UNKNOWN_URL_SCHEME) */
-            try {
-                if (!_excelShareText) {
-                    showToast("Data kosong. Buka ulang Unduh Excel.", "error");
-                    return;
-                }
-                var title = _excelShareName || 'Rekap Tabungan';
-                var text = _excelShareText;
-
-                if (typeof navigator.share === 'function') {
-                    navigator.share({
-                        title: title,
-                        text: text
-                    }).then(function () {
-                        showToast("Berhasil dibagikan / disimpan!", "success");
-                    }).catch(function (err) {
-                        if (err && err.name === 'AbortError') {
-                            showToast("Dibatalkan.", "info");
-                            return;
-                        }
-                        copyExcelData();
-                    });
-                    return;
-                }
-
-                /* Tidak ada Share API → salin ke clipboard (tanpa intent URL) */
-                copyExcelData();
-            } catch (err) {
-                console.error('shareExcelData error:', err);
-                copyExcelData();
-            }
-        }
-
-        function copyExcelData() {
-            try {
-                if (!_excelShareText) {
-                    showToast("Data kosong.", "error");
-                    return;
-                }
-                var ok = false;
-                var ta = document.getElementById('excel-raw-text');
-                if (ta) {
-                    ta.value = _excelShareText;
-                    ta.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;z-index:-1;';
-                    ta.removeAttribute('aria-hidden');
-                    ta.focus();
-                    ta.select();
-                    if (ta.setSelectionRange) ta.setSelectionRange(0, _excelShareText.length);
-                    try { ok = document.execCommand('copy'); } catch (e1) {}
-                    ta.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;opacity:0;';
-                }
-                if (!ok && navigator.clipboard && navigator.clipboard.writeText) {
-                    try { navigator.clipboard.writeText(_excelShareText); ok = true; } catch (e2) {}
-                }
-                if (ok) {
-                    showToast("Data disalin! Buka Excel/Sheets → Tempel.", "success");
-                } else {
-                    showToast("Long-press tabel pratinjau, lalu Salin.", "info");
-                }
-            } catch (err) {
-                showToast("Long-press tabel pratinjau, lalu Salin.", "info");
+                showToast("Gagal menyiapkan Excel.", "error");
             }
         }
 
         function doExcelFileDownload() {
-            shareExcelData();
+            /* Unduh langsung file .xlsx ke folder Berkas Android (App Inventor) */
+            try {
+                var data = _excelLastData || getFilteredRekapData();
+                var fileName = _excelLastName || ('Rekap_Tabungan_' + Date.now() + '.xlsx');
+
+                if (typeof XLSX !== 'undefined') {
+                    var sheets = buildExcelAoaSheets(data);
+                    var wb = XLSX.utils.book_new();
+                    sheets.forEach(function (sh) {
+                        var ws = XLSX.utils.aoa_to_sheet(sh.aoa);
+                        XLSX.utils.book_append_sheet(wb, ws, sh.name.substring(0, 31));
+                    });
+                    var out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                    var blob = new Blob([out], {
+                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    });
+                    downloadBlobFile(blob, fileName);
+                    showToast("File Excel diunduh ke Berkas!", "success");
+                    return;
+                }
+
+                /* Cadangan tanpa SheetJS: file .xls HTML */
+                var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body>';
+                html += (document.getElementById('excel-preview-body') && document.getElementById('excel-preview-body').innerHTML) || '';
+                html += '</body></html>';
+                var blob2 = new Blob(['\uFEFF' + html], { type: 'application/vnd.ms-excel' });
+                downloadBlobFile(blob2, fileName.replace(/\.xlsx$/i, '.xls'));
+                showToast("File Excel diunduh ke Berkas!", "success");
+            } catch (err) {
+                console.error('doExcelFileDownload error:', err);
+                showToast("Gagal unduh. Coba lagi atau gunakan Cetak PDF.", "error");
+            }
         }
 
         function downloadCSVFallback(data) {
             try { exportRekapExcel(); } catch (e) {
-                showToast("Gagal. Silakan gunakan Cetak PDF.", "error");
+                showToast("Gagal unduh. Silakan gunakan Cetak PDF.", "error");
             }
         }
 
