@@ -469,24 +469,6 @@
                                         <p class="text-[10px] text-slate-500 font-medium">Pilihan Template Logo Cepat:</p>
                                         <div class="flex gap-2 flex-wrap text-[10px]">
                                             <button type="button" onclick="setLogoPreset('custom')" class="px-2.5 py-1 rounded-lg bg-blue-900/60 text-blue-300 hover:bg-blue-800 font-semibold">Logo RA Al-Hidayah</button>
-                                            <button type="button" onclick="setLogoPreset('sd')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">SD Negeri</button>
-                                            <button type="button" onclick="setLogoPreset('buku')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Buku</button>
-                                            <button type="button" onclick="setLogoPreset('akademik')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Akademik</button>
-                                        </div>
-                                    </div>
-
-                                    <div class="pt-2 border-t border-slate-800 space-y-2">
-                                        <label class="text-[11px] font-semibold text-slate-400 block">🔐 Kata Sandi Login Guru / Admin</label>
-                                        <p class="text-[10px] text-slate-500">Ubah username dan kata sandi login Guru. Tersimpan di Firebase.</p>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div>
-                                                <label class="text-[10px] text-slate-500 block mb-1">Username Guru</label>
-                                                <input type="text" id="tab-sekolah-admin-user" placeholder="admin" class="custom-input w-full px-3 py-2.5 rounded-xl text-xs font-medium">
-                                            </div>
-                                            <div>
-                                                <label class="text-[10px] text-slate-500 block mb-1">Kata Sandi Baru</label>
-                                                <input type="text" id="tab-sekolah-admin-pass" placeholder="Kata sandi baru" class="custom-input w-full px-3 py-2.5 rounded-xl text-xs font-medium">
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -558,23 +540,6 @@
                             <p class="text-[10px] text-slate-500 font-medium">Pilihan Template Logo Cepat:</p>
                             <div class="flex gap-2 flex-wrap text-[10px]">
                                 <button type="button" onclick="setLogoPreset('custom')" class="px-2.5 py-1 rounded-lg bg-blue-900/60 text-blue-300 hover:bg-blue-800 font-semibold">Logo RA Al-Hidayah</button>
-                                <button type="button" onclick="setLogoPreset('sd')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">SD Negeri</button>
-                                <button type="button" onclick="setLogoPreset('buku')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Buku</button>
-                                <button type="button" onclick="setLogoPreset('akademik')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Akademik</button>
-                            </div>
-                        </div>
-
-                        <div class="pt-2 border-t border-slate-800 space-y-2">
-                            <label class="text-[11px] font-semibold text-slate-400 block">🔐 Kata Sandi Login Guru / Admin</label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="text-[10px] text-slate-500 block mb-1">Username Guru</label>
-                                    <input type="text" id="sekolah-admin-user" placeholder="admin" class="custom-input w-full px-3 py-2.5 rounded-xl text-xs font-medium">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] text-slate-500 block mb-1">Kata Sandi Baru</label>
-                                    <input type="text" id="sekolah-admin-pass" placeholder="Kata sandi baru" class="custom-input w-full px-3 py-2.5 rounded-xl text-xs font-medium">
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -909,6 +874,47 @@
                 </div>
             </div>
 
+            <!-- MODAL: PEMBARUAN APLIKASI -->
+            <div id="modal-update" class="fixed inset-0 z-[99999999] bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+                <div class="glass-card w-full max-w-sm rounded-3xl p-5 border border-slate-700/80 shadow-2xl space-y-4 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500"></div>
+                    <div class="flex items-center gap-3 pt-1">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center shrink-0">
+                            <i class="fas fa-cloud-arrow-down text-blue-400 text-lg"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h3 class="text-sm font-extrabold text-slate-100">Pembaruan Tersedia</h3>
+                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v2.3.5</span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Versi baru siap dipasang</p>
+                        </div>
+                    </div>
+                    <ul id="update-changelog-list" class="text-[11px] text-slate-300 space-y-1.5 bg-slate-900/60 rounded-xl p-3 border border-slate-800">
+                        <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Perbaikan stabilitas aplikasi</li>
+                        <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Notifikasi update responsif</li>
+                        <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Penyempurnaan laporan cetak &amp; export</li>
+                    </ul>
+                    <div id="update-progress-section" class="hidden space-y-2">
+                        <div class="flex justify-between text-[10px] text-slate-400">
+                            <span id="update-progress-status">Memulai...</span>
+                            <span id="update-progress-percent">0%</span>
+                        </div>
+                        <div class="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden border border-slate-700">
+                            <div id="update-progress-bar" class="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-150" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <div id="update-action-buttons" class="grid grid-cols-2 gap-2.5 pt-1">
+                        <button type="button" onclick="handlePostponeUpdate()" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition-all active:scale-95">
+                            <i class="fas fa-clock"></i> Tunda
+                        </button>
+                        <button type="button" id="btn-do-update" onclick="handleDoUpdate()" class="py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition-all active:scale-95">
+                            <i class="fas fa-download"></i> Update
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -1008,9 +1014,7 @@
                 alamat: "Palalang Waru Pamekasan",
                 tahun: "2025/2026",
                 kepsek: "Safinatul Jannah, S.Pd.",
-                logo: "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg",
-                adminUser: "admin",
-                adminPass: "123"
+                logo: "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg"
             },
             siswa: [
                 {
@@ -1044,10 +1048,135 @@
         };
 
         let historyChartInstance = null;
+        let isUpdateInProgress = false;
+
+        /* ===== SISTEM UPDATE ===== */
+        const APP_VERSION = "2.3.5";
+        const APP_VERSION_STORAGE_KEY = "tabungan_ra_app_version_v1";
+        const UPDATE_CHECK_URL = "version.json";
+        const UPDATE_CHANGELOG = [
+            "Perbaikan stabilitas aplikasi",
+            "Notifikasi update responsif",
+            "Penyempurnaan laporan cetak & export"
+        ];
+
+        function isUpdateAvailable() {
+            try {
+                var stored = localStorage.getItem(APP_VERSION_STORAGE_KEY);
+                return !stored || String(stored) !== String(APP_VERSION);
+            } catch (e) {
+                return true;
+            }
+        }
+
+        function showUpdateModalUI() {
+            var modal = document.getElementById("modal-update");
+            if (!modal) return false;
+            var badge = document.getElementById("update-version-badge");
+            if (badge) badge.textContent = "v" + APP_VERSION;
+            var list = document.getElementById("update-changelog-list");
+            if (list) {
+                list.innerHTML = UPDATE_CHANGELOG.map(function (item) {
+                    return '<li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> ' + item + "</li>";
+                }).join("");
+            }
+            var prog = document.getElementById("update-progress-section");
+            var acts = document.getElementById("update-action-buttons");
+            if (prog) {
+                prog.classList.add("hidden");
+                prog.style.display = "none";
+            }
+            if (acts) {
+                acts.classList.remove("hidden");
+                acts.style.display = "grid";
+                acts.style.pointerEvents = "auto";
+            }
+            var btn = document.getElementById("btn-do-update");
+            if (btn) {
+                btn.disabled = false;
+                btn.style.pointerEvents = "auto";
+            }
+            modal.classList.remove("hidden");
+            modal.style.display = "flex";
+            modal.style.visibility = "visible";
+            modal.style.opacity = "1";
+            modal.style.zIndex = "99999999";
+            modal.style.pointerEvents = "auto";
+            return true;
+        }
+
+        function hideUpdateModalUI() {
+            var modal = document.getElementById("modal-update");
+            if (!modal) return;
+            modal.classList.add("hidden");
+            modal.style.display = "none";
+        }
+
+        function checkAndShowUpdatePopup() {
+            if (isUpdateInProgress) return;
+            if (isUpdateAvailable()) showUpdateModalUI();
+        }
+
+        function handlePostponeUpdate() {
+            if (isUpdateInProgress) return;
+            hideUpdateModalUI();
+            if (typeof showToast === "function") {
+                showToast("Pembaruan ditunda. Akan muncul lagi saat buka aplikasi.", "info");
+            }
+        }
+
+        function handleDoUpdate() {
+            if (isUpdateInProgress) return;
+            isUpdateInProgress = true;
+            var prog = document.getElementById("update-progress-section");
+            var acts = document.getElementById("update-action-buttons");
+            var bar = document.getElementById("update-progress-bar");
+            var pct = document.getElementById("update-progress-percent");
+            var status = document.getElementById("update-progress-status");
+            var btn = document.getElementById("btn-do-update");
+            if (prog) {
+                prog.classList.remove("hidden");
+                prog.style.display = "";
+            }
+            if (acts) {
+                acts.classList.add("hidden");
+                acts.style.display = "none";
+            }
+            if (btn) btn.disabled = true;
+            var progress = 0;
+            var statuses = ["Menghubungkan...", "Mengunduh...", "Memverifikasi...", "Menerapkan...", "Selesai..."];
+            var iv = setInterval(function () {
+                progress = Math.min(100, progress + Math.floor(Math.random() * 10) + 5);
+                if (bar) bar.style.width = progress + "%";
+                if (pct) pct.textContent = progress + "%";
+                if (status) {
+                    if (progress < 25) status.textContent = statuses[0];
+                    else if (progress < 50) status.textContent = statuses[1];
+                    else if (progress < 75) status.textContent = statuses[2];
+                    else if (progress < 95) status.textContent = statuses[3];
+                    else status.textContent = statuses[4];
+                }
+                if (progress >= 100) {
+                    clearInterval(iv);
+                    try {
+                        localStorage.setItem(APP_VERSION_STORAGE_KEY, APP_VERSION);
+                    } catch (e) {}
+                    if (status) status.textContent = "Pembaruan berhasil!";
+                    if (typeof showToast === "function") {
+                        showToast("Berhasil diperbarui ke v" + APP_VERSION + "!", "success");
+                    }
+                    setTimeout(function () {
+                        hideUpdateModalUI();
+                        isUpdateInProgress = false;
+                        if (btn) btn.disabled = false;
+                    }, 500);
+                }
+            }, 70);
+        }
 
         // ON APP INITIALIZATION
-        if (document.readyState === 'loading') {
-            window.addEventListener('DOMContentLoaded', () => {
+        if (document.readyState === "loading") {
+            window.addEventListener("DOMContentLoaded", function () {
                 initApp();
             });
         } else {
@@ -1061,6 +1190,7 @@
                 if (!IS_PREVIEW) {
                     initFirebaseConnection();
                 }
+                setTimeout(checkAndShowUpdatePopup, 600);
             } catch (err) {
                 console.error("InitApp error:", err);
             }
@@ -1249,13 +1379,12 @@
                     return;
                 }
 
-                var validUser = String((state.sekolah && state.sekolah.adminUser) || "admin").trim();
-                var validPass = String((state.sekolah && state.sekolah.adminPass) || "123").trim();
-                if (user === validUser && pass === validPass) {
+                // Verify Admin Credential
+                if ((user === "admin" && (pass === "123" || pass === "edudigital")) || (user === "admin" && pass === "admin2026")) {
                     state.currentUser = {
-                        role: "admin",
+                        role: 'admin',
                         name: "Pengelola Sekolah",
-                        username: validUser
+                        username: "admin"
                     };
                     showToast("Login Admin Berhasil!", "success");
                     enterDashboard();
@@ -1324,8 +1453,6 @@
             if (document.getElementById('sekolah-tahun')) document.getElementById('sekolah-tahun').value = state.sekolah.tahun;
             if (document.getElementById('sekolah-kepsek')) document.getElementById('sekolah-kepsek').value = state.sekolah.kepsek;
             if (document.getElementById('sekolah-logo')) document.getElementById('sekolah-logo').value = state.sekolah.logo;
-            if (document.getElementById('sekolah-admin-user')) document.getElementById('sekolah-admin-user').value = state.sekolah.adminUser || "admin";
-            if (document.getElementById('sekolah-admin-pass')) document.getElementById('sekolah-admin-pass').value = state.sekolah.adminPass || "";
 
             // Tab Inputs (Menu Guru)
             if (document.getElementById('tab-sekolah-nama')) document.getElementById('tab-sekolah-nama').value = state.sekolah.nama;
@@ -1333,8 +1460,6 @@
             if (document.getElementById('tab-sekolah-tahun')) document.getElementById('tab-sekolah-tahun').value = state.sekolah.tahun;
             if (document.getElementById('tab-sekolah-kepsek')) document.getElementById('tab-sekolah-kepsek').value = state.sekolah.kepsek;
             if (document.getElementById('tab-sekolah-logo')) document.getElementById('tab-sekolah-logo').value = state.sekolah.logo;
-            if (document.getElementById('tab-sekolah-admin-user')) document.getElementById('tab-sekolah-admin-user').value = state.sekolah.adminUser || "admin";
-            if (document.getElementById('tab-sekolah-admin-pass')) document.getElementById('tab-sekolah-admin-pass').value = state.sekolah.adminPass || "";
         }
 
         function updateRoleBadgeUI() {
@@ -2260,21 +2385,11 @@
             const modalLogo = document.getElementById('sekolah-logo')?.value.trim();
             const logo = (state.currentMainTab === 'sekolah' ? tabLogo : modalLogo) || tabLogo || modalLogo;
 
-            const tabAdminUser = document.getElementById('tab-sekolah-admin-user')?.value.trim();
-            const modalAdminUser = document.getElementById('sekolah-admin-user')?.value.trim();
-            const adminUserVal = (state.currentMainTab === 'sekolah' ? tabAdminUser : modalAdminUser) || tabAdminUser || modalAdminUser || "admin";
-
-            const tabAdminPass = document.getElementById('tab-sekolah-admin-pass')?.value.trim();
-            const modalAdminPass = document.getElementById('sekolah-admin-pass')?.value.trim();
-            const adminPassVal = (state.currentMainTab === 'sekolah' ? tabAdminPass : modalAdminPass) || tabAdminPass || modalAdminPass;
-
             state.sekolah.nama = nama;
             state.sekolah.alamat = alamat;
             state.sekolah.tahun = tahun;
             state.sekolah.kepsek = kepsek;
             state.sekolah.logo = logo;
-            state.sekolah.adminUser = adminUserVal;
-            if (adminPassVal) state.sekolah.adminPass = adminPassVal;
 
             updateSchoolHeaderUI();
             showToast("Profil Sekolah Berhasil Disimpan!", "success");
@@ -2586,305 +2701,280 @@
                 `;
             }
 
-            try {
-                var logoUrl = (data.sekolah && data.sekolah.logo)
-                    ? String(data.sekolah.logo)
-                    : "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg";
-                var schoolNama = String((data.sekolah && data.sekolah.nama) || "RA AL-HIDAYAH").replace(/[<>]/g, "");
-                var schoolAlamat = String((data.sekolah && data.sekolah.alamat) || "Palalang").replace(/[<>]/g, "");
-                var schoolTahun = String((data.sekolah && data.sekolah.tahun) || "2025/2026").replace(/[<>]/g, "");
-                var schoolKepsek = String((data.sekolah && data.sekolah.kepsek) || "................................").replace(/[<>]/g, "");
-                var periodeTxt = String(data.periodeText || "").toUpperCase();
+            const logoHtml = data.sekolah.logo ? `<img src="${data.sekolah.logo}" class="logo" alt="Logo">` : '';
 
-                var bodyInner =
-                    '<table class="print-kop" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-bottom:2px solid #0f172a;margin-bottom:12px;border-collapse:collapse;">' +
-                    '<tr><td style="width:75px;vertical-align:middle;border:none;padding:4px 8px 8px 0;">' +
-                    '<img src="' + logoUrl + '" alt="Logo" width="68" height="68" style="width:68px;height:68px;object-fit:contain;display:block;background:#fff;">' +
-                    '</td><td style="text-align:center;vertical-align:middle;border:none;padding:4px 0 8px;">' +
-                    '<div style="font-size:16px;font-weight:800;text-transform:uppercase;color:#0f172a;margin:0;">' + schoolNama + '</div>' +
-                    '<div style="font-size:10px;color:#475569;margin:3px 0;">' + schoolAlamat + '</div>' +
-                    '<div style="font-size:10px;color:#475569;margin:3px 0;">Tahun Ajaran: ' + schoolTahun + '</div>' +
-                    '</td><td style="width:75px;border:none;"></td></tr></table>' +
-                    '<h3 style="font-size:13px;font-weight:800;text-align:center;margin:12px 0 4px;text-transform:uppercase;color:#0f172a;">LAPORAN REKAPITULASI TABUNGAN SISWA</h3>' +
-                    '<p style="text-align:center;font-size:10px;margin-bottom:14px;color:#334155;font-weight:600;">PERIODE: ' + periodeTxt + ' | TANGGAL CETAK: ' + datePrinted + '</p>' +
-                    contentHTML +
-                    '<div style="margin-top:28px;"><table cellpadding="0" cellspacing="0" border="0" style="width:100%;border:none;"><tr>' +
-                    '<td style="width:50%;text-align:center;vertical-align:top;border:none;">' +
-                    '<p style="margin:0;">Mengetahui,</p><p style="margin:2px 0;font-weight:bold;">Kepala Sekolah ' + schoolNama + '</p>' +
-                    '<div style="height:55px;"></div>' +
-                    '<p style="margin:0;font-weight:bold;text-decoration:underline;">' + schoolKepsek + '</p>' +
-                    '<p style="margin:2px 0;font-size:9px;color:#64748b;">NIP / ID: -</p></td>' +
-                    '<td style="width:50%;text-align:center;vertical-align:top;border:none;">' +
-                    '<p style="margin:0;">Palalang, ' + datePrinted + '</p>' +
-                    '<p style="margin:2px 0;font-weight:bold;">Bendahara Tabungan / Wali Kelas</p>' +
-                    '<div style="height:55px;"></div>' +
-                    '<p style="margin:0;font-weight:bold;text-decoration:underline;">(...............................................)</p>' +
-                    '<p style="margin:2px 0;font-size:9px;color:#64748b;">Petugas Administrator</p></td></tr></table></div>';
+            const printHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Rekap_Tabungan_${data.sekolah.nama ? data.sekolah.nama.replace(/\s+/g, '_') : 'Sekolah'}</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; color: #1e293b; font-size: 11px; line-height: 1.4; }
+                        .header { position: relative; border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 15px; text-align: center; }
+                        .logo { position: absolute; left: 10px; top: 0; width: 65px; height: 65px; object-fit: contain; }
+                        .school-name { font-size: 16px; font-weight: 800; text-transform: uppercase; margin: 0; color: #0f172a; }
+                        .school-address { font-size: 10px; margin: 3px 0; color: #475569; }
+                        .report-title { font-size: 13px; font-weight: 800; text-align: center; margin-top: 15px; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+                        .report-meta { text-align: center; font-size: 10px; margin-bottom: 15px; color: #334155; font-weight: 600; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 10px; }
+                        th, td { border: 1px solid #cbd5e1; padding: 5px 7px; text-align: left; }
+                        th { background-color: #f1f5f9; font-weight: 700; text-align: center; color: #0f172a; text-transform: uppercase; font-size: 9px; }
+                        .signature-container { width: 100%; margin-top: 30px; page-break-inside: avoid; }
+                        .signature-table { width: 100%; border: none; }
+                        .signature-table td { border: none; text-align: center; vertical-align: top; width: 50%; padding-top: 5px; font-size: 10px; }
+                        @media print {
+                            @page { margin: 12mm; size: A4; }
+                            body { margin: 0; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        ${logoHtml}
+                        <h2 class="school-name">${data.sekolah.nama || 'RA AL-HIDAYAH'}</h2>
+                        <p class="school-address">${data.sekolah.alamat || 'Palalang'}</p>
+                        <p class="school-address">Tahun Ajaran: ${data.sekolah.tahun || '2025/2026'}</p>
+                    </div>
 
-                var styleEl = document.getElementById("print-preview-style");
-                if (!styleEl) {
-                    styleEl = document.createElement("style");
-                    styleEl.id = "print-preview-style";
-                    document.head.appendChild(styleEl);
-                }
-                styleEl.textContent =
-                    "#print-preview-shell{position:fixed;inset:0;z-index:2147483646;background:#fff;overflow:auto;padding:16px;font-family:Arial,sans-serif;font-size:11px;color:#111;}" +
-                    "#print-preview-shell .no-print{position:sticky;top:0;z-index:2;display:flex;gap:8px;justify-content:flex-end;padding:8px 0 12px;background:#fff;border-bottom:1px solid #e2e8f0;margin-bottom:12px;}" +
-                    "#print-preview-shell .no-print button{padding:10px 14px;border-radius:10px;font-weight:700;font-size:12px;border:0;cursor:pointer;}" +
-                    "#print-preview-shell .btn-print{background:#e11d48;color:#fff;}" +
-                    "#print-preview-shell .btn-close{background:#e2e8f0;color:#0f172a;}" +
-                    "#print-preview-shell table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:10px;}" +
-                    "#print-preview-shell th,#print-preview-shell td{border:1px solid #cbd5e1;padding:5px 7px;}" +
-                    "#print-preview-shell th{background:#f1f5f9;font-weight:700;text-align:center;font-size:9px;}" +
-                    "#print-preview-shell .print-kop td{border:none !important;}" +
-                    "@media print{" +
-                    "body *{visibility:hidden !important;}" +
-                    "#print-preview-shell,#print-preview-shell *{visibility:visible !important;}" +
-                    "#print-preview-shell{position:absolute;left:0;top:0;width:100%;padding:12mm;}" +
-                    "#print-preview-shell .no-print{display:none !important;}" +
-                    "@page{size:A4;margin:12mm;}" +
-                    "}";
+                    <h3 class="report-title">LAPORAN REKAPITULASI TABUNGAN SISWA</h3>
+                    <p class="report-meta">PERIODE: ${data.periodeText.toUpperCase()} | TANGGAL CETAK: ${datePrinted}</p>
 
-                var shell = document.getElementById("print-preview-shell");
-                if (!shell) {
-                    shell = document.createElement("div");
-                    shell.id = "print-preview-shell";
-                    document.body.appendChild(shell);
-                }
-                shell.innerHTML =
-                    '<div class="no-print">' +
-                    '<button type="button" class="btn-close" onclick="closePrintPreview()">Tutup</button>' +
-                    '<button type="button" class="btn-print" onclick="doPrintPreview()">Cetak / Simpan PDF</button>' +
-                    "</div>" + bodyInner;
-                shell.style.display = "block";
-                showToast("Preview laporan siap.", "success");
-            } catch (err) {
-                showToast("Gagal membuat laporan.", "error");
-            }
-        }
+                    ${contentHTML}
 
-        function closePrintPreview() {
-            var shell = document.getElementById("print-preview-shell");
-            if (shell) {
-                shell.style.display = "none";
-                shell.innerHTML = "";
-            }
-        }
+                    <div class="signature-container">
+                        <table class="signature-table">
+                            <tr>
+                                <td>
+                                    <p>Mengetahui,</p>
+                                    <p style="font-weight:bold;">Kepala Sekolah ${data.sekolah.nama}</p>
+                                    <div style="height:55px;"></div>
+                                    <p style="font-weight:bold; text-decoration:underline;">${data.sekolah.kepsek || '................................'}</p>
+                                    <p style="font-size:9px; color:#64748b;">NIP / ID: -</p>
+                                </td>
+                                <td>
+                                    <p>Palalang, ${datePrinted}</p>
+                                    <p style="font-weight:bold;">Bendahara Tabungan / Wali Kelas</p>
+                                    <div style="height:55px;"></div>
+                                    <p style="font-weight:bold; text-decoration:underline;">(...............................................)</p>
+                                    <p style="font-size:9px; color:#64748b;">Petugas Administrator</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
 
-        function doPrintPreview() {
-            try {
-                setTimeout(function () {
-                    try {
-                        window.print();
-                    } catch (e) {
-                        showToast("Perangkat tidak mendukung dialog cetak.", "info");
-                    }
-                }, 120);
-            } catch (e) {
-                showToast("Gagal membuka cetak.", "error");
+                    <script>
+                        window.onload = function() {
+                            setTimeout(function() {
+                                window.print();
+                            }, 500);
+                        };
+                    <\/script>
+                </body>
+                </html>
+            `;
+
+            const win = window.open('', '_blank');
+            if (win) {
+                win.document.open();
+                win.document.write(printHTML);
+                win.document.close();
+            } else {
+                showToast("Pop-up diblokir browser, mohon izinkan pop-up!", "error");
             }
         }
 
         function saveAndDownloadExcel(wb, fileName) {
             try {
-                if (typeof XLSX === "undefined") return false;
-                var out = null;
-                try {
-                    out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-                } catch (e1) {
-                    try {
-                        var bin = XLSX.write(wb, { bookType: "xlsx", type: "binary" });
-                        var buf = new ArrayBuffer(bin.length);
-                        var view = new Uint8Array(buf);
-                        for (var i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i) & 0xFF;
-                        out = buf;
-                    } catch (e2) {
-                        return false;
-                    }
+                if (typeof XLSX !== 'undefined' && XLSX.writeFile) {
+                    XLSX.writeFile(wb, fileName);
+                    showToast("File Excel Berhasil Diunduh!", "success");
+                    return;
                 }
-                if (!out) return false;
-                var blob = new Blob([out], {
-                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                });
-                var url = URL.createObjectURL(blob);
-                var a = document.createElement("a");
-                a.href = url;
-                a.download = String(fileName || "Rekap.xlsx").replace(/[^\w.\-]+/g, "_");
-                a.style.display = "none";
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(function () {
-                    try {
+            } catch (e) {
+                console.warn("XLSX.writeFile direct download error, trying blob download:", e);
+            }
+
+            try {
+                if (typeof XLSX !== 'undefined') {
+                    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+                    function s2ab(s) {
+                        const buf = new ArrayBuffer(s.length);
+                        const view = new Uint8Array(buf);
+                        for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+                        return buf;
+                    }
+                    const blob = new Blob([s2ab(wbout)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
                         document.body.removeChild(a);
                         URL.revokeObjectURL(url);
-                    } catch (e) {}
-                }, 1500);
-                showToast("File Excel berhasil diunduh!", "success");
-                return true;
-            } catch (e) {
-                return false;
+                    }, 1000);
+                    showToast("File Excel Berhasil Diunduh!", "success");
+                    return;
+                }
+            } catch (err) {
+                console.error("Blob download error:", err);
+                showToast("Gagal mengunduh Excel: " + err.message, "error");
             }
         }
 
         function exportRekapExcel() {
-            try {
-                var data = getFilteredRekapData();
-                if (!data) {
-                    showToast("Data tidak tersedia.", "error");
-                    return;
-                }
-                if (typeof XLSX === "undefined") {
+            const data = getFilteredRekapData();
+            
+            if (typeof XLSX === 'undefined') {
+                showToast("Memuat library Excel...", "info");
+                const script = document.createElement('script');
+                script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+                script.onload = () => {
+                    exportRekapExcel();
+                };
+                script.onerror = () => {
+                    showToast("Gagal memuat library Excel, mengunduh format CSV...", "warning");
                     downloadCSVFallback(data);
-                    return;
-                }
-                try {
-                    var wb = XLSX.utils.book_new();
-                    if (data.tipe === "per_siswa" && data.selectedSiswaObj) {
-                        var s = data.selectedSiswaObj;
-                        var rows = [
-                            ["LAPORAN TABUNGAN INDIVIDUAL SISWA"],
-                            ["Sekolah", (data.sekolah && data.sekolah.nama) || "RA AL-HIDAYAH"],
-                            ["Periode", data.periodeText || ""],
-                            ["Nama", s.nama || ""],
-                            ["NIS", s.nis || ""],
-                            ["Kelas", s.kelas || ""],
-                            ["Saldo", Number(s.saldo) || 0],
-                            [],
-                            ["No", "Tanggal", "Jenis", "Keperluan", "Setor", "Tarik", "Saldo"]
-                        ];
-                        var rSaldo = 0, totSetor = 0, totTarik = 0;
-                        var sorted = (data.transaksiList || []).slice().reverse();
-                        for (var i = 0; i < sorted.length; i++) {
-                            var t = sorted[i];
-                            var nom = Number(t.nominal) || 0;
-                            if (t.tipe === "setor") {
-                                totSetor += nom;
-                                rSaldo += nom;
-                            } else {
-                                totTarik += nom;
-                                rSaldo -= nom;
-                            }
-                            rows.push([
-                                i + 1,
-                                t.tanggal || "",
-                                String(t.tipe || "").toUpperCase(),
-                                t.keperluan || "-",
-                                t.tipe === "setor" ? nom : 0,
-                                t.tipe === "tarik" ? nom : 0,
-                                rSaldo
-                            ]);
-                        }
-                        rows.push(["TOTAL", "", "", "", totSetor, totTarik, totSetor - totTarik]);
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "Tabungan");
-                        if (!saveAndDownloadExcel(wb, "Tabungan.xlsx")) downloadCSVFallback(data);
+                };
+                document.head.appendChild(script);
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+
+            if (data.tipe === 'per_siswa' && data.selectedSiswaObj) {
+                const s = data.selectedSiswaObj;
+                const rows = [
+                    ["LAPORAN TABUNGAN INDIVIDUAL SISWA"],
+                    ["Sekolah", data.sekolah.nama || 'RA AL-HIDAYAH'],
+                    ["Periode", data.periodeText],
+                    ["Nama Siswa", s.nama],
+                    ["NIS", s.nis],
+                    ["Kelas", s.kelas],
+                    ["Wali Murid", s.wali || '-'],
+                    ["No HP", s.hp || '-'],
+                    ["Saldo Saat Ini", Number(s.saldo) || 0],
+                    [],
+                    ["No", "Tanggal", "Jenis Transaksi", "Keperluan / Catatan", "Setoran (Rp)", "Penarikan (Rp)", "Saldo Berjalan (Rp)"]
+                ];
+
+                let rSaldo = 0;
+                let totSetor = 0;
+                let totTarik = 0;
+
+                const sorted = [...data.transaksiList].reverse();
+                sorted.forEach((t, idx) => {
+                    const nom = Number(t.nominal) || 0;
+                    if (t.tipe === 'setor') {
+                        totSetor += nom;
+                        rSaldo += nom;
                     } else {
-                        var rowsSiswa = [
-                            ["REKAPITULASI TABUNGAN"],
-                            ["Periode", data.periodeText || ""],
-                            [],
-                            ["No", "NIS", "Nama", "Kelas", "Setor", "Tarik", "Saldo"]
-                        ];
-                        var gSetor = 0, gTarik = 0, gSaldo = 0;
-                        var siswaList = data.siswaList || [];
-                        for (var si = 0; si < siswaList.length; si++) {
-                            var ss = siswaList[si];
-                            var sSetor = 0, sTarik = 0;
-                            var snis = String(ss.nis || "");
-                            var trx = data.transaksiList || [];
-                            for (var ti = 0; ti < trx.length; ti++) {
-                                if (String(trx[ti].nis || "") !== snis) continue;
-                                var n = Number(trx[ti].nominal) || 0;
-                                if (trx[ti].tipe === "setor") sSetor += n;
-                                if (trx[ti].tipe === "tarik") sTarik += n;
-                            }
-                            gSetor += sSetor;
-                            gTarik += sTarik;
-                            gSaldo += Number(ss.saldo) || 0;
-                            rowsSiswa.push([
-                                si + 1,
-                                snis,
-                                ss.nama || "",
-                                ss.kelas || "",
-                                sSetor,
-                                sTarik,
-                                Number(ss.saldo) || 0
-                            ]);
-                        }
-                        rowsSiswa.push(["TOTAL", "", "", "", gSetor, gTarik, gSaldo]);
-                        var rowsJurnal = [
-                            ["JURNAL TRANSAKSI"],
-                            ["No", "Tanggal", "NIS", "Nama", "Kelas", "Jenis", "Nominal", "Keperluan"]
-                        ];
-                        var trxAll = data.transaksiList || [];
-                        for (var j = 0; j < trxAll.length; j++) {
-                            var tt = trxAll[j];
-                            rowsJurnal.push([
-                                j + 1,
-                                tt.tanggal || "",
-                                tt.nis || "",
-                                tt.nama || "",
-                                tt.kelas || "",
-                                String(tt.tipe || "").toUpperCase(),
-                                Number(tt.nominal) || 0,
-                                tt.keperluan || "-"
-                            ]);
-                        }
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsSiswa), "Rekap");
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsJurnal), "Jurnal");
-                        if (!saveAndDownloadExcel(wb, "Rekap_Tabungan.xlsx")) downloadCSVFallback(data);
+                        totTarik += nom;
+                        rSaldo -= nom;
                     }
-                } catch (inner) {
-                    downloadCSVFallback(data);
-                }
-            } catch (err) {
-                try {
-                    downloadCSVFallback(getFilteredRekapData());
-                } catch (e2) {
-                    showToast("Gagal export.", "error");
-                }
+                    rows.push([
+                        idx + 1,
+                        t.tanggal,
+                        t.tipe.toUpperCase(),
+                        t.keperluan || '-',
+                        t.tipe === 'setor' ? nom : 0,
+                        t.tipe === 'tarik' ? nom : 0,
+                        rSaldo
+                    ]);
+                });
+
+                rows.push([]);
+                rows.push(["TOTAL PERIODE INI", "", "", "", totSetor, totTarik, totSetor - totTarik]);
+
+                const ws = XLSX.utils.aoa_to_sheet(rows);
+                ws['!cols'] = [{wch: 6}, {wch: 16}, {wch: 16}, {wch: 30}, {wch: 18}, {wch: 18}, {wch: 22}];
+                XLSX.utils.book_append_sheet(wb, ws, "Tabungan_Siswa");
+                
+                const safeName = (s.nama || 'Siswa').replace(/[^a-zA-Z0-9_-]/g, '_');
+                saveAndDownloadExcel(wb, `Tabungan_${safeName}_${s.nis}.xlsx`);
+            } else {
+                const rowsSiswa = [
+                    ["REKAPITULASI TABUNGAN SISWA - " + (data.sekolah.nama ? data.sekolah.nama.toUpperCase() : "SEKOLAH")],
+                    ["Periode", data.periodeText],
+                    [],
+                    ["No", "NIS", "Nama Siswa", "Kelas", "Total Setoran (Rp)", "Total Penarikan (Rp)", "Saldo Akhir (Rp)"]
+                ];
+
+                let gSetor = 0, gTarik = 0, gSaldo = 0;
+
+                data.siswaList.forEach((s, idx) => {
+                    let sSetor = 0, sTarik = 0;
+                    data.transaksiList.filter(t => t.nis === s.nis).forEach(t => {
+                        const nom = Number(t.nominal) || 0;
+                        if (t.tipe === 'setor') sSetor += nom;
+                        if (t.tipe === 'tarik') sTarik += nom;
+                    });
+                    gSetor += sSetor;
+                    gTarik += sTarik;
+                    gSaldo += Number(s.saldo) || 0;
+
+                    rowsSiswa.push([
+                        idx + 1,
+                        s.nis,
+                        s.nama,
+                        s.kelas,
+                        sSetor,
+                        sTarik,
+                        Number(s.saldo) || 0
+                    ]);
+                });
+
+                rowsSiswa.push([]);
+                rowsSiswa.push(["TOTAL KESELURUHAN", "", "", "", gSetor, gTarik, gSaldo]);
+
+                const rowsJurnal = [
+                    ["JURNAL DETAIL TRANSAKSI"],
+                    ["No", "Tanggal", "NIS", "Nama Siswa", "Kelas", "Jenis", "Nominal (Rp)", "Keperluan / Catatan"]
+                ];
+
+                data.transaksiList.forEach((t, idx) => {
+                    rowsJurnal.push([
+                        idx + 1,
+                        t.tanggal,
+                        t.nis,
+                        t.nama,
+                        t.kelas,
+                        t.tipe.toUpperCase(),
+                        Number(t.nominal) || 0,
+                        t.keperluan || '-'
+                    ]);
+                });
+
+                const ws1 = XLSX.utils.aoa_to_sheet(rowsSiswa);
+                ws1['!cols'] = [{wch: 6}, {wch: 14}, {wch: 28}, {wch: 16}, {wch: 20}, {wch: 20}, {wch: 22}];
+
+                const ws2 = XLSX.utils.aoa_to_sheet(rowsJurnal);
+                ws2['!cols'] = [{wch: 6}, {wch: 16}, {wch: 14}, {wch: 28}, {wch: 14}, {wch: 12}, {wch: 18}, {wch: 30}];
+
+                XLSX.utils.book_append_sheet(wb, ws1, "Rekap_Saldo");
+                XLSX.utils.book_append_sheet(wb, ws2, "Jurnal_Transaksi");
+                
+                saveAndDownloadExcel(wb, `Rekap_Tabungan_RA_AlHidayah_${Date.now()}.xlsx`);
             }
         }
 
         function downloadCSVFallback(data) {
-            try {
-                if (!data) data = getFilteredRekapData();
-                var lines = ["Tanggal,NIS,Nama,Kelas,Jenis,Nominal,Keperluan"];
-                var list = (data && data.transaksiList) ? data.transaksiList : [];
-                for (var i = 0; i < list.length; i++) {
-                    var t = list[i];
-                    var cells = [
-                        t.tanggal || "",
-                        t.nis || "",
-                        t.nama || "",
-                        t.kelas || "",
-                        t.tipe || "",
-                        t.nominal || 0,
-                        String(t.keperluan || "-").replace(/"/g, "'")
-                    ];
-                    lines.push(cells.map(function (v) {
-                        return '"' + String(v).replace(/"/g, '""') + '"';
-                    }).join(","));
-                }
-                var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
-                var url = URL.createObjectURL(blob);
-                var a = document.createElement("a");
-                a.href = url;
-                a.download = "Rekap_Tabungan.csv";
-                a.style.display = "none";
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(function () {
-                    try {
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                    } catch (e) {}
-                }, 1200);
-                showToast("File CSV berhasil diunduh!", "success");
-            } catch (err) {
-                showToast("Gagal mengunduh file.", "error");
-            }
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Tanggal,NIS,Nama,Kelas,Jenis,Nominal,Keperluan\n";
+            data.transaksiList.forEach(t => {
+                csvContent += `"${t.tanggal}","${t.nis}","${t.nama}","${t.kelas}","${t.tipe}","${t.nominal}","${t.keperluan || '-'}"\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Rekap_Tabungan_${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("File CSV Berhasil Diunduh!", "success");
         }
-
     </script>
 </body>
 </html>
