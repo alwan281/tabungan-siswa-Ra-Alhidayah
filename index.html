@@ -921,13 +921,13 @@
                     </div>
                     <div class="px-4 py-2 bg-emerald-50 border-b border-emerald-100 flex gap-2 shrink-0">
                         <button type="button" id="btn-excel-do-download" onclick="doExcelFileDownload()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2">
-                            <i class="fas fa-download"></i> Unduh File Sekarang
+                            <i class="fas fa-copy"></i> Salin & Unduh Excel
                         </button>
                         <button type="button" onclick="closeModal('modal-excel-download')" class="px-4 py-2.5 rounded-xl bg-slate-200 text-slate-700 font-bold text-xs">
                             Tutup
                         </button>
                     </div>
-                    <p class="px-4 pt-2 text-[10px] text-slate-500 shrink-0">Pratinjau data di bawah. Tekan <b>Unduh File Sekarang</b> untuk menyimpan ke perangkat.</p>
+                    <p class="px-4 pt-2 text-[10px] text-slate-500 shrink-0">Pratinjau data di bawah. Tekan <b>Salin & Unduh Excel</b> — data disalin ke clipboard (bisa ditempel di Excel) dan dicoba diunduh ke folder.</p>
                     <div id="excel-preview-body" class="flex-1 overflow-auto p-3 text-[11px] text-slate-800 leading-relaxed">
                         <!-- diisi JS -->
                     </div>
@@ -945,7 +945,7 @@
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <h3 class="text-sm font-extrabold text-slate-100">Pembaruan Tersedia</h3>
-                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v2.3.6</span>
+                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v2.3.8</span>
                             </div>
                             <p class="text-[11px] text-slate-400 mt-0.5">Versi baru siap dipasang</p>
                         </div>
@@ -1113,14 +1113,14 @@
         let isUpdateInProgress = false;
 
         /* ===== SISTEM UPDATE ===== */
-        const APP_VERSION = "2.3.6";
+        const APP_VERSION = "2.3.8";
         const APP_VERSION_STORAGE_KEY = "tabungan_ra_app_version_v1";
         const UPDATE_CHECK_URL = "https://raw.githubusercontent.com/alwan281/tabungan-siswa-Ra-Alhidayah/main/version.json";
         const UPDATE_CHANGELOG = [
-            "Perbaikan cetak PDF putih penuh seperti kertas",
-            "Export Excel stabil tanpa keluar aplikasi",
-            "Update otomatis tanpa bersihkan cache manual",
-            "Pengaturan username & password guru di Info Sekolah"
+            "Unduh Excel IN-APP (tanpa popup) — cegah crash WebView",
+            "Logo cetak PDF dari gambar lokal aplikasi",
+            "Modal pratinjau + salin data ke clipboard",
+            "Perbaikan stabilitas di aplikasi GitHub WebView"
         ];
         let remoteUpdateVersion = null;
         let remoteUpdateChangelog = null;
@@ -3066,7 +3066,8 @@
         }
 
         function doExcelFileDownload() {
-            /* Unduh dari modal in-app — jalur paling ringan untuk WebView */
+            /* Utama: salin ke clipboard (AMAN, tidak crash WebView).
+               Opsional: coba unduh file jika WebView mendukung. */
             try {
                 var csv = (_excelDownloadPayload && _excelDownloadPayload.csv) ? _excelDownloadPayload.csv : '';
                 var fname = (_excelDownloadPayload && _excelDownloadPayload.fileName) ? _excelDownloadPayload.fileName : ('Rekap_' + Date.now() + '.csv');
@@ -3074,44 +3075,58 @@
                     showToast("Data kosong. Buka ulang Unduh Excel.", "error");
                     return;
                 }
+                var plain = csv.replace(/^\uFEFF/, '');
 
-                // 1) Coba bridge native jika ada (beberapa WebView app)
+                // 1) Salin ke clipboard dulu (selalu aman)
+                var copied = false;
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(plain);
+                        copied = true;
+                    }
+                } catch (eClip) {}
+                if (!copied) {
+                    try {
+                        var ta = document.createElement('textarea');
+                        ta.value = plain;
+                        ta.setAttribute('readonly', '');
+                        ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        ta.setSelectionRange(0, plain.length);
+                        copied = document.execCommand('copy');
+                        document.body.removeChild(ta);
+                    } catch (eExec) {}
+                }
+
+                // 2) Coba unduh file (dibungkus ketat — error tidak boleh crash app)
                 try {
                     if (window.Android && typeof window.Android.downloadFile === 'function') {
                         window.Android.downloadFile(fname, csv);
-                        showToast("File dikirim ke sistem unduhan aplikasi.", "success");
-                        return;
+                    } else {
+                        var href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+                        var a = document.createElement('a');
+                        a.setAttribute('href', href);
+                        a.setAttribute('download', fname);
+                        a.style.display = 'none';
+                        document.body.appendChild(a);
+                        a.click();
+                        setTimeout(function () {
+                            try { if (a.parentNode) a.parentNode.removeChild(a); } catch (e) {}
+                        }, 400);
                     }
-                } catch (eA) {}
+                } catch (eDl) {
+                    console.warn('download optional failed', eDl);
+                }
 
-                // 2) Data-URI + <a download> (bekerja di banyak WebView bila DownloadListener aktif)
-                var href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-                var a = document.createElement('a');
-                a.href = href;
-                a.download = fname;
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(function () {
-                    try { if (a.parentNode) a.parentNode.removeChild(a); } catch (e) {}
-                }, 500);
-
-                // 3) Cadangan: salin ke clipboard agar user bisa tempel di Excel
-                try {
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                        navigator.clipboard.writeText(csv.replace(/^\uFEFF/, '')).then(function () {
-                            showToast("File diunduh. Data juga disalin ke clipboard.", "success");
-                        }).catch(function () {
-                            showToast("Perintah unduh dikirim. Cek folder Unduhan.", "success");
-                        });
-                        return;
-                    }
-                } catch (eC) {}
-
-                showToast("Perintah unduh dikirim. Cek notifikasi / folder Unduhan.", "success");
+                if (copied) {
+                    showToast("Data Excel disalin! Tempel di Excel/Sheets. File juga dicoba diunduh.", "success");
+                } else {
+                    showToast("Pratinjau siap. Long-press tabel untuk salin, atau cek folder Unduhan.", "info");
+                }
             } catch (err) {
                 console.error('doExcelFileDownload error:', err);
-                showToast("Unduh gagal di aplikasi ini. Gunakan Cetak PDF.", "error");
+                showToast("Gunakan pratinjau di atas. Atau Cetak PDF.", "error");
             }
         }
 
