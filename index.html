@@ -898,10 +898,10 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-3 pt-2">
-                        <button onclick="exportRekapPDF()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-rose-600/20 transition-all">
+                        <button type="button" onclick="event.preventDefault();event.stopPropagation();exportRekapPDF();" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-rose-600/20 transition-all">
                             <i class="fas fa-file-pdf"></i> Cetak / Save PDF
                         </button>
-                        <button onclick="exportRekapExcel()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all">
+                        <button type="button" onclick="event.preventDefault();event.stopPropagation();exportRekapExcel();" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all">
                             <i class="fas fa-file-excel"></i> Export Excel (.xlsx)
                         </button>
                     </div>
@@ -919,7 +919,7 @@
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <h3 class="text-sm font-extrabold text-slate-100">Pembaruan Tersedia</h3>
-                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v2.3.5</span>
+                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v2.3.6</span>
                             </div>
                             <p class="text-[11px] text-slate-400 mt-0.5">Versi baru siap dipasang</p>
                         </div>
@@ -1087,18 +1087,24 @@
         let isUpdateInProgress = false;
 
         /* ===== SISTEM UPDATE ===== */
-        const APP_VERSION = "2.3.6";
+        const APP_VERSION = "2.3.7";
         const APP_VERSION_STORAGE_KEY = "tabungan_ra_app_version_v1";
-        const UPDATE_CHECK_URL = "version.json";
+        const UPDATE_CHECK_URL = "https://raw.githubusercontent.com/alwan281/tabungan-siswa-Ra-Alhidayah/main/version.json";
         const UPDATE_CHANGELOG = [
-            "Perbaikan stabilitas aplikasi",
-            "Notifikasi update responsif",
-            "Penyempurnaan laporan cetak & export"
+            "Perbaikan cetak PDF putih penuh seperti kertas",
+            "Export Excel stabil tanpa keluar aplikasi",
+            "Update otomatis tanpa bersihkan cache manual",
+            "Pengaturan username & password guru di Info Sekolah"
         ];
+        let remoteUpdateVersion = null;
+        let remoteUpdateChangelog = null;
 
         function isUpdateAvailable() {
             try {
                 var stored = localStorage.getItem(APP_VERSION_STORAGE_KEY);
+                if (remoteUpdateVersion) {
+                    return !stored || String(stored) !== String(remoteUpdateVersion);
+                }
                 return !stored || String(stored) !== String(APP_VERSION);
             } catch (e) {
                 return true;
@@ -1109,10 +1115,12 @@
             var modal = document.getElementById("modal-update");
             if (!modal) return false;
             var badge = document.getElementById("update-version-badge");
-            if (badge) badge.textContent = "v" + APP_VERSION;
+            var verShow = remoteUpdateVersion || APP_VERSION;
+            if (badge) badge.textContent = "v" + verShow;
             var list = document.getElementById("update-changelog-list");
+            var logs = remoteUpdateChangelog || UPDATE_CHANGELOG;
             if (list) {
-                list.innerHTML = UPDATE_CHANGELOG.map(function (item) {
+                list.innerHTML = logs.map(function (item) {
                     return '<li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> ' + item + "</li>";
                 }).join("");
             }
@@ -1150,7 +1158,22 @@
 
         function checkAndShowUpdatePopup() {
             if (isUpdateInProgress) return;
-            if (isUpdateAvailable()) showUpdateModalUI();
+            // Cek versi remote dulu, lalu putuskan tampilkan popup
+            fetch(UPDATE_CHECK_URL + "?t=" + Date.now(), { cache: "no-store" })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) {
+                    if (data && data.version) {
+                        remoteUpdateVersion = String(data.version);
+                        if (Array.isArray(data.changelog) && data.changelog.length) {
+                            remoteUpdateChangelog = data.changelog;
+                        }
+                    }
+                    if (isUpdateAvailable()) showUpdateModalUI();
+                })
+                .catch(function () {
+                    // Fallback lokal jika GitHub tidak terjangkau
+                    if (isUpdateAvailable()) showUpdateModalUI();
+                });
         }
 
         function handlePostponeUpdate() {
@@ -1180,7 +1203,8 @@
             }
             if (btn) btn.disabled = true;
             var progress = 0;
-            var statuses = ["Menghubungkan...", "Mengunduh...", "Memverifikasi...", "Menerapkan...", "Selesai..."];
+            var statuses = ["Menghubungkan...", "Mengunduh...", "Memverifikasi...", "Membersihkan cache...", "Selesai..."];
+            var targetVer = remoteUpdateVersion || APP_VERSION;
             var iv = setInterval(function () {
                 progress = Math.min(100, progress + Math.floor(Math.random() * 10) + 5);
                 if (bar) bar.style.width = progress + "%";
@@ -1195,17 +1219,24 @@
                 if (progress >= 100) {
                     clearInterval(iv);
                     try {
-                        localStorage.setItem(APP_VERSION_STORAGE_KEY, APP_VERSION);
+                        localStorage.setItem(APP_VERSION_STORAGE_KEY, targetVer);
                     } catch (e) {}
-                    if (status) status.textContent = "Pembaruan berhasil!";
+                    if (status) status.textContent = "Pembaruan berhasil! Memuat ulang...";
                     if (typeof showToast === "function") {
-                        showToast("Berhasil diperbarui ke v" + APP_VERSION + "!", "success");
+                        showToast("Berhasil diperbarui ke v" + targetVer + "! Memuat halaman terbaru...", "success");
                     }
+                    // Hard reload + cache-bust agar halaman terbaru tampil tanpa bersihkan cache manual
                     setTimeout(function () {
-                        hideUpdateModalUI();
-                        isUpdateInProgress = false;
-                        if (btn) btn.disabled = false;
-                    }, 500);
+                        try {
+                            if ("caches" in window) {
+                                caches.keys().then(function (names) {
+                                    names.forEach(function (n) { caches.delete(n); });
+                                }).catch(function () {});
+                            }
+                        } catch (e) {}
+                        var url = window.location.href.split("#")[0].split("?")[0];
+                        window.location.replace(url + "?v=" + encodeURIComponent(targetVer) + "&t=" + Date.now());
+                    }, 600);
                 }
             }, 70);
         }
@@ -2643,7 +2674,7 @@
                         </table>
                     </div>
 
-                    <h4 style="margin:10px 0 5px 0; font-size:12px; font-weight:bold; text-transform:uppercase;">Rincian Mutasi Tabungan Siswa:</h4>
+                    <h4 style="margin:10px 0 5px 0; font-size:12px; font-weight:bold; text-transform:uppercase; color:#0f172a; background:#ffffff;">Rincian Mutasi Tabungan Siswa:</h4>
                     <table>
                         <thead>
                             <tr>
@@ -2715,7 +2746,7 @@
                 `).join('');
 
                 contentHTML = `
-                    <h4 style="margin:10px 0 5px 0; font-size:12px; font-weight:bold; text-transform:uppercase;">1. Rekapitulasi Saldo Tabungan Siswa:</h4>
+                    <h4 style="margin:10px 0 5px 0; font-size:12px; font-weight:bold; text-transform:uppercase; color:#0f172a; background:#ffffff;">1. Rekapitulasi Saldo Tabungan Siswa:</h4>
                     <table>
                         <thead>
                             <tr>
@@ -2741,7 +2772,7 @@
                         </tfoot>
                     </table>
 
-                    <h4 style="margin:20px 0 5px 0; font-size:12px; font-weight:bold; text-transform:uppercase;">2. Jurnal Transaksi Tabungan (${data.transaksiList.length} Transaksi):</h4>
+                    <h4 style="margin:20px 0 5px 0; font-size:12px; font-weight:bold; text-transform:uppercase; color:#0f172a; background:#ffffff;">2. Jurnal Transaksi Tabungan (${data.transaksiList.length} Transaksi):</h4>
                     <table>
                         <thead>
                             <tr>
@@ -2771,19 +2802,30 @@
                     <meta charset="utf-8">
                     <title>Rekap_Tabungan_${data.sekolah.nama ? data.sekolah.nama.replace(/\s+/g, '_') : 'Sekolah'}</title>
                     <style>
-                        * { box-sizing: border-box; }
-                        html, body {
-                            font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
-                            margin: 0;
-                            padding: 0;
+                        :root { color-scheme: only light; }
+                        * { box-sizing: border-box; margin: 0; padding: 0; }
+                        html {
                             background: #ffffff !important;
-                            color: #1e293b;
+                            color-scheme: only light;
+                        }
+                        body {
+                            font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+                            margin: 0 !important;
+                            padding: 16px !important;
+                            background: #ffffff !important;
+                            color: #1e293b !important;
                             font-size: 11px;
                             line-height: 1.45;
-                            -webkit-print-color-adjust: exact;
-                            print-color-adjust: exact;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                            min-height: 100vh;
                         }
-                        body { margin: 18px; background: #ffffff !important; }
+                        .page-wrap {
+                            background: #ffffff !important;
+                            color: #1e293b !important;
+                            padding: 4px;
+                            min-height: 100%;
+                        }
                         .header {
                             position: relative;
                             border-bottom: 2.5px solid #0f172a;
@@ -2791,7 +2833,7 @@
                             margin-bottom: 16px;
                             text-align: center;
                             min-height: 72px;
-                            background: #ffffff;
+                            background: #ffffff !important;
                         }
                         .logo {
                             position: absolute;
@@ -2801,28 +2843,30 @@
                             height: 68px;
                             object-fit: contain;
                             object-position: center;
-                            background: #ffffff;
+                            background: #ffffff !important;
                         }
-                        .school-name { font-size: 16px; font-weight: 800; text-transform: uppercase; margin: 0 0 2px 0; color: #0f172a; letter-spacing: 0.3px; }
-                        .school-address { font-size: 10px; margin: 2px 0; color: #475569; }
-                        .report-title { font-size: 13px; font-weight: 800; text-align: center; margin: 14px 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px; color: #0f172a; }
-                        .report-meta { text-align: center; font-size: 10px; margin-bottom: 14px; color: #334155; font-weight: 600; }
-                        table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 10px; background: #ffffff; }
-                        th, td { border: 1px solid #94a3b8; padding: 5px 7px; text-align: left; background: #ffffff; }
-                        th { background-color: #f1f5f9 !important; font-weight: 700; text-align: center; color: #0f172a; text-transform: uppercase; font-size: 9px; }
-                        .signature-container { width: 100%; margin-top: 28px; page-break-inside: avoid; background: #ffffff; }
-                        .signature-table { width: 100%; border: none; background: #ffffff; }
-                        .signature-table td { border: none; text-align: center; vertical-align: top; width: 50%; padding-top: 5px; font-size: 10px; background: #ffffff; }
+                        .school-name { font-size: 16px; font-weight: 800; text-transform: uppercase; margin: 0 0 2px 0; color: #0f172a !important; letter-spacing: 0.3px; background: transparent !important; }
+                        .school-address { font-size: 10px; margin: 2px 0; color: #475569 !important; background: transparent !important; }
+                        .report-title { font-size: 13px; font-weight: 800; text-align: center; margin: 14px 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px; color: #0f172a !important; background: #ffffff !important; }
+                        .report-meta { text-align: center; font-size: 10px; margin-bottom: 14px; color: #334155 !important; font-weight: 600; background: #ffffff !important; }
+                        h4 { color: #0f172a !important; background: #ffffff !important; margin: 12px 0 6px 0; font-size: 12px; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 10px; background: #ffffff !important; }
+                        th, td { border: 1px solid #94a3b8; padding: 5px 7px; text-align: left; background: #ffffff !important; color: #1e293b !important; }
+                        th { background-color: #f1f5f9 !important; font-weight: 700; text-align: center; color: #0f172a !important; text-transform: uppercase; font-size: 9px; }
+                        .signature-container { width: 100%; margin-top: 28px; page-break-inside: avoid; background: #ffffff !important; }
+                        .signature-table { width: 100%; border: none; background: #ffffff !important; }
+                        .signature-table td { border: none !important; text-align: center; vertical-align: top; width: 50%; padding-top: 5px; font-size: 10px; background: #ffffff !important; color: #1e293b !important; }
                         @media print {
-                            @page { margin: 12mm; size: A4; }
-                            html, body { margin: 0; padding: 0; background: #ffffff !important; }
-                            body { margin: 0; background: #ffffff !important; }
-                            .header, table, th, td, .signature-container { background: #ffffff !important; }
+                            @page { margin: 12mm; size: A4; background: #ffffff; }
+                            html, body { margin: 0 !important; padding: 8px !important; background: #ffffff !important; color: #1e293b !important; }
+                            .page-wrap, .header, table, th, td, .signature-container, h4, .report-title, .report-meta { background: #ffffff !important; }
                             th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                         }
                     </style>
+                    <meta name="color-scheme" content="only light">
                 </head>
-                <body>
+                <body style="background:#ffffff!important;color:#1e293b!important;">
+                    <div class="page-wrap" style="background:#ffffff!important;color:#1e293b!important;">
                     <div class="header">
                         ${logoHtml}
                         <h2 class="school-name">${data.sekolah.nama || 'RA AL-HIDAYAH'}</h2>
@@ -2855,12 +2899,18 @@
                             </tr>
                         </table>
                     </div>
+                    </div>
 
                     <script>
                         window.onload = function() {
+                            try {
+                                document.documentElement.style.background = '#ffffff';
+                                document.body.style.background = '#ffffff';
+                                document.body.style.color = '#1e293b';
+                            } catch(e) {}
                             setTimeout(function() {
                                 window.print();
-                            }, 500);
+                            }, 400);
                         };
                     <\/script>
                 </body>
@@ -2878,54 +2928,79 @@
         }
 
         function saveAndDownloadExcel(wb, fileName) {
-            // Metode Blob stabil — tidak menyebabkan reload/navigasi di Blogger & browser modern
+            // Unduh Excel stabil di mobile/Blogger — multi strategi, tanpa navigasi/reload
+            if (typeof XLSX === 'undefined') {
+                showToast("Library Excel belum siap. Coba lagi sebentar.", "error");
+                return;
+            }
+            var fname = fileName || ('Rekap_Tabungan_' + Date.now() + '.xlsx');
             try {
-                if (typeof XLSX === 'undefined') {
-                    showToast("Library Excel belum siap. Coba lagi sebentar.", "error");
+                // Strategi 1: ArrayBuffer + Blob + download attribute (paling stabil)
+                var wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                var blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                    window.navigator.msSaveOrOpenBlob(blob, fname);
+                    showToast("File Excel Berhasil Diunduh!", "success");
                     return;
                 }
-                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.style.cssText = 'display:none;position:fixed;left:-9999px;';
                 a.href = url;
-                a.download = fileName || ('Rekap_Tabungan_' + Date.now() + '.xlsx');
-                a.setAttribute('download', a.download);
+                a.download = fname;
+                a.setAttribute('download', fname);
+                a.setAttribute('target', '_blank');
+                a.rel = 'noopener';
                 document.body.appendChild(a);
-                a.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+                // Jangan pakai a.click() langsung di beberapa WebView; gunakan MouseEvent
+                var evt = document.createEvent ? document.createEvent('MouseEvents') : null;
+                if (evt && evt.initMouseEvent) {
+                    evt.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                    a.dispatchEvent(evt);
+                } else {
+                    a.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+                }
                 setTimeout(function () {
                     try {
                         if (a.parentNode) document.body.removeChild(a);
                         URL.revokeObjectURL(url);
                     } catch (e) {}
-                }, 1500);
+                }, 2500);
                 showToast("File Excel Berhasil Diunduh!", "success");
             } catch (err) {
-                console.error("Excel download error:", err);
+                console.error("Excel primary download error:", err);
+                // Strategi 2: base64 data URI (bekerja di banyak mobile browser)
                 try {
-                    const wbout2 = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-                    function s2ab(s) {
-                        const buf = new ArrayBuffer(s.length);
-                        const view = new Uint8Array(buf);
-                        for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-                        return buf;
-                    }
-                    const blob2 = new Blob([s2ab(wbout2)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                    const url2 = URL.createObjectURL(blob2);
-                    const a2 = document.createElement('a');
-                    a2.style.display = 'none';
-                    a2.href = url2;
-                    a2.download = fileName || ('Rekap_Tabungan_' + Date.now() + '.xlsx');
+                    var wboutB64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+                    var dataUri = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + wboutB64;
+                    var a2 = document.createElement('a');
+                    a2.style.cssText = 'display:none;position:fixed;left:-9999px;';
+                    a2.href = dataUri;
+                    a2.download = fname;
+                    a2.setAttribute('download', fname);
                     document.body.appendChild(a2);
                     a2.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
                     setTimeout(function () {
-                        try { if (a2.parentNode) document.body.removeChild(a2); URL.revokeObjectURL(url2); } catch (e) {}
-                    }, 1500);
+                        try { if (a2.parentNode) document.body.removeChild(a2); } catch (e) {}
+                    }, 2500);
                     showToast("File Excel Berhasil Diunduh!", "success");
                 } catch (err2) {
-                    console.error("Excel fallback error:", err2);
-                    showToast("Gagal mengunduh Excel. Coba gunakan mode Cetak PDF.", "error");
+                    console.error("Excel base64 fallback error:", err2);
+                    // Strategi 3: buka di tab baru sebagai last resort
+                    try {
+                        var wbout3 = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                        var blob3 = new Blob([wbout3], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                        var url3 = URL.createObjectURL(blob3);
+                        var w = window.open(url3, '_blank');
+                        if (w) {
+                            showToast("File Excel dibuka di tab baru. Simpan dari sana.", "info");
+                        } else {
+                            showToast("Gagal unduh. Izinkan pop-up atau gunakan Cetak PDF.", "error");
+                        }
+                    } catch (err3) {
+                        console.error("Excel last resort error:", err3);
+                        showToast("Gagal mengunduh Excel. Silakan gunakan Cetak PDF.", "error");
+                    }
                 }
             }
         }
