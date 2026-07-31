@@ -1,10 +1,8 @@
 {
-  "version": "2.3.7",
+  "version": "2.3.8",
   "changelog": [
-    "Perbaikan keamanan data",
-    "Perbaikan tombol login dan keluar",
-    "Perbaikan riwayat siswa"
-  ],
-  "downloadUrl": "",
-  "force": false
+    "Perbaikan cetak PDF putih penuh seperti kertas",
+    "Export Excel stabil tanpa keluar aplikasi",
+    "Update otomatis tanpa bersihkan cache manual"
+  ]
 }
