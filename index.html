@@ -3002,36 +3002,51 @@
                     </div>
 
                     <script>
-                        window.onload = function() {
+                        function doPrintNow() {
                             try {
                                 document.documentElement.style.background = '#ffffff';
                                 document.body.style.background = '#ffffff';
                                 document.body.style.color = '#1e293b';
                             } catch(e) {}
-                            setTimeout(function() {
-                                try { window.focus(); window.print(); } catch(e2) {}
-                            }, 400);
+                            try { window.focus(); } catch(e2) {}
+                            try { window.print(); } catch(e3) {}
+                        }
+                        window.onload = function() {
+                            doPrintNow();
+                            setTimeout(doPrintNow, 300);
+                            setTimeout(doPrintNow, 800);
                         };
+                        if (document.readyState === 'complete') {
+                            setTimeout(doPrintNow, 200);
+                        }
                     <\/script>
                 </body>
                 </html>
             `;
 
-            /* Cetak langsung lewat jendela pratinjau + printer (seperti semula) */
+            /* Langsung buka dialog printer sistem (bukan hanya preview) */
             try {
                 const win = window.open('', '_blank');
                 if (win) {
                     win.document.open();
                     win.document.write(printHTML);
                     win.document.close();
+                    try {
+                        win.onafterprint = function () {
+                            try { win.close(); } catch (e) {}
+                        };
+                    } catch (eA) {}
+                    setTimeout(function () {
+                        try { win.focus(); win.print(); } catch (eP) {}
+                    }, 500);
                     try { closeModal('modal-rekap'); } catch (e) {}
-                    showToast("Pratinjau cetak dibuka...", "success");
+                    showToast("Membuka dialog printer...", "success");
                 } else {
-                    showToast("Izinkan pop-up untuk mencetak.", "error");
+                    showToast("Izinkan pop-up untuk mencetak ke printer.", "error");
                 }
             } catch (err) {
                 console.error('exportRekapPDF error:', err);
-                showToast("Gagal membuka cetak.", "error");
+                showToast("Gagal membuka printer.", "error");
             }
         }
 
@@ -3135,41 +3150,31 @@
                 (trxTr || '<tr><td colspan="8">Kosong</td></tr>') + '</table>';
         }
 
-        function downloadBlobFile(blob, fileName) {
-            /* Beberapa jalur unduhan agar App Inventor WebViewer menangkap file */
-            var ok = false;
-
-            // 1) Blob URL + <a download>
-            try {
-                var url = URL.createObjectURL(blob);
-                var a = document.createElement('a');
-                a.href = url;
-                a.setAttribute('download', fileName);
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
-                ok = true;
-                setTimeout(function () {
-                    try { document.body.removeChild(a); } catch (e) {}
-                    try { URL.revokeObjectURL(url); } catch (e2) {}
-                }, 3000);
-            } catch (e1) {}
-
-            // 2) msSaveOrOpenBlob (beberapa WebView)
-            if (!ok) {
-                try {
-                    if (navigator.msSaveOrOpenBlob) {
-                        navigator.msSaveOrOpenBlob(blob, fileName);
-                        ok = true;
-                    }
-                } catch (e2) {}
+        function buildExcelBlob(data, fileName) {
+            if (typeof XLSX !== 'undefined') {
+                var sheets = buildExcelAoaSheets(data);
+                var wb = XLSX.utils.book_new();
+                sheets.forEach(function (sh) {
+                    var ws = XLSX.utils.aoa_to_sheet(sh.aoa);
+                    XLSX.utils.book_append_sheet(wb, ws, sh.name.substring(0, 31));
+                });
+                var out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                return {
+                    blob: new Blob([out], {
+                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    }),
+                    fileName: fileName
+                };
             }
-
-            return ok;
+            var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body>' +
+                buildExcelPreviewHtml(data) + '</body></html>';
+            return {
+                blob: new Blob(['\uFEFF' + html], { type: 'application/vnd.ms-excel' }),
+                fileName: String(fileName).replace(/\.xlsx$/i, '.xls')
+            };
         }
 
         function exportRekapExcel() {
-            /* Langsung unduh file — tanpa langkah salin */
             try {
                 var data = getFilteredRekapData();
                 _excelLastData = data;
@@ -3181,7 +3186,6 @@
                 var preview = document.getElementById('excel-preview-body');
                 if (preview) preview.innerHTML = buildExcelPreviewHtml(data);
                 try { closeModal('modal-rekap'); } catch (e) {}
-                /* Unduh langsung; modal hanya jika user ingin lihat pratinjau lagi */
                 doExcelFileDownload();
             } catch (err) {
                 console.error('exportRekapExcel error:', err);
@@ -3190,54 +3194,93 @@
         }
 
         function doExcelFileDownload() {
-            /* Buat file .xlsx asli dan picu unduhan ke Berkas */
+            /*
+             * XLSX.writeFile di App Inventor WebView sering HANYA menampilkan toast
+             * tanpa file nyata. Urutan andal:
+             *  1) navigator.share({ files }) → menu sistem Android (Files/Drive)
+             *  2) <a download> Blob
+             *  3) window.open(blobUrl) cadangan
+             */
             try {
                 var data = _excelLastData || getFilteredRekapData();
                 var fileName = _excelLastName || ('Rekap_Tabungan_' + Date.now() + '.xlsx');
+                var built = buildExcelBlob(data, fileName);
+                var blob = built.blob;
+                fileName = built.fileName;
+                var mime = blob.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-                if (typeof XLSX !== 'undefined') {
-                    var sheets = buildExcelAoaSheets(data);
-                    var wb = XLSX.utils.book_new();
-                    sheets.forEach(function (sh) {
-                        var ws = XLSX.utils.aoa_to_sheet(sh.aoa);
-                        XLSX.utils.book_append_sheet(wb, ws, sh.name.substring(0, 31));
-                    });
+                try {
+                    if (typeof navigator.share === 'function') {
+                        var fileObj = null;
+                        try {
+                            fileObj = new File([blob], fileName, { type: mime });
+                        } catch (eF) { fileObj = null; }
 
-                    /* Coba API resmi SheetJS dulu */
-                    try {
-                        if (typeof XLSX.writeFile === 'function') {
-                            XLSX.writeFile(wb, fileName);
-                            showToast("File Excel disimpan: " + fileName, "success");
-                            return;
+                        if (fileObj) {
+                            var canFiles = true;
+                            try {
+                                if (navigator.canShare && !navigator.canShare({ files: [fileObj] })) {
+                                    canFiles = false;
+                                }
+                            } catch (eC) {}
+
+                            if (canFiles) {
+                                navigator.share({
+                                    files: [fileObj],
+                                    title: fileName,
+                                    text: 'Rekap Tabungan Siswa'
+                                }).then(function () {
+                                    showToast("Pilih Files / Drive / Excel untuk menyimpan file.", "success");
+                                }).catch(function (err) {
+                                    if (err && err.name === 'AbortError') {
+                                        showToast("Dibatalkan.", "info");
+                                        return;
+                                    }
+                                    triggerAnchorDownload(blob, fileName);
+                                });
+                                return;
+                            }
                         }
-                    } catch (eWrite) {}
-
-                    var out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                    var blob = new Blob([out], {
-                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                    });
-                    var started = downloadBlobFile(blob, fileName);
-                    if (started) {
-                        showToast("Mengunduh " + fileName + " — cek folder Unduhan/Berkas.", "success");
-                    } else {
-                        showToast("WebView memblokir unduhan. Aktifkan Download di App Inventor.", "error");
                     }
-                    return;
-                }
+                } catch (eShare) {}
 
-                var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body>';
-                html += (document.getElementById('excel-preview-body') && document.getElementById('excel-preview-body').innerHTML) || '';
-                html += '</body></html>';
-                var blob2 = new Blob(['\uFEFF' + html], { type: 'application/vnd.ms-excel' });
-                var name2 = fileName.replace(/\.xlsx$/i, '.xls');
-                if (downloadBlobFile(blob2, name2)) {
-                    showToast("Mengunduh " + name2 + " — cek folder Unduhan/Berkas.", "success");
-                } else {
-                    showToast("Gagal unduh. Aktifkan Download di WebViewer App Inventor.", "error");
-                }
+                triggerAnchorDownload(blob, fileName);
             } catch (err) {
                 console.error('doExcelFileDownload error:', err);
                 showToast("Gagal unduh Excel. Coba Cetak PDF.", "error");
+            }
+        }
+
+        function triggerAnchorDownload(blob, fileName) {
+            try {
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(function () {
+                    try { document.body.removeChild(a); } catch (e) {}
+                }, 1500);
+
+                setTimeout(function () {
+                    try {
+                        var w = window.open(url, '_blank');
+                        if (w) {
+                            showToast("File dibuka. Menu ⋮ → Unduh/Simpan jika perlu.", "success");
+                        } else {
+                            showToast("Cek folder Unduhan, atau izinkan pop-up.", "info");
+                        }
+                    } catch (e2) {
+                        showToast("Perintah unduh dikirim. Cek folder Unduhan.", "info");
+                    }
+                    setTimeout(function () {
+                        try { URL.revokeObjectURL(url); } catch (e3) {}
+                    }, 60000);
+                }, 500);
+            } catch (err) {
+                showToast("Gagal memulai unduhan file.", "error");
             }
         }
 
