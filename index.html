@@ -474,6 +474,21 @@
                                             <button type="button" onclick="setLogoPreset('akademik')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Akademik</button>
                                         </div>
                                     </div>
+
+                                    <div class="pt-2 border-t border-slate-800 space-y-2">
+                                        <label class="text-[11px] font-semibold text-slate-400 block">🔐 Kata Sandi Login Guru / Admin</label>
+                                        <p class="text-[10px] text-slate-500">Ubah username dan kata sandi login Guru. Tersimpan di Firebase.</p>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label class="text-[10px] text-slate-500 block mb-1">Username Guru</label>
+                                                <input type="text" id="tab-sekolah-admin-user" placeholder="admin" class="custom-input w-full px-3 py-2.5 rounded-xl text-xs font-medium">
+                                            </div>
+                                            <div>
+                                                <label class="text-[10px] text-slate-500 block mb-1">Kata Sandi Baru</label>
+                                                <input type="text" id="tab-sekolah-admin-pass" placeholder="Kata sandi baru" class="custom-input w-full px-3 py-2.5 rounded-xl text-xs font-medium">
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <button onclick="saveProfilSekolah()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl text-xs shadow-lg shadow-blue-600/30 transition-all uppercase tracking-wider flex items-center justify-center gap-2">
@@ -546,6 +561,20 @@
                                 <button type="button" onclick="setLogoPreset('sd')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">SD Negeri</button>
                                 <button type="button" onclick="setLogoPreset('buku')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Buku</button>
                                 <button type="button" onclick="setLogoPreset('akademik')" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Akademik</button>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-slate-800 space-y-2">
+                            <label class="text-[11px] font-semibold text-slate-400 block">🔐 Kata Sandi Login Guru / Admin</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-[10px] text-slate-500 block mb-1">Username Guru</label>
+                                    <input type="text" id="sekolah-admin-user" placeholder="admin" class="custom-input w-full px-3 py-2.5 rounded-xl text-xs font-medium">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-slate-500 block mb-1">Kata Sandi Baru</label>
+                                    <input type="text" id="sekolah-admin-pass" placeholder="Kata sandi baru" class="custom-input w-full px-3 py-2.5 rounded-xl text-xs font-medium">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -880,63 +909,6 @@
                 </div>
             </div>
 
-            <!-- MODAL: PEMBARUAN APLIKASI -->
-            <div id="modal-update" class="fixed inset-0 z-[99999999] bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
-                <div class="glass-card w-full max-w-sm rounded-3xl p-5 border border-slate-700/80 shadow-2xl space-y-4 relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500"></div>
-                    <div class="flex items-center gap-3 pt-1">
-                        <div class="w-12 h-12 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center shrink-0">
-                            <i class="fas fa-cloud-arrow-down text-blue-400 text-lg"></i>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <h3 class="text-sm font-extrabold text-slate-100">Pembaruan Tersedia</h3>
-                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v2.3.5</span>
-                            </div>
-                            <p class="text-[11px] text-slate-400 mt-0.5">Versi baru siap dipasang</p>
-                        </div>
-                    </div>
-                    <ul id="update-changelog-list" class="text-[11px] text-slate-300 space-y-1.5 bg-slate-900/60 rounded-xl p-3 border border-slate-800">
-                        <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Perbaikan cetak PDF & export Excel (anti-crash APK)</li>
-                        <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Notifikasi update responsif</li>
-                        <li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> Stabilitas aplikasi ditingkatkan</li>
-                    </ul>
-                    <div id="update-progress-section" class="hidden space-y-2">
-                        <div class="flex justify-between text-[10px] text-slate-400"><span id="update-progress-status">Memulai...</span><span id="update-progress-percent">0%</span></div>
-                        <div class="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden border border-slate-700">
-                            <div id="update-progress-bar" class="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-150" style="width:0%"></div>
-                        </div>
-                    </div>
-                    <div id="update-action-buttons" class="grid grid-cols-2 gap-2.5 pt-1">
-                        <button type="button" onclick="handlePostponeUpdate()" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition-all active:scale-95">
-                            <i class="fas fa-clock"></i> Tunda
-                        </button>
-                        <button type="button" id="btn-do-update" onclick="handleDoUpdate()" class="py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition-all active:scale-95">
-                            <i class="fas fa-download"></i> Update
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MODAL: KONFIRMASI -->
-            <div id="modal-confirm" class="fixed inset-0 z-[999999999] bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-                <div class="glass-card w-full max-w-xs rounded-2xl p-5 border border-slate-700/80 shadow-2xl space-y-4">
-                    <div class="flex items-start gap-3">
-                        <div id="confirm-icon-box" class="w-11 h-11 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center shrink-0">
-                            <i id="confirm-icon" class="fas fa-trash-can text-rose-400 text-base"></i>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <h3 id="confirm-title" class="text-sm font-extrabold text-slate-100">Konfirmasi</h3>
-                            <p id="confirm-message" class="text-[11px] text-slate-400 mt-1 leading-relaxed">Apakah Anda yakin?</p>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <button type="button" id="confirm-btn-cancel" onclick="handleConfirmCancel()" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition-all active:scale-95">Batal</button>
-                        <button type="button" id="confirm-btn-ok" onclick="handleConfirmOk()" class="py-3 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95">Hapus</button>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 
@@ -1036,7 +1008,9 @@
                 alamat: "Palalang Waru Pamekasan",
                 tahun: "2025/2026",
                 kepsek: "Safinatul Jannah, S.Pd.",
-                logo: "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg"
+                logo: "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg",
+                adminUser: "admin",
+                adminPass: "123"
             },
             siswa: [
                 {
@@ -1070,142 +1044,12 @@
         };
 
         let historyChartInstance = null;
-        let isUpdateInProgress = false;
-        let confirmCallback = null;
-
-        /* ===== SISTEM UPDATE ===== */
-        const APP_VERSION = "2.3.5";
-        const APP_VERSION_STORAGE_KEY = "tabungan_ra_app_version_v1";
-        const UPDATE_CHECK_URL = "version.json"; // isi URL raw version.json GitHub jika perlu
-        const UPDATE_CHANGELOG = [
-            "Perbaikan cetak PDF & export Excel (anti-crash APK)",
-            "Notifikasi update responsif",
-            "Stabilitas aplikasi ditingkatkan",
-            "Logo berwarna pada laporan cetak"
-        ];
-
-        function isUpdateAvailable() {
-            try {
-                var stored = localStorage.getItem(APP_VERSION_STORAGE_KEY);
-                return !stored || String(stored) !== String(APP_VERSION);
-            } catch (e) { return true; }
-        }
-
-        function showUpdateModalUI() {
-            var modal = document.getElementById('modal-update');
-            if (!modal) return;
-            var badge = document.getElementById('update-version-badge');
-            if (badge) badge.textContent = 'v' + APP_VERSION;
-            var list = document.getElementById('update-changelog-list');
-            if (list) {
-                list.innerHTML = UPDATE_CHANGELOG.map(function(item) {
-                    return '<li class="flex gap-2"><span class="text-emerald-400 shrink-0">•</span> ' + item + '</li>';
-                }).join('');
-            }
-            var prog = document.getElementById('update-progress-section');
-            var acts = document.getElementById('update-action-buttons');
-            if (prog) { prog.classList.add('hidden'); prog.style.display = 'none'; }
-            if (acts) { acts.classList.remove('hidden'); acts.style.display = 'grid'; acts.style.pointerEvents = 'auto'; }
-            var btn = document.getElementById('btn-do-update');
-            if (btn) { btn.disabled = false; btn.style.pointerEvents = 'auto'; }
-            modal.classList.remove('hidden');
-            modal.style.display = 'flex';
-            modal.style.visibility = 'visible';
-            modal.style.opacity = '1';
-            modal.style.zIndex = '99999999';
-            modal.style.pointerEvents = 'auto';
-        }
-
-        function hideUpdateModalUI() {
-            var modal = document.getElementById('modal-update');
-            if (!modal) return;
-            modal.classList.add('hidden');
-            modal.style.display = 'none';
-        }
-
-        function checkAndShowUpdatePopup() {
-            if (isUpdateInProgress) return;
-            if (isUpdateAvailable()) showUpdateModalUI();
-        }
-
-        function handlePostponeUpdate() {
-            if (isUpdateInProgress) return;
-            hideUpdateModalUI();
-            if (typeof showToast === 'function') showToast("Pembaruan ditunda. Akan muncul lagi saat buka aplikasi.", "info");
-        }
-
-        function handleDoUpdate() {
-            if (isUpdateInProgress) return;
-            isUpdateInProgress = true;
-            var prog = document.getElementById('update-progress-section');
-            var acts = document.getElementById('update-action-buttons');
-            var bar = document.getElementById('update-progress-bar');
-            var pct = document.getElementById('update-progress-percent');
-            var status = document.getElementById('update-progress-status');
-            var btn = document.getElementById('btn-do-update');
-            if (prog) { prog.classList.remove('hidden'); prog.style.display = ''; }
-            if (acts) { acts.classList.add('hidden'); acts.style.display = 'none'; }
-            if (btn) btn.disabled = true;
-            var progress = 0;
-            var statuses = ["Menghubungkan...", "Mengunduh...", "Memverifikasi...", "Menerapkan...", "Selesai..."];
-            var iv = setInterval(function() {
-                progress = Math.min(100, progress + Math.floor(Math.random() * 10) + 5);
-                if (bar) bar.style.width = progress + '%';
-                if (pct) pct.textContent = progress + '%';
-                if (status) {
-                    if (progress < 25) status.textContent = statuses[0];
-                    else if (progress < 50) status.textContent = statuses[1];
-                    else if (progress < 75) status.textContent = statuses[2];
-                    else if (progress < 95) status.textContent = statuses[3];
-                    else status.textContent = statuses[4];
-                }
-                if (progress >= 100) {
-                    clearInterval(iv);
-                    try { localStorage.setItem(APP_VERSION_STORAGE_KEY, APP_VERSION); } catch (e) {}
-                    if (status) status.textContent = "Pembaruan berhasil!";
-                    if (typeof showToast === 'function') showToast("Berhasil diperbarui ke v" + APP_VERSION + "!", "success");
-                    setTimeout(function() {
-                        hideUpdateModalUI();
-                        isUpdateInProgress = false;
-                        if (btn) btn.disabled = false;
-                    }, 500);
-                }
-            }, 70);
-        }
-
-        /* ===== KONFIRMASI MODERN ===== */
-        function showConfirmModal(opts) {
-            opts = opts || {};
-            var modal = document.getElementById('modal-confirm');
-            if (!modal) return;
-            var t = document.getElementById('confirm-title');
-            var m = document.getElementById('confirm-message');
-            var ok = document.getElementById('confirm-btn-ok');
-            var cancel = document.getElementById('confirm-btn-cancel');
-            if (t) t.textContent = opts.title || 'Konfirmasi';
-            if (m) m.textContent = opts.message || 'Yakin?';
-            if (ok) ok.textContent = opts.okText || 'OK';
-            if (cancel) cancel.textContent = opts.cancelText || 'Batal';
-            confirmCallback = typeof opts.onConfirm === 'function' ? opts.onConfirm : null;
-            modal.classList.remove('hidden');
-            modal.style.display = 'flex';
-            modal.style.visibility = 'visible';
-        }
-        function hideConfirmModal() {
-            var modal = document.getElementById('modal-confirm');
-            if (modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
-            confirmCallback = null;
-        }
-        function handleConfirmCancel() { hideConfirmModal(); }
-        function handleConfirmOk() {
-            var cb = confirmCallback;
-            hideConfirmModal();
-            if (typeof cb === 'function') { try { cb(); } catch (e) {} }
-        }
 
         // ON APP INITIALIZATION
         if (document.readyState === 'loading') {
-            window.addEventListener('DOMContentLoaded', function() { initApp(); });
+            window.addEventListener('DOMContentLoaded', () => {
+                initApp();
+            });
         } else {
             initApp();
         }
@@ -1217,7 +1061,6 @@
                 if (!IS_PREVIEW) {
                     initFirebaseConnection();
                 }
-                setTimeout(checkAndShowUpdatePopup, 600);
             } catch (err) {
                 console.error("InitApp error:", err);
             }
@@ -1406,12 +1249,13 @@
                     return;
                 }
 
-                // Verify Admin Credential
-                if ((user === "admin" && (pass === "123" || pass === "edudigital")) || (user === "admin" && pass === "admin2026")) {
+                var validUser = String((state.sekolah && state.sekolah.adminUser) || "admin").trim();
+                var validPass = String((state.sekolah && state.sekolah.adminPass) || "123").trim();
+                if (user === validUser && pass === validPass) {
                     state.currentUser = {
-                        role: 'admin',
+                        role: "admin",
                         name: "Pengelola Sekolah",
-                        username: "admin"
+                        username: validUser
                     };
                     showToast("Login Admin Berhasil!", "success");
                     enterDashboard();
@@ -1433,29 +1277,24 @@
         }
 
         function handleLogout() {
-            showConfirmModal({
-                title: 'Keluar Aplikasi',
-                message: 'Yakin ingin keluar? Anda perlu login ulang untuk mengakses dashboard.',
-                okText: 'Keluar',
-                cancelText: 'Batal',
-                onConfirm: function() {
-                    state.currentUser = null;
-                    var vd = document.getElementById('view-dashboard');
-                    var vl = document.getElementById('view-login');
-                    if (vd) vd.classList.add('hidden');
-                    if (vl) vl.classList.remove('hidden');
-                    var siswaNis = document.getElementById('siswa-nis');
-                    var siswaPass = document.getElementById('siswa-pass');
-                    var adminUser = document.getElementById('admin-user');
-                    var adminPass = document.getElementById('admin-pass');
-                    if (siswaNis) siswaNis.value = '';
-                    if (siswaPass) siswaPass.value = '';
-                    if (adminUser) adminUser.value = '';
-                    if (adminPass) adminPass.value = '';
-                    state.currentMainTab = "tabungan";
-                    showToast("Anda telah keluar. Silakan masukkan ulang akun.", "info");
-                }
-            });
+            state.currentUser = null;
+            document.getElementById('view-dashboard').classList.add('hidden');
+            document.getElementById('view-login').classList.remove('hidden');
+            
+            // Clear inputs manually so credentials are required again
+            const siswaNis = document.getElementById('siswa-nis');
+            const siswaPass = document.getElementById('siswa-pass');
+            const adminUser = document.getElementById('admin-user');
+            const adminPass = document.getElementById('admin-pass');
+            
+            if (siswaNis) siswaNis.value = '';
+            if (siswaPass) siswaPass.value = '';
+            if (adminUser) adminUser.value = '';
+            if (adminPass) adminPass.value = '';
+
+            // Reset to default main tab state for next session
+            state.currentMainTab = "tabungan";
+            showToast("Anda telah keluar. Silakan masukkan ulang akun.", "info");
         }
 
         function updateSchoolHeaderUI() {
@@ -1485,6 +1324,8 @@
             if (document.getElementById('sekolah-tahun')) document.getElementById('sekolah-tahun').value = state.sekolah.tahun;
             if (document.getElementById('sekolah-kepsek')) document.getElementById('sekolah-kepsek').value = state.sekolah.kepsek;
             if (document.getElementById('sekolah-logo')) document.getElementById('sekolah-logo').value = state.sekolah.logo;
+            if (document.getElementById('sekolah-admin-user')) document.getElementById('sekolah-admin-user').value = state.sekolah.adminUser || "admin";
+            if (document.getElementById('sekolah-admin-pass')) document.getElementById('sekolah-admin-pass').value = state.sekolah.adminPass || "";
 
             // Tab Inputs (Menu Guru)
             if (document.getElementById('tab-sekolah-nama')) document.getElementById('tab-sekolah-nama').value = state.sekolah.nama;
@@ -1492,6 +1333,8 @@
             if (document.getElementById('tab-sekolah-tahun')) document.getElementById('tab-sekolah-tahun').value = state.sekolah.tahun;
             if (document.getElementById('tab-sekolah-kepsek')) document.getElementById('tab-sekolah-kepsek').value = state.sekolah.kepsek;
             if (document.getElementById('tab-sekolah-logo')) document.getElementById('tab-sekolah-logo').value = state.sekolah.logo;
+            if (document.getElementById('tab-sekolah-admin-user')) document.getElementById('tab-sekolah-admin-user').value = state.sekolah.adminUser || "admin";
+            if (document.getElementById('tab-sekolah-admin-pass')) document.getElementById('tab-sekolah-admin-pass').value = state.sekolah.adminPass || "";
         }
 
         function updateRoleBadgeUI() {
@@ -2417,11 +2260,21 @@
             const modalLogo = document.getElementById('sekolah-logo')?.value.trim();
             const logo = (state.currentMainTab === 'sekolah' ? tabLogo : modalLogo) || tabLogo || modalLogo;
 
+            const tabAdminUser = document.getElementById('tab-sekolah-admin-user')?.value.trim();
+            const modalAdminUser = document.getElementById('sekolah-admin-user')?.value.trim();
+            const adminUserVal = (state.currentMainTab === 'sekolah' ? tabAdminUser : modalAdminUser) || tabAdminUser || modalAdminUser || "admin";
+
+            const tabAdminPass = document.getElementById('tab-sekolah-admin-pass')?.value.trim();
+            const modalAdminPass = document.getElementById('sekolah-admin-pass')?.value.trim();
+            const adminPassVal = (state.currentMainTab === 'sekolah' ? tabAdminPass : modalAdminPass) || tabAdminPass || modalAdminPass;
+
             state.sekolah.nama = nama;
             state.sekolah.alamat = alamat;
             state.sekolah.tahun = tahun;
             state.sekolah.kepsek = kepsek;
             state.sekolah.logo = logo;
+            state.sekolah.adminUser = adminUserVal;
+            if (adminPassVal) state.sekolah.adminPass = adminPassVal;
 
             updateSchoolHeaderUI();
             showToast("Profil Sekolah Berhasil Disimpan!", "success");
@@ -2734,20 +2587,19 @@
             }
 
             try {
-                var logoUrl = (data.sekolah && data.sekolah.logo) ? String(data.sekolah.logo) : 'https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg';
-                var schoolNama = String((data.sekolah && data.sekolah.nama) || 'RA AL-HIDAYAH').replace(/[<>]/g, '');
-                var schoolAlamat = String((data.sekolah && data.sekolah.alamat) || 'Palalang').replace(/[<>]/g, '');
-                var schoolTahun = String((data.sekolah && data.sekolah.tahun) || '2025/2026').replace(/[<>]/g, '');
-                var schoolKepsek = String((data.sekolah && data.sekolah.kepsek) || '................................').replace(/[<>]/g, '');
-                var periodeTxt = String(data.periodeText || '').toUpperCase();
-                var isAndroid = false;
-                try { isAndroid = /Android/i.test(navigator.userAgent || ''); } catch (e) {}
+                var logoUrl = (data.sekolah && data.sekolah.logo)
+                    ? String(data.sekolah.logo)
+                    : "https://cdn.phototourl.com/free/2026-07-22-95ada972-850d-4286-b13c-d062c80896d3.jpg";
+                var schoolNama = String((data.sekolah && data.sekolah.nama) || "RA AL-HIDAYAH").replace(/[<>]/g, "");
+                var schoolAlamat = String((data.sekolah && data.sekolah.alamat) || "Palalang").replace(/[<>]/g, "");
+                var schoolTahun = String((data.sekolah && data.sekolah.tahun) || "2025/2026").replace(/[<>]/g, "");
+                var schoolKepsek = String((data.sekolah && data.sekolah.kepsek) || "................................").replace(/[<>]/g, "");
+                var periodeTxt = String(data.periodeText || "").toUpperCase();
 
-                // Class print-kop (bukan .header) agar tidak kena CSS hide Blogger
                 var bodyInner =
                     '<table class="print-kop" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-bottom:2px solid #0f172a;margin-bottom:12px;border-collapse:collapse;">' +
                     '<tr><td style="width:75px;vertical-align:middle;border:none;padding:4px 8px 8px 0;">' +
-                    '<img src="' + logoUrl + '" alt="Logo" width="68" height="68" style="width:68px;height:68px;object-fit:contain;display:block;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;">' +
+                    '<img src="' + logoUrl + '" alt="Logo" width="68" height="68" style="width:68px;height:68px;object-fit:contain;display:block;background:#fff;">' +
                     '</td><td style="text-align:center;vertical-align:middle;border:none;padding:4px 0 8px;">' +
                     '<div style="font-size:16px;font-weight:800;text-transform:uppercase;color:#0f172a;margin:0;">' + schoolNama + '</div>' +
                     '<div style="font-size:10px;color:#475569;margin:3px 0;">' + schoolAlamat + '</div>' +
@@ -2769,86 +2621,104 @@
                     '<p style="margin:0;font-weight:bold;text-decoration:underline;">(...............................................)</p>' +
                     '<p style="margin:2px 0;font-size:9px;color:#64748b;">Petugas Administrator</p></td></tr></table></div>';
 
-                var styleBlock = 'html,body{margin:0;padding:16px;background:#fff!important;color:#1e293b;font-family:Segoe UI,Arial,sans-serif;font-size:11px;line-height:1.4;}' +
-                    'table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:10px;}' +
-                    'th,td{border:1px solid #cbd5e1;padding:5px 7px;}' +
-                    'th{background:#f1f5f9;font-weight:700;text-align:center;font-size:9px;text-transform:uppercase;}' +
-                    '.print-kop td{border:none!important;}' +
-                    '@page{size:A4;margin:12mm;}' +
-                    '@media print{body{padding:0;background:#fff!important;}}';
-
-                var fullHtml = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
-                    '<title>Rekap_Tabungan</title><style>' + styleBlock + '</style></head><body style="background:#fff;">' + bodyInner +
-                    '<script>window.onload=function(){setTimeout(function(){try{window.focus();window.print();}catch(e){}},400);};<\/script></body></html>';
-
-                // Browser/Blogger: buka jendela cetak langsung
-                // Android APK: unduh HTML (window.open/print sering crash WebView)
-                if (isAndroid) {
-                    try {
-                        var blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
-                        var url = URL.createObjectURL(blob);
-                        var a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'Laporan_Tabungan.html';
-                        a.style.display = 'none';
-                        document.body.appendChild(a);
-                        a.click();
-                        setTimeout(function() { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) {} }, 1200);
-                        showToast("Laporan diunduh. Buka file → Cetak / Simpan PDF.", "success");
-                    } catch (e) {
-                        showToast("Gagal menyimpan laporan.", "error");
-                    }
-                } else {
-                    try {
-                        var win = window.open('', '_blank');
-                        if (win) {
-                            win.document.open();
-                            win.document.write(fullHtml);
-                            win.document.close();
-                            showToast("Membuka dialog cetak...", "info");
-                        } else {
-                            // Fallback unduh
-                            var blob2 = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
-                            var url2 = URL.createObjectURL(blob2);
-                            var a2 = document.createElement('a');
-                            a2.href = url2; a2.download = 'Laporan_Tabungan.html';
-                            document.body.appendChild(a2); a2.click();
-                            setTimeout(function() { try { document.body.removeChild(a2); URL.revokeObjectURL(url2); } catch (e) {} }, 1200);
-                            showToast("Pop-up diblokir. Laporan diunduh sebagai file.", "info");
-                        }
-                    } catch (e) {
-                        showToast("Gagal membuka cetak.", "error");
-                    }
+                var styleEl = document.getElementById("print-preview-style");
+                if (!styleEl) {
+                    styleEl = document.createElement("style");
+                    styleEl.id = "print-preview-style";
+                    document.head.appendChild(styleEl);
                 }
+                styleEl.textContent =
+                    "#print-preview-shell{position:fixed;inset:0;z-index:2147483646;background:#fff;overflow:auto;padding:16px;font-family:Arial,sans-serif;font-size:11px;color:#111;}" +
+                    "#print-preview-shell .no-print{position:sticky;top:0;z-index:2;display:flex;gap:8px;justify-content:flex-end;padding:8px 0 12px;background:#fff;border-bottom:1px solid #e2e8f0;margin-bottom:12px;}" +
+                    "#print-preview-shell .no-print button{padding:10px 14px;border-radius:10px;font-weight:700;font-size:12px;border:0;cursor:pointer;}" +
+                    "#print-preview-shell .btn-print{background:#e11d48;color:#fff;}" +
+                    "#print-preview-shell .btn-close{background:#e2e8f0;color:#0f172a;}" +
+                    "#print-preview-shell table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:10px;}" +
+                    "#print-preview-shell th,#print-preview-shell td{border:1px solid #cbd5e1;padding:5px 7px;}" +
+                    "#print-preview-shell th{background:#f1f5f9;font-weight:700;text-align:center;font-size:9px;}" +
+                    "#print-preview-shell .print-kop td{border:none !important;}" +
+                    "@media print{" +
+                    "body *{visibility:hidden !important;}" +
+                    "#print-preview-shell,#print-preview-shell *{visibility:visible !important;}" +
+                    "#print-preview-shell{position:absolute;left:0;top:0;width:100%;padding:12mm;}" +
+                    "#print-preview-shell .no-print{display:none !important;}" +
+                    "@page{size:A4;margin:12mm;}" +
+                    "}";
+
+                var shell = document.getElementById("print-preview-shell");
+                if (!shell) {
+                    shell = document.createElement("div");
+                    shell.id = "print-preview-shell";
+                    document.body.appendChild(shell);
+                }
+                shell.innerHTML =
+                    '<div class="no-print">' +
+                    '<button type="button" class="btn-close" onclick="closePrintPreview()">Tutup</button>' +
+                    '<button type="button" class="btn-print" onclick="doPrintPreview()">Cetak / Simpan PDF</button>' +
+                    "</div>" + bodyInner;
+                shell.style.display = "block";
+                showToast("Preview laporan siap.", "success");
             } catch (err) {
                 showToast("Gagal membuat laporan.", "error");
             }
         }
 
+        function closePrintPreview() {
+            var shell = document.getElementById("print-preview-shell");
+            if (shell) {
+                shell.style.display = "none";
+                shell.innerHTML = "";
+            }
+        }
+
+        function doPrintPreview() {
+            try {
+                setTimeout(function () {
+                    try {
+                        window.print();
+                    } catch (e) {
+                        showToast("Perangkat tidak mendukung dialog cetak.", "info");
+                    }
+                }, 120);
+            } catch (e) {
+                showToast("Gagal membuka cetak.", "error");
+            }
+        }
+
         function saveAndDownloadExcel(wb, fileName) {
             try {
-                if (typeof XLSX === 'undefined') return false;
+                if (typeof XLSX === "undefined") return false;
                 var out = null;
-                try { out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' }); }
-                catch (e1) {
+                try {
+                    out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+                } catch (e1) {
                     try {
-                        var bin = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+                        var bin = XLSX.write(wb, { bookType: "xlsx", type: "binary" });
                         var buf = new ArrayBuffer(bin.length);
                         var view = new Uint8Array(buf);
                         for (var i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i) & 0xFF;
                         out = buf;
-                    } catch (e2) { return false; }
+                    } catch (e2) {
+                        return false;
+                    }
                 }
                 if (!out) return false;
-                var blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                var blob = new Blob([out], {
+                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                });
                 var url = URL.createObjectURL(blob);
-                var a = document.createElement('a');
+                var a = document.createElement("a");
                 a.href = url;
-                a.download = String(fileName || 'Rekap.xlsx').replace(/[^\w.\-]+/g, '_');
-                a.style.display = 'none';
+                a.download = String(fileName || "Rekap.xlsx").replace(/[^\w.\-]+/g, "_");
+                a.style.display = "none";
                 document.body.appendChild(a);
                 a.click();
-                setTimeout(function() { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) {} }, 1200);
+                setTimeout(function () {
+                    try {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    } catch (e) {}
+                }, 1500);
                 showToast("File Excel berhasil diunduh!", "success");
                 return true;
             } catch (e) {
@@ -2859,31 +2729,25 @@
         function exportRekapExcel() {
             try {
                 var data = getFilteredRekapData();
-                if (!data) { showToast("Data tidak tersedia.", "error"); return; }
-
-                var isAndroid = false;
-                try { isAndroid = /Android/i.test(navigator.userAgent || ''); } catch (e) {}
-
-                // Di APK: langsung CSV (aman, tidak crash)
-                if (isAndroid) {
+                if (!data) {
+                    showToast("Data tidak tersedia.", "error");
+                    return;
+                }
+                if (typeof XLSX === "undefined") {
                     downloadCSVFallback(data);
                     return;
                 }
-
-                if (typeof XLSX === 'undefined') {
-                    downloadCSVFallback(data);
-                    return;
-                }
-
                 try {
                     var wb = XLSX.utils.book_new();
-                    if (data.tipe === 'per_siswa' && data.selectedSiswaObj) {
+                    if (data.tipe === "per_siswa" && data.selectedSiswaObj) {
                         var s = data.selectedSiswaObj;
                         var rows = [
                             ["LAPORAN TABUNGAN INDIVIDUAL SISWA"],
-                            ["Sekolah", (data.sekolah && data.sekolah.nama) || 'RA AL-HIDAYAH'],
-                            ["Periode", data.periodeText || ''],
-                            ["Nama", s.nama || ''], ["NIS", s.nis || ''], ["Kelas", s.kelas || ''],
+                            ["Sekolah", (data.sekolah && data.sekolah.nama) || "RA AL-HIDAYAH"],
+                            ["Periode", data.periodeText || ""],
+                            ["Nama", s.nama || ""],
+                            ["NIS", s.nis || ""],
+                            ["Kelas", s.kelas || ""],
                             ["Saldo", Number(s.saldo) || 0],
                             [],
                             ["No", "Tanggal", "Jenis", "Keperluan", "Setor", "Tarik", "Saldo"]
@@ -2893,80 +2757,134 @@
                         for (var i = 0; i < sorted.length; i++) {
                             var t = sorted[i];
                             var nom = Number(t.nominal) || 0;
-                            if (t.tipe === 'setor') { totSetor += nom; rSaldo += nom; }
-                            else { totTarik += nom; rSaldo -= nom; }
-                            rows.push([i + 1, t.tanggal || '', String(t.tipe || '').toUpperCase(), t.keperluan || '-', t.tipe === 'setor' ? nom : 0, t.tipe === 'tarik' ? nom : 0, rSaldo]);
+                            if (t.tipe === "setor") {
+                                totSetor += nom;
+                                rSaldo += nom;
+                            } else {
+                                totTarik += nom;
+                                rSaldo -= nom;
+                            }
+                            rows.push([
+                                i + 1,
+                                t.tanggal || "",
+                                String(t.tipe || "").toUpperCase(),
+                                t.keperluan || "-",
+                                t.tipe === "setor" ? nom : 0,
+                                t.tipe === "tarik" ? nom : 0,
+                                rSaldo
+                            ]);
                         }
                         rows.push(["TOTAL", "", "", "", totSetor, totTarik, totSetor - totTarik]);
                         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "Tabungan");
-                        if (!saveAndDownloadExcel(wb, 'Tabungan.xlsx')) downloadCSVFallback(data);
+                        if (!saveAndDownloadExcel(wb, "Tabungan.xlsx")) downloadCSVFallback(data);
                     } else {
-                        var rowsSiswa = [["REKAPITULASI"], ["Periode", data.periodeText || ''], [], ["No", "NIS", "Nama", "Kelas", "Setor", "Tarik", "Saldo"]];
+                        var rowsSiswa = [
+                            ["REKAPITULASI TABUNGAN"],
+                            ["Periode", data.periodeText || ""],
+                            [],
+                            ["No", "NIS", "Nama", "Kelas", "Setor", "Tarik", "Saldo"]
+                        ];
                         var gSetor = 0, gTarik = 0, gSaldo = 0;
                         var siswaList = data.siswaList || [];
                         for (var si = 0; si < siswaList.length; si++) {
                             var ss = siswaList[si];
                             var sSetor = 0, sTarik = 0;
-                            var snis = String(ss.nis || '');
+                            var snis = String(ss.nis || "");
                             var trx = data.transaksiList || [];
                             for (var ti = 0; ti < trx.length; ti++) {
-                                if (String(trx[ti].nis || '') !== snis) continue;
+                                if (String(trx[ti].nis || "") !== snis) continue;
                                 var n = Number(trx[ti].nominal) || 0;
-                                if (trx[ti].tipe === 'setor') sSetor += n;
-                                if (trx[ti].tipe === 'tarik') sTarik += n;
+                                if (trx[ti].tipe === "setor") sSetor += n;
+                                if (trx[ti].tipe === "tarik") sTarik += n;
                             }
-                            gSetor += sSetor; gTarik += sTarik; gSaldo += Number(ss.saldo) || 0;
-                            rowsSiswa.push([si + 1, snis, ss.nama || '', ss.kelas || '', sSetor, sTarik, Number(ss.saldo) || 0]);
+                            gSetor += sSetor;
+                            gTarik += sTarik;
+                            gSaldo += Number(ss.saldo) || 0;
+                            rowsSiswa.push([
+                                si + 1,
+                                snis,
+                                ss.nama || "",
+                                ss.kelas || "",
+                                sSetor,
+                                sTarik,
+                                Number(ss.saldo) || 0
+                            ]);
                         }
                         rowsSiswa.push(["TOTAL", "", "", "", gSetor, gTarik, gSaldo]);
-                        var rowsJurnal = [["JURNAL"], ["No", "Tanggal", "NIS", "Nama", "Kelas", "Jenis", "Nominal", "Keperluan"]];
+                        var rowsJurnal = [
+                            ["JURNAL TRANSAKSI"],
+                            ["No", "Tanggal", "NIS", "Nama", "Kelas", "Jenis", "Nominal", "Keperluan"]
+                        ];
                         var trxAll = data.transaksiList || [];
                         for (var j = 0; j < trxAll.length; j++) {
                             var tt = trxAll[j];
-                            rowsJurnal.push([j + 1, tt.tanggal || '', tt.nis || '', tt.nama || '', tt.kelas || '', String(tt.tipe || '').toUpperCase(), Number(tt.nominal) || 0, tt.keperluan || '-']);
+                            rowsJurnal.push([
+                                j + 1,
+                                tt.tanggal || "",
+                                tt.nis || "",
+                                tt.nama || "",
+                                tt.kelas || "",
+                                String(tt.tipe || "").toUpperCase(),
+                                Number(tt.nominal) || 0,
+                                tt.keperluan || "-"
+                            ]);
                         }
                         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsSiswa), "Rekap");
                         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsJurnal), "Jurnal");
-                        if (!saveAndDownloadExcel(wb, 'Rekap_Tabungan.xlsx')) downloadCSVFallback(data);
+                        if (!saveAndDownloadExcel(wb, "Rekap_Tabungan.xlsx")) downloadCSVFallback(data);
                     }
                 } catch (inner) {
                     downloadCSVFallback(data);
                 }
             } catch (err) {
-                try { downloadCSVFallback(getFilteredRekapData()); }
-                catch (e2) { showToast("Gagal export.", "error"); }
+                try {
+                    downloadCSVFallback(getFilteredRekapData());
+                } catch (e2) {
+                    showToast("Gagal export.", "error");
+                }
             }
         }
 
         function downloadCSVFallback(data) {
             try {
                 if (!data) data = getFilteredRekapData();
-                var lines = ['Tanggal,NIS,Nama,Kelas,Jenis,Nominal,Keperluan'];
+                var lines = ["Tanggal,NIS,Nama,Kelas,Jenis,Nominal,Keperluan"];
                 var list = (data && data.transaksiList) ? data.transaksiList : [];
                 for (var i = 0; i < list.length; i++) {
                     var t = list[i];
-                    lines.push([t.tanggal || '', t.nis || '', t.nama || '', t.kelas || '', t.tipe || '', t.nominal || 0, String(t.keperluan || '-').replace(/"/g, "'")]
-                        .map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(','));
+                    var cells = [
+                        t.tanggal || "",
+                        t.nis || "",
+                        t.nama || "",
+                        t.kelas || "",
+                        t.tipe || "",
+                        t.nominal || 0,
+                        String(t.keperluan || "-").replace(/"/g, "'")
+                    ];
+                    lines.push(cells.map(function (v) {
+                        return '"' + String(v).replace(/"/g, '""') + '"';
+                    }).join(","));
                 }
-                lines.push('');
-                lines.push('No,NIS,Nama,Kelas,Saldo');
-                var siswaList = (data && data.siswaList) ? data.siswaList : [];
-                for (var j = 0; j < siswaList.length; j++) {
-                    var s = siswaList[j];
-                    lines.push([j + 1, s.nis || '', s.nama || '', s.kelas || '', s.saldo || 0]
-                        .map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(','));
-                }
-                var blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+                var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
                 var url = URL.createObjectURL(blob);
-                var a = document.createElement('a');
-                a.href = url; a.download = 'Rekap_Tabungan.csv'; a.style.display = 'none';
-                document.body.appendChild(a); a.click();
-                setTimeout(function() { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) {} }, 1200);
+                var a = document.createElement("a");
+                a.href = url;
+                a.download = "Rekap_Tabungan.csv";
+                a.style.display = "none";
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(function () {
+                    try {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    } catch (e) {}
+                }, 1200);
                 showToast("File CSV berhasil diunduh!", "success");
             } catch (err) {
                 showToast("Gagal mengunduh file.", "error");
             }
         }
+
     </script>
 </body>
 </html>
