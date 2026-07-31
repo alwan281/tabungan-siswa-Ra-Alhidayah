@@ -941,8 +941,8 @@
                         </div>
                     </div>
                     <p class="px-4 pt-2 text-[10px] text-slate-500 shrink-0">
-                        <b>AppCreator24:</b> Tekan <b>Bagikan / Simpan ke File</b> → pilih <b>Drive / Files / Excel / Sheets</b>.
-                        Cara ini memakai menu sistem Android (bukan unduhan Blob yang membuat crash).
+                        Tekan <b>Bagikan / Simpan ke File</b> untuk membuka menu bagikan sistem.
+                        Jika tidak muncul, tekan <b>Salin Data</b> lalu tempel di Excel / Google Sheets.
                     </p>
                     <div id="excel-preview-body" class="flex-1 overflow-auto p-3 text-[11px] text-slate-800 leading-relaxed">
                         <!-- diisi JS -->
@@ -962,7 +962,7 @@
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <h3 class="text-sm font-extrabold text-slate-100">Pembaruan Tersedia</h3>
-                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v3.0.2</span>
+                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v3.0.3</span>
                             </div>
                             <p class="text-[11px] text-slate-400 mt-0.5">Versi baru siap dipasang</p>
                         </div>
@@ -1130,14 +1130,14 @@
         let isUpdateInProgress = false;
 
         /* ===== SISTEM UPDATE ===== */
-        const APP_VERSION = "3.0.2";
+        const APP_VERSION = "3.0.3";
         const APP_VERSION_STORAGE_KEY = "tabungan_ra_app_version_v1";
         const UPDATE_CHECK_URL = "https://raw.githubusercontent.com/alwan281/tabungan-siswa-Ra-Alhidayah/main/version.json";
         const UPDATE_CHANGELOG = [
-            "AppCreator24: Bagikan/Simpan via menu sistem Android (tanpa Blob)",
-            "Tidak ada a.click / data-URI / unduhan file yang crash WebView",
-            "Cadangan Salin Data + intent SHARE Android",
-            "Logo cetak PDF & fitur lain tetap utuh"
+            "Hapus intent URL (perbaiki ERR_UNKNOWN_URL_SCHEME AppCreator24)",
+            "Bagikan hanya Web Share API + Salin Data",
+            "Cetak PDF lewat iframe — tombol Kembali tidak keluar app",
+            "Logo cetak & fitur lain tetap utuh"
         ];
         let remoteUpdateVersion = null;
         let remoteUpdateChangelog = null;
@@ -2959,7 +2959,7 @@
                                 document.body.style.color = '#1e293b';
                             } catch(e) {}
                             setTimeout(function() {
-                                window.print();
+                                try { window.print(); } catch(e2) {}
                             }, 400);
                         };
                     <\/script>
@@ -2967,13 +2967,37 @@
                 </html>
             `;
 
-            const win = window.open('', '_blank');
-            if (win) {
-                win.document.open();
-                win.document.write(printHTML);
-                win.document.close();
-            } else {
-                showToast("Pop-up diblokir browser, mohon izinkan pop-up!", "error");
+            /* Cetak lewat iframe tersembunyi — tombol Kembali TIDAK keluar dari aplikasi (AppCreator24) */
+            try {
+                var iframe = document.getElementById('print-frame-ra');
+                if (!iframe) {
+                    iframe = document.createElement('iframe');
+                    iframe.id = 'print-frame-ra';
+                    iframe.setAttribute('title', 'Cetak');
+                    iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;left:-9999px;top:0;visibility:hidden;';
+                    document.body.appendChild(iframe);
+                }
+                var idoc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
+                if (!idoc) {
+                    showToast("Gagal membuka pratinjau cetak.", "error");
+                    return;
+                }
+                idoc.open();
+                idoc.write(printHTML);
+                idoc.close();
+                setTimeout(function () {
+                    try {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.print();
+                    } catch (ePrint) {
+                        showToast("Gagal mencetak. Coba lagi.", "error");
+                    }
+                }, 500);
+                showToast("Pratinjau cetak dibuka...", "success");
+                try { closeModal('modal-rekap'); } catch (e) {}
+            } catch (err) {
+                console.error('exportRekapPDF error:', err);
+                showToast("Gagal cetak PDF.", "error");
             }
         }
 
@@ -3101,8 +3125,7 @@
         }
 
         function shareExcelData() {
-            /* Web Share API — memunculkan menu sistem Android (Drive / Files / Excel)
-               Tidak memakai Blob unduhan → tidak crash di AppCreator24 */
+            /* Hanya Web Share API + salin. JANGAN intent: URL (AppCreator24 → ERR_UNKNOWN_URL_SCHEME) */
             try {
                 if (!_excelShareText) {
                     showToast("Data kosong. Buka ulang Unduh Excel.", "error");
@@ -3111,7 +3134,7 @@
                 var title = _excelShareName || 'Rekap Tabungan';
                 var text = _excelShareText;
 
-                if (navigator.share) {
+                if (typeof navigator.share === 'function') {
                     navigator.share({
                         title: title,
                         text: text
@@ -3122,23 +3145,12 @@
                             showToast("Dibatalkan.", "info");
                             return;
                         }
-                        /* Share gagal → salin otomatis */
                         copyExcelData();
                     });
                     return;
                 }
 
-                /* Fallback Android intent SHARE (teks) */
-                try {
-                    var intentUrl = 'intent:#Intent;action=android.intent.action.SEND;type=text/plain;' +
-                        'S.android.intent.extra.SUBJECT=' + encodeURIComponent(title) + ';' +
-                        'S.android.intent.extra.TEXT=' + encodeURIComponent(text.substring(0, 200000)) + ';' +
-                        'end';
-                    window.location.href = intentUrl;
-                    showToast("Membuka menu Bagikan sistem...", "info");
-                    return;
-                } catch (eIntent) {}
-
+                /* Tidak ada Share API → salin ke clipboard (tanpa intent URL) */
                 copyExcelData();
             } catch (err) {
                 console.error('shareExcelData error:', err);
