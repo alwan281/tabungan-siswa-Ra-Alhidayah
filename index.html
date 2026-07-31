@@ -945,6 +945,30 @@
                 </div>
             </div>
 
+            <!-- MODAL: KONFIRMASI MODERN (ganti confirm browser) -->
+            <div id="modal-confirm" class="fixed inset-0 z-[999999999] bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+                <div class="glass-card w-full max-w-xs rounded-2xl p-5 border border-slate-700/80 shadow-2xl space-y-4 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 via-amber-500 to-rose-500"></div>
+                    <div class="flex items-start gap-3 pt-1">
+                        <div id="confirm-icon-box" class="w-11 h-11 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center shrink-0">
+                            <i id="confirm-icon" class="fas fa-trash-can text-rose-400 text-base"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h3 id="confirm-title" class="text-sm font-extrabold text-slate-100">Konfirmasi</h3>
+                            <p id="confirm-message" class="text-[11px] text-slate-400 mt-1 leading-relaxed">Apakah Anda yakin?</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2.5 pt-1">
+                        <button type="button" id="confirm-btn-cancel" onclick="handleConfirmCancel()" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition-all active:scale-95">
+                            Batal
+                        </button>
+                        <button type="button" id="confirm-btn-ok" onclick="handleConfirmOk()" class="py-3 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-bold text-xs shadow-lg shadow-rose-600/25 transition-all active:scale-95">
+                            Hapus
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -1009,7 +1033,7 @@
                     getDocs: fs.getDocs
                 };
             } catch (e) {
-                console.warn("Firebase module load notice (using preview mode):", e);
+                // Modul Firebase gagal dimuat (offline / preview) — app tetap jalan lokal
             }
         })();
     </script>
@@ -1031,6 +1055,8 @@
         const APP_VERSION_STORAGE_KEY = "tabungan_ra_app_version_v1";
         // URL file version.json di GitHub (raw). GANTI sesuai repo Anda!
         // Contoh: https://raw.githubusercontent.com/username/nama-repo/main/version.json
+        // Isi URL raw version.json GitHub Anda. Kosongkan ("") jika belum siap → tidak error 404.
+        // Contoh: "https://raw.githubusercontent.com/USER/REPO/main/version.json"
         const UPDATE_CHECK_URL = "https://raw.githubusercontent.com/alwan281/tabungan-siswa-Ra-Alhidayah/main/version.json";
         const UPDATE_CHANGELOG = [
             "Notifikasi pembaruan remote via GitHub (APK & Web)",
@@ -1043,6 +1069,9 @@
         let pendingUpdateChangelog = UPDATE_CHANGELOG;
         let pendingUpdateDownloadUrl = "";
         let remoteUpdateChecked = false;
+        let remoteUpdateInFlight = false;
+        let appInitialized = false;
+        let firebaseInitStarted = false;
 
         // Konfigurasi Firebase Tabungan Siswa
         const firebaseConfig = {
@@ -1181,19 +1210,32 @@
 
         async function checkRemoteUpdateAndShow() {
             if (isUpdateInProgress) return;
-            const url = (UPDATE_CHECK_URL || '').trim();
-            // Lewati jika URL masih placeholder
-            if (!url || url.indexOf('YOUR_') !== -1 || url.indexOf('username') !== -1) {
+            if (remoteUpdateInFlight) return;
+            // Sudah dicek sekali → cukup fallback lokal tanpa fetch ulang
+            if (remoteUpdateChecked) {
                 checkAndShowUpdatePopup();
                 return;
             }
+            const url = (UPDATE_CHECK_URL || '').trim();
+            // Lewati jika URL kosong / placeholder → tidak memicu error 404
+            if (!url || url.indexOf('YOUR_') !== -1 || url.indexOf('username') !== -1 || url.indexOf('edudigital-id') !== -1) {
+                remoteUpdateChecked = true;
+                checkAndShowUpdatePopup();
+                return;
+            }
+            remoteUpdateInFlight = true;
             try {
                 const res = await fetch(url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now(), {
                     method: 'GET',
                     cache: 'no-store',
                     mode: 'cors'
                 });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
+                if (!res.ok) {
+                    // 404/dll: diam, pakai cek lokal
+                    remoteUpdateChecked = true;
+                    checkAndShowUpdatePopup();
+                    return;
+                }
                 const data = await res.json();
                 remoteUpdateChecked = true;
                 const remoteVer = String(data.version || data.appVersion || '').replace(/^v/i, '');
@@ -1209,8 +1251,11 @@
                     showUpdateModalUI(remoteVer, pendingUpdateChangelog);
                 }
             } catch (err) {
-                console.warn('Remote update check failed, fallback local:', err);
+                // Jaringan/CORS: fallback lokal tanpa spam console
+                remoteUpdateChecked = true;
                 checkAndShowUpdatePopup();
+            } finally {
+                remoteUpdateInFlight = false;
             }
         }
 
@@ -1305,63 +1350,87 @@
             }, 80);
         }
 
-        // ON APP INITIALIZATION
+        // ON APP INITIALIZATION (sekali saja)
         if (document.readyState === 'loading') {
-            window.addEventListener('DOMContentLoaded', () => {
-                initApp();
-            });
+            window.addEventListener('DOMContentLoaded', function() { initApp(); });
         } else {
             initApp();
         }
 
         function initApp() {
+            if (appInitialized) return;
+            appInitialized = true;
             try {
                 updateSchoolHeaderUI();
                 renderAllViews();
                 if (!IS_PREVIEW) {
                     initFirebaseConnection();
                 }
-                // Cek update remote (GitHub) lalu fallback lokal
-                setTimeout(checkRemoteUpdateAndShow, 400);
-                setTimeout(function() {
-                    if (!remoteUpdateChecked) checkAndShowUpdatePopup();
-                }, 2500);
-            } catch (err) {
-                console.error("InitApp error:", err);
+                // Cek update sekali (remote jika URL diisi, else lokal)
                 setTimeout(checkRemoteUpdateAndShow, 500);
+            } catch (err) {
+                appInitialized = false;
+                setTimeout(function() { appInitialized = true; checkRemoteUpdateAndShow(); }, 500);
             }
         }
 
-        window.addEventListener('load', function() {
-            setTimeout(checkRemoteUpdateAndShow, 800);
-        });
-
         async function initFirebaseConnection() {
+            if (firebaseInitStarted) return;
             try {
                 const mods = window.firebaseAppModules;
                 if (!mods) {
-                    setTimeout(initFirebaseConnection, 300);
+                    setTimeout(initFirebaseConnection, 400);
                     return;
                 }
-                const app = mods.initializeApp(firebaseConfig);
-                db = mods.getFirestore(app);
-                auth = mods.getAuth(app);
+                firebaseInitStarted = true;
 
+                let app;
                 try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await mods.signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await mods.signInAnonymously(auth);
+                    app = mods.initializeApp(firebaseConfig);
+                } catch (initErr) {
+                    // App sudah di-init (hot reload / double call) — lanjut pakai instance yang ada
+                    try {
+                        // firebase modular tidak selalu expose getApp di bundle ini
+                        app = mods.initializeApp(firebaseConfig, 'tabungan-secondary');
+                    } catch (e2) {
+                        // Tetap coba getFirestore tanpa app baru jika memungkinkan
+                        app = null;
                     }
-                } catch (authErr) {
-                    console.warn("Auth notice:", authErr);
                 }
 
-                userId = auth.currentUser?.uid || crypto.randomUUID();
-                console.log("Firebase connection initialized.");
-                loadDataFromFirestore();
+                if (app) {
+                    db = mods.getFirestore(app);
+                    auth = mods.getAuth(app);
+                } else {
+                    // Fallback: coba getFirestore default
+                    try { db = mods.getFirestore(); } catch (e) {}
+                    try { auth = mods.getAuth(); } catch (e) {}
+                }
+
+                // Auth opsional: jika Anonymous dinonaktifkan di Firebase Console, app tetap jalan
+                if (auth && mods.signInAnonymously) {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await mods.signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await mods.signInAnonymously(auth);
+                        }
+                    } catch (authErr) {
+                        // auth/admin-restricted-operation & sejenisnya: abaikan (tidak spam konsol)
+                        userId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('user-' + Date.now());
+                    }
+                }
+
+                userId = (auth && auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : (userId || ((typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('user-' + Date.now())));
+                if (db) {
+                    loadDataFromFirestore();
+                }
             } catch (e) {
-                console.error("Firebase init error:", e);
+                firebaseInitStarted = false;
+                // Satu log saja jika benar-benar gagal total
+                if (typeof console !== 'undefined' && console.error) {
+                    console.error("Firebase init error:", e && e.message ? e.message : e);
+                }
             }
         }
 
@@ -1561,22 +1630,40 @@
         }
 
         function handleLogout() {
+            const role = (state.currentUser && state.currentUser.role) ? state.currentUser.role : '';
+            const isAdmin = role === 'admin';
+            showConfirmModal({
+                title: 'Keluar Aplikasi',
+                message: isAdmin
+                    ? 'Yakin ingin keluar dari akun Guru / Admin? Anda perlu login ulang untuk mengakses dashboard.'
+                    : 'Yakin ingin keluar dari akun Siswa? Anda perlu login ulang untuk melihat tabungan.',
+                okText: 'Keluar',
+                cancelText: 'Batal',
+                icon: 'fas fa-right-from-bracket',
+                danger: true,
+                onConfirm: function() {
+                    doLogout();
+                }
+            });
+        }
+
+        function doLogout() {
             state.currentUser = null;
-            document.getElementById('view-dashboard').classList.add('hidden');
-            document.getElementById('view-login').classList.remove('hidden');
-            
-            // Clear inputs manually so credentials are required again
+            const viewDash = document.getElementById('view-dashboard');
+            const viewLogin = document.getElementById('view-login');
+            if (viewDash) viewDash.classList.add('hidden');
+            if (viewLogin) viewLogin.classList.remove('hidden');
+
             const siswaNis = document.getElementById('siswa-nis');
             const siswaPass = document.getElementById('siswa-pass');
             const adminUser = document.getElementById('admin-user');
             const adminPass = document.getElementById('admin-pass');
-            
+
             if (siswaNis) siswaNis.value = '';
             if (siswaPass) siswaPass.value = '';
             if (adminUser) adminUser.value = '';
             if (adminPass) adminPass.value = '';
 
-            // Reset to default main tab state for next session
             state.currentMainTab = "tabungan";
             showToast("Anda telah keluar. Silakan masukkan ulang akun.", "info");
         }
@@ -1913,19 +2000,9 @@
             }
 
             if (state.historyDateFilter) {
-                const filterDt = parseIndoDateFromISO(state.historyDateFilter);
-                filtered = filtered.filter(t => {
-                    const dt = parseIndoDate(t.tanggal);
-                    if (!filterDt || !dt) {
-                        // Fallback string match
-                        const [y, m, d] = state.historyDateFilter.split('-');
-                        const formatted = `${parseInt(d, 10)}/${parseInt(m, 10)}/${y}`;
-                        const formattedPad = `${d}/${m}/${y}`;
-                        return t.tanggal && (t.tanggal.includes(formattedPad) || t.tanggal.includes(formatted));
-                    }
-                    return dt.getFullYear() === filterDt.getFullYear()
-                        && dt.getMonth() === filterDt.getMonth()
-                        && dt.getDate() === filterDt.getDate();
+                const filterKey = toDateKey(state.historyDateFilter);
+                filtered = filtered.filter(function(t) {
+                    return isTrxInDateRange(t.tanggal, filterKey, filterKey);
                 });
             }
 
@@ -2041,13 +2118,9 @@
                 filtered = filtered.filter(t => t.kelas === state.selectedRiwayatClass);
             }
             if (state.historyDateFilter) {
-                const filterDt = parseIndoDateFromISO(state.historyDateFilter);
-                filtered = filtered.filter(t => {
-                    const dt = parseIndoDate(t.tanggal);
-                    if (!filterDt || !dt) return true;
-                    return dt.getFullYear() === filterDt.getFullYear()
-                        && dt.getMonth() === filterDt.getMonth()
-                        && dt.getDate() === filterDt.getDate();
+                const filterKey = toDateKey(state.historyDateFilter);
+                filtered = filtered.filter(function(t) {
+                    return isTrxInDateRange(t.tanggal, filterKey, filterKey);
                 });
             }
 
@@ -2193,19 +2266,91 @@
             openModal('modal-siswa');
         }
 
-        function deleteSiswa(nis) {
-            if (confirm(`Yakin ingin menghapus data siswa NIS: ${nis}?`)) {
-                state.siswa = state.siswa.filter(x => x.nis !== nis);
-                showToast("Siswa Berhasil Dihapus!", "info");
+        let confirmCallback = null;
 
-                if (!IS_PREVIEW && db) {
-                    const mods = window.firebaseAppModules;
-                    mods.deleteDoc(mods.doc(db, 'artifacts', appId, 'siswa', nis))
-                        .catch(err => console.error("Firestore delete siswa error:", err));
-                }
+        function showConfirmModal(options) {
+            const opts = options || {};
+            const title = opts.title || 'Konfirmasi';
+            const message = opts.message || 'Apakah Anda yakin?';
+            const okText = opts.okText || 'Hapus';
+            const cancelText = opts.cancelText || 'Batal';
+            const iconClass = opts.icon || 'fas fa-trash-can';
+            const danger = opts.danger !== false;
 
-                renderAllViews();
+            const modal = document.getElementById('modal-confirm');
+            const elTitle = document.getElementById('confirm-title');
+            const elMsg = document.getElementById('confirm-message');
+            const elIcon = document.getElementById('confirm-icon');
+            const elIconBox = document.getElementById('confirm-icon-box');
+            const btnOk = document.getElementById('confirm-btn-ok');
+            const btnCancel = document.getElementById('confirm-btn-cancel');
+
+            if (elTitle) elTitle.textContent = title;
+            if (elMsg) elMsg.textContent = message;
+            if (elIcon) elIcon.className = iconClass + (danger ? ' text-rose-400 text-base' : ' text-blue-400 text-base');
+            if (elIconBox) {
+                elIconBox.className = danger
+                    ? 'w-11 h-11 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center shrink-0'
+                    : 'w-11 h-11 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center shrink-0';
             }
+            if (btnOk) {
+                btnOk.textContent = okText;
+                btnOk.className = danger
+                    ? 'py-3 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-bold text-xs shadow-lg shadow-rose-600/25 transition-all active:scale-95'
+                    : 'py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-600/25 transition-all active:scale-95';
+            }
+            if (btnCancel) btnCancel.textContent = cancelText;
+
+            confirmCallback = typeof opts.onConfirm === 'function' ? opts.onConfirm : null;
+
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+                modal.style.visibility = 'visible';
+                modal.style.opacity = '1';
+            }
+        }
+
+        function hideConfirmModal() {
+            const modal = document.getElementById('modal-confirm');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            }
+            confirmCallback = null;
+        }
+
+        function handleConfirmCancel() {
+            hideConfirmModal();
+        }
+
+        function handleConfirmOk() {
+            const cb = confirmCallback;
+            hideConfirmModal();
+            if (typeof cb === 'function') {
+                try { cb(); } catch (e) { console.error(e); }
+            }
+        }
+
+        function deleteSiswa(nis) {
+            showConfirmModal({
+                title: 'Hapus Data Siswa',
+                message: 'Yakin ingin menghapus data siswa NIS: ' + nis + '? Tindakan ini tidak dapat dibatalkan.',
+                okText: 'Hapus',
+                cancelText: 'Batal',
+                icon: 'fas fa-user-minus',
+                danger: true,
+                onConfirm: function() {
+                    state.siswa = state.siswa.filter(function(x) { return String(x.nis) !== String(nis); });
+                    showToast("Siswa Berhasil Dihapus!", "info");
+                    if (!IS_PREVIEW && db) {
+                        const mods = window.firebaseAppModules;
+                        mods.deleteDoc(mods.doc(db, 'artifacts', appId, 'siswa', nis))
+                            .catch(function(err) { console.error("Firestore delete siswa error:", err); });
+                    }
+                    renderAllViews();
+                }
+            });
         }
 
         let currentDetailSiswaNis = null;
@@ -2217,7 +2362,7 @@
 
             currentDetailSiswaNis = targetNis;
             document.getElementById('detail-siswa-nama').textContent = s.nama;
-            document.getElementById('detail-siswa-info').textContent = `NIS: ${s.nis} • Kelas: ${s.kelas} • Wali: ${s.wali || '-'}`;
+            document.getElementById('detail-siswa-info').textContent = 'NIS: ' + s.nis + ' | Kelas: ' + s.kelas + ' | Wali: ' + (s.wali || '-');
             document.getElementById('detail-siswa-saldo-saat-ini').textContent = formatRp(s.saldo);
 
             const isAdmin = state.currentUser && state.currentUser.role === 'admin';
@@ -2241,39 +2386,51 @@
             if (elTipe) elTipe.value = "semua";
 
             openModal('modal-riwayat-siswa');
-            // Render setelah modal tampil agar elemen filter siap
-            setTimeout(function() { renderDetailRiwayatSiswaList(); }, 50);
+            // Render segera + retry agar list pasti muncul di WebView/APK
+            renderDetailRiwayatSiswaList();
+            setTimeout(function() { renderDetailRiwayatSiswaList(); }, 100);
+            setTimeout(function() { renderDetailRiwayatSiswaList(); }, 400);
         }
 
         function setDetailPresetDate(preset) {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const todayStr = getTodayYYYYMMDD();
+            try {
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const dd = String(today.getDate()).padStart(2, '0');
+                const todayStr = yyyy + '-' + mm + '-' + dd;
 
-            const tglMulai = document.getElementById('detail-tgl-mulai');
-            const tglSelesai = document.getElementById('detail-tgl-selesai');
+                const tglMulai = document.getElementById('detail-tgl-mulai');
+                const tglSelesai = document.getElementById('detail-tgl-selesai');
 
-            if (preset === 'bulan_ini') {
-                if (tglMulai) tglMulai.value = `${yyyy}-${mm}-01`;
-                if (tglSelesai) tglSelesai.value = todayStr;
-            } else if (preset === 'bulan_lalu') {
-                const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
-                const lmY = lastMonth.getFullYear();
-                const lmM = String(lastMonth.getMonth() + 1).padStart(2, '0');
-                const lmD = String(lastMonthEnd.getDate()).padStart(2, '0');
-                if (tglMulai) tglMulai.value = `${lmY}-${lmM}-01`;
-                if (tglSelesai) tglSelesai.value = `${lmY}-${lmM}-${lmD}`;
-            } else if (preset === 'semua') {
-                if (tglMulai) tglMulai.value = '';
-                if (tglSelesai) tglSelesai.value = '';
+                if (preset === 'hari_ini' || preset === 'today') {
+                    if (tglMulai) tglMulai.value = todayStr;
+                    if (tglSelesai) tglSelesai.value = todayStr;
+                } else if (preset === 'bulan_ini') {
+                    if (tglMulai) tglMulai.value = yyyy + '-' + mm + '-01';
+                    if (tglSelesai) tglSelesai.value = todayStr;
+                } else if (preset === 'bulan_lalu') {
+                    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                    const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+                    const lmY = lastMonth.getFullYear();
+                    const lmM = String(lastMonth.getMonth() + 1).padStart(2, '0');
+                    const lmD = String(lastMonthEnd.getDate()).padStart(2, '0');
+                    if (tglMulai) tglMulai.value = lmY + '-' + lmM + '-01';
+                    if (tglSelesai) tglSelesai.value = lmY + '-' + lmM + '-' + lmD;
+                } else if (preset === 'semua') {
+                    if (tglMulai) tglMulai.value = '';
+                    if (tglSelesai) tglSelesai.value = '';
+                }
+
+                renderDetailRiwayatSiswaList();
+            } catch (e) {
+                console.error('setDetailPresetDate error:', e);
+                renderDetailRiwayatSiswaList();
             }
-
-            renderDetailRiwayatSiswaList();
         }
 
         function renderDetailRiwayatSiswaList() {
+            try {
             if (!currentDetailSiswaNis) return;
             const container = document.getElementById('detail-transaksi-list');
             if (!container) return;
@@ -2281,32 +2438,26 @@
             const elMulai = document.getElementById('detail-tgl-mulai');
             const elSelesai = document.getElementById('detail-tgl-selesai');
             const elTipe = document.getElementById('detail-tipe-filter');
-            const tglMulaiVal = elMulai ? elMulai.value : '';
-            const tglSelesaiVal = elSelesai ? elSelesai.value : '';
-            const tipeFilter = elTipe ? elTipe.value : 'semua';
+            const tglMulaiVal = elMulai ? String(elMulai.value || '').trim() : '';
+            const tglSelesaiVal = elSelesai ? String(elSelesai.value || '').trim() : '';
+            const tipeFilter = elTipe ? String(elTipe.value || 'semua') : 'semua';
 
-            const startDate = tglMulaiVal ? parseIndoDateFromISO(tglMulaiVal) : null;
-            let endDate = tglSelesaiVal ? parseIndoDateFromISO(tglSelesaiVal) : null;
-            if (endDate) {
-                endDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999);
-            }
+            const startKey = tglMulaiVal ? toDateKey(tglMulaiVal) : null;
+            const endKey = tglSelesaiVal ? toDateKey(tglSelesaiVal) : null;
 
             const targetNis = String(currentDetailSiswaNis);
-            let filtered = (state.transaksi || []).filter(t => String(t.nis || '') === targetNis);
+            let filtered = (state.transaksi || []).filter(function(t) {
+                return String(t.nis || '') === targetNis;
+            });
 
             if (tipeFilter && tipeFilter !== 'semua') {
-                filtered = filtered.filter(t => t.tipe === tipeFilter);
+                filtered = filtered.filter(function(t) { return t.tipe === tipeFilter; });
             }
 
-            // Filter tanggal hanya jika salah satu diisi; kosong = semua tanggal
-            if (startDate || endDate) {
-                filtered = filtered.filter(t => {
-                    const dt = parseIndoDate(t.tanggal);
-                    if (!dt) return true;
-                    const dayStart = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 0, 0, 0, 0);
-                    if (startDate && dayStart < startDate) return false;
-                    if (endDate && dayStart > endDate) return false;
-                    return true;
+            // Filter tanggal: kosong = semua tanggal
+            if (startKey || endKey) {
+                filtered = filtered.filter(function(t) {
+                    return isTrxInDateRange(t.tanggal, startKey, endKey);
                 });
             }
 
@@ -2361,6 +2512,13 @@
                     </div>
                 </div>
             `).join('');
+            } catch (err) {
+                console.error('renderDetailRiwayatSiswaList error:', err);
+                const container = document.getElementById('detail-transaksi-list');
+                if (container) {
+                    container.innerHTML = '<div class="p-6 text-center text-slate-500"><p class="text-xs">Gagal memuat riwayat. Coba tutup lalu buka lagi.</p></div>';
+                }
+            }
         }
 
         function openModalSetor(nis) {
@@ -2519,40 +2677,51 @@
         }
 
         function deleteTransaksi(id) {
-            if (confirm("Yakin ingin menghapus catatan transaksi ini?")) {
-                const trx = state.transaksi.find(t => t.id === id);
-                if (trx) {
-                    const s = state.siswa.find(x => x.nis === trx.nis);
-                    if (s) {
-                        if (trx.tipe === 'setor') {
-                            s.saldo = Math.max(0, (Number(s.saldo) || 0) - Number(trx.nominal));
-                        } else if (trx.tipe === 'tarik') {
-                            s.saldo = (Number(s.saldo) || 0) + Number(trx.nominal);
-                        }
-                        if (!IS_PREVIEW && db) {
-                            const mods = window.firebaseAppModules;
-                            mods.setDoc(mods.doc(db, 'artifacts', appId, 'siswa', s.nis), s)
-                                .catch(err => console.error("Firestore update saldo error:", err));
+            showConfirmModal({
+                title: 'Hapus Transaksi',
+                message: 'Yakin ingin menghapus catatan transaksi ini? Saldo siswa akan disesuaikan otomatis.',
+                okText: 'Hapus',
+                cancelText: 'Batal',
+                icon: 'fas fa-trash-can',
+                danger: true,
+                onConfirm: function() {
+                    const trx = state.transaksi.find(function(t) { return t.id === id; });
+                    if (trx) {
+                        const s = state.siswa.find(function(x) { return String(x.nis) === String(trx.nis); });
+                        if (s) {
+                            if (trx.tipe === 'setor') {
+                                s.saldo = Math.max(0, (Number(s.saldo) || 0) - Number(trx.nominal));
+                            } else if (trx.tipe === 'tarik') {
+                                s.saldo = (Number(s.saldo) || 0) + Number(trx.nominal);
+                            }
+                            if (!IS_PREVIEW && db) {
+                                const mods = window.firebaseAppModules;
+                                mods.setDoc(mods.doc(db, 'artifacts', appId, 'siswa', s.nis), s)
+                                    .catch(function(err) { console.error("Firestore update saldo error:", err); });
+                            }
                         }
                     }
-                }
 
-                state.transaksi = state.transaksi.filter(t => t.id !== id);
-                showToast("Catatan Transaksi Dihapus!", "info");
+                    state.transaksi = state.transaksi.filter(function(t) { return t.id !== id; });
+                    showToast("Catatan Transaksi Dihapus!", "info");
 
-                if (!IS_PREVIEW && db) {
-                    const mods = window.firebaseAppModules;
-                    mods.deleteDoc(mods.doc(db, 'artifacts', appId, 'transaksi', id))
-                        .catch(err => console.error("Firestore delete trx error:", err));
-                }
+                    if (!IS_PREVIEW && db) {
+                        const mods = window.firebaseAppModules;
+                        mods.deleteDoc(mods.doc(db, 'artifacts', appId, 'transaksi', id))
+                            .catch(function(err) { console.error("Firestore delete trx error:", err); });
+                    }
 
-                if (currentDetailSiswaNis) {
-                    renderDetailRiwayatSiswaList();
-                    const sObj = state.siswa.find(x => x.nis === currentDetailSiswaNis);
-                    if (sObj) document.getElementById('detail-siswa-saldo-saat-ini').textContent = formatRp(sObj.saldo);
+                    if (currentDetailSiswaNis) {
+                        renderDetailRiwayatSiswaList();
+                        const sObj = state.siswa.find(function(x) { return String(x.nis) === String(currentDetailSiswaNis); });
+                        if (sObj) {
+                            const el = document.getElementById('detail-siswa-saldo-saat-ini');
+                            if (el) el.textContent = formatRp(sObj.saldo);
+                        }
+                    }
+                    renderAllViews();
                 }
-                renderAllViews();
-            }
+            });
         }
 
         function setLogoPreset(type) {
@@ -2671,82 +2840,130 @@
             }
         }
 
-        function parseIndoDate(str) {
-            if (!str) return null;
+        // Normalisasi tanggal transaksi → { y, m, d, key:'YYYY-MM-DD', timeMs } atau null
+        function parseTrxDateParts(str) {
+            if (str == null || str === '') return null;
             try {
-                const clean = String(str).trim().split(' ')[0];
-                // Format DD/MM/YYYY
-                if (clean.indexOf('/') !== -1) {
-                    const p = clean.split('/');
-                    if (p.length === 3) {
-                        const d = parseInt(p[0], 10);
-                        const m = parseInt(p[1], 10) - 1;
-                        const y = parseInt(p[2], 10);
-                        if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
-                            return new Date(y, m, d, 0, 0, 0, 0);
+                // Jika sudah Date object
+                if (Object.prototype.toString.call(str) === '[object Date]' && !isNaN(str.getTime())) {
+                    const y = str.getFullYear(), m = str.getMonth() + 1, d = str.getDate();
+                    return {
+                        y: y, m: m, d: d,
+                        key: y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0'),
+                        timeMs: new Date(y, m - 1, d, str.getHours(), str.getMinutes(), str.getSeconds()).getTime()
+                    };
+                }
+                let raw = String(str).trim();
+                // Ambil bagian waktu jika ada (HH:MM atau HH:MM:SS)
+                let hour = 0, minute = 0, second = 0;
+                const spaceIdx = raw.search(/\s+/);
+                let datePart = raw;
+                if (spaceIdx > 0) {
+                    datePart = raw.substring(0, spaceIdx);
+                    const timePart = raw.substring(spaceIdx).trim();
+                    const tp = timePart.split(':');
+                    hour = parseInt(tp[0], 10) || 0;
+                    minute = parseInt(tp[1], 10) || 0;
+                    second = parseInt(tp[2], 10) || 0;
+                }
+                // Buang karakter selain angka, /, -
+                datePart = datePart.replace(/[^\d\/\-]/g, '');
+                let y = 0, m = 0, d = 0;
+                if (datePart.indexOf('/') !== -1) {
+                    const p = datePart.split('/');
+                    if (p.length >= 3) {
+                        // DD/MM/YYYY (standar app)
+                        d = parseInt(p[0], 10);
+                        m = parseInt(p[1], 10);
+                        y = parseInt(p[2], 10);
+                        // Jika tahun di depan (YYYY/MM/DD)
+                        if (p[0].length === 4) {
+                            y = parseInt(p[0], 10);
+                            m = parseInt(p[1], 10);
+                            d = parseInt(p[2], 10);
                         }
                     }
-                }
-                // Format YYYY-MM-DD
-                if (clean.indexOf('-') !== -1) {
-                    const p = clean.split('-');
-                    if (p.length === 3) {
-                        const y = parseInt(p[0], 10);
-                        const m = parseInt(p[1], 10) - 1;
-                        const d = parseInt(p[2], 10);
-                        if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
-                            return new Date(y, m, d, 0, 0, 0, 0);
+                } else if (datePart.indexOf('-') !== -1) {
+                    const p = datePart.split('-');
+                    if (p.length >= 3) {
+                        if (p[0].length === 4) {
+                            // YYYY-MM-DD
+                            y = parseInt(p[0], 10);
+                            m = parseInt(p[1], 10);
+                            d = parseInt(p[2], 10);
+                        } else {
+                            // DD-MM-YYYY
+                            d = parseInt(p[0], 10);
+                            m = parseInt(p[1], 10);
+                            y = parseInt(p[2], 10);
                         }
                     }
+                } else if (/^\d{8}$/.test(datePart)) {
+                    // YYYYMMDD atau DDMMYYYY
+                    if (parseInt(datePart.substring(0, 4), 10) > 1900) {
+                        y = parseInt(datePart.substring(0, 4), 10);
+                        m = parseInt(datePart.substring(4, 6), 10);
+                        d = parseInt(datePart.substring(6, 8), 10);
+                    } else {
+                        d = parseInt(datePart.substring(0, 2), 10);
+                        m = parseInt(datePart.substring(2, 4), 10);
+                        y = parseInt(datePart.substring(4, 8), 10);
+                    }
                 }
-            } catch (e) {}
-            return null;
+                if (!y || !m || !d || m < 1 || m > 12 || d < 1 || d > 31) return null;
+                if (y < 100) y += 2000;
+                const timeMs = new Date(y, m - 1, d, hour, minute, second).getTime();
+                if (isNaN(timeMs)) return null;
+                return {
+                    y: y, m: m, d: d,
+                    key: y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0'),
+                    timeMs: timeMs
+                };
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function parseIndoDate(str) {
+            const p = parseTrxDateParts(str);
+            if (!p) return null;
+            return new Date(p.y, p.m - 1, p.d, 0, 0, 0, 0);
         }
 
         function parseIndoDateFromISO(isoStr) {
             if (!isoStr) return null;
-            try {
-                const p = String(isoStr).trim().split('-');
-                if (p.length === 3) {
-                    const y = parseInt(p[0], 10);
-                    const m = parseInt(p[1], 10) - 1;
-                    const d = parseInt(p[2], 10);
-                    if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
-                        return new Date(y, m, d, 0, 0, 0, 0);
-                    }
-                }
-            } catch (e) {}
-            return null;
+            const p = parseTrxDateParts(String(isoStr).trim());
+            if (!p) return null;
+            return new Date(p.y, p.m - 1, p.d, 0, 0, 0, 0);
         }
 
-        // Ambil timestamp dari tanggal+jam transaksi (format: DD/MM/YYYY HH:MM)
-        // Agar riwayat selalu urut terbaru di atas, termasuk backdate
+        // Key YYYY-MM-DD dari input type=date atau string tanggal
+        function toDateKey(val) {
+            if (!val) return null;
+            const p = parseTrxDateParts(val);
+            return p ? p.key : null;
+        }
+
+        // Cek apakah tanggal transaksi berada di rentang [startKey, endKey] (inklusif)
+        function isTrxInDateRange(tanggalStr, startKey, endKey) {
+            const p = parseTrxDateParts(tanggalStr);
+            if (!p) return true; // tidak bisa parse → tetap tampilkan
+            if (startKey && p.key < startKey) return false;
+            if (endKey && p.key > endKey) return false;
+            return true;
+        }
+
+        // Ambil timestamp dari tanggal+jam transaksi agar riwayat urut terbaru di atas
         function getTrxSortTime(t) {
             if (!t) return 0;
-            const str = (t.tanggal || '').trim();
-            if (str) {
-                const parts = str.split(' ');
-                const datePart = parts[0] || '';
-                const timePart = parts[1] || '00:00';
-                const dp = datePart.split('/');
-                const tp = timePart.split(':');
-                if (dp.length === 3) {
-                    const day = parseInt(dp[0], 10) || 1;
-                    const month = (parseInt(dp[1], 10) || 1) - 1;
-                    const year = parseInt(dp[2], 10) || 2000;
-                    const hour = parseInt(tp[0], 10) || 0;
-                    const minute = parseInt(tp[1], 10) || 0;
-                    const second = parseInt(tp[2], 10) || 0;
-                    const ms = new Date(year, month, day, hour, minute, second).getTime();
-                    if (!isNaN(ms)) return ms;
-                }
-            }
-            // Fallback: nomor dari ID transaksi
+            const p = parseTrxDateParts(t.tanggal);
+            if (p && p.timeMs) return p.timeMs;
             return Number(String(t.id || '').replace(/\D/g, '')) || 0;
         }
 
         function sortTransaksiTerbaru(list) {
-            return list.sort((a, b) => getTrxSortTime(b) - getTrxSortTime(a));
+            if (!list || !list.length) return list || [];
+            return list.sort(function(a, b) { return getTrxSortTime(b) - getTrxSortTime(a); });
         }
 
         function getFilteredRekapData() {
@@ -2756,23 +2973,20 @@
             const selectedNis = document.getElementById('rekap-select-siswa') ? document.getElementById('rekap-select-siswa').value : '';
             const selectedKelas = document.getElementById('rekap-select-kelas') ? document.getElementById('rekap-select-kelas').value : 'Semua';
 
-            let startDate = tglMulaiVal ? new Date(tglMulaiVal + 'T00:00:00') : null;
-            let endDate = tglSelesaiVal ? new Date(tglSelesaiVal + 'T23:59:59') : null;
+            const startKey = tglMulaiVal ? toDateKey(tglMulaiVal) : null;
+            const endKey = tglSelesaiVal ? toDateKey(tglSelesaiVal) : null;
 
-            let filteredTrx = state.transaksi.filter(t => {
-                const dt = parseIndoDate(t.tanggal);
-                if (!dt) return true;
-                if (startDate && dt < startDate) return false;
-                if (endDate && dt > endDate) return false;
-                return true;
+            let filteredTrx = (state.transaksi || []).filter(function(t) {
+                if (!startKey && !endKey) return true;
+                return isTrxInDateRange(t.tanggal, startKey, endKey);
             });
 
-            let targetSiswaList = [...state.siswa];
+            let targetSiswaList = [...(state.siswa || [])];
             let selectedSiswaObj = null;
 
             if (tipe === 'per_siswa') {
-                selectedSiswaObj = state.siswa.find(s => s.nis === selectedNis);
-                filteredTrx = filteredTrx.filter(t => t.nis === selectedNis);
+                selectedSiswaObj = state.siswa.find(function(s) { return String(s.nis) === String(selectedNis); });
+                filteredTrx = filteredTrx.filter(function(t) { return String(t.nis) === String(selectedNis); });
                 targetSiswaList = selectedSiswaObj ? [selectedSiswaObj] : [];
             } else if (tipe === 'per_kelas') {
                 if (selectedKelas !== 'Semua') {
@@ -2808,6 +3022,7 @@
         }
 
         function exportRekapPDF() {
+            try {
             const data = getFilteredRekapData();
             const datePrinted = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -2971,279 +3186,377 @@
                 `;
             }
 
-            const logoHtml = data.sekolah.logo ? `<img src="${data.sekolah.logo}" class="logo" alt="Logo">` : '';
+            const logoUrl = (data.sekolah && data.sekolah.logo) ? String(data.sekolah.logo).trim() : '';
+            const safeSchoolTitle = (data.sekolah.nama || 'Sekolah').replace(/[<>]/g, '');
+            const schoolNama = data.sekolah.nama || 'RA AL-HIDAYAH';
+            const schoolAlamat = data.sekolah.alamat || 'Palalang';
+            const schoolTahun = data.sekolah.tahun || '2025/2026';
+            const schoolKepsek = data.sekolah.kepsek || '................................';
+            const periodeUpper = (data.periodeText || '').toUpperCase();
 
-            const printHTML = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="utf-8">
-                    <title>Rekap_Tabungan_${data.sekolah.nama ? data.sekolah.nama.replace(/\s+/g, '_') : 'Sekolah'}</title>
-                    <style>
-                        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; color: #1e293b; font-size: 11px; line-height: 1.4; }
-                        .header { position: relative; border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 15px; text-align: center; }
-                        .logo { position: absolute; left: 10px; top: 0; width: 65px; height: 65px; object-fit: contain; }
-                        .school-name { font-size: 16px; font-weight: 800; text-transform: uppercase; margin: 0; color: #0f172a; }
-                        .school-address { font-size: 10px; margin: 3px 0; color: #475569; }
-                        .report-title { font-size: 13px; font-weight: 800; text-align: center; margin-top: 15px; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
-                        .report-meta { text-align: center; font-size: 10px; margin-bottom: 15px; color: #334155; font-weight: 600; }
-                        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 10px; }
-                        th, td { border: 1px solid #cbd5e1; padding: 5px 7px; text-align: left; }
-                        th { background-color: #f1f5f9; font-weight: 700; text-align: center; color: #0f172a; text-transform: uppercase; font-size: 9px; }
-                        .signature-container { width: 100%; margin-top: 30px; page-break-inside: avoid; }
-                        .signature-table { width: 100%; border: none; }
-                        .signature-table td { border: none; text-align: center; vertical-align: top; width: 50%; padding-top: 5px; font-size: 10px; }
-                        @media print {
-                            @page { margin: 12mm; size: A4; }
-                            body { margin: 0; }
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        ${logoHtml}
-                        <h2 class="school-name">${data.sekolah.nama || 'RA AL-HIDAYAH'}</h2>
-                        <p class="school-address">${data.sekolah.alamat || 'Palalang'}</p>
-                        <p class="school-address">Tahun Ajaran: ${data.sekolah.tahun || '2025/2026'}</p>
-                    </div>
+            // Konversi logo ke data-URL agar tampil penuh berwarna saat cetak/PDF
+            function canvasFromImg(imgEl) {
+                try {
+                    if (!imgEl || !imgEl.naturalWidth) return '';
+                    const c = document.createElement('canvas');
+                    c.width = imgEl.naturalWidth;
+                    c.height = imgEl.naturalHeight;
+                    const ctx = c.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, c.width, c.height);
+                    ctx.drawImage(imgEl, 0, 0);
+                    return c.toDataURL('image/png');
+                } catch (e) {
+                    return '';
+                }
+            }
 
-                    <h3 class="report-title">LAPORAN REKAPITULASI TABUNGAN SISWA</h3>
-                    <p class="report-meta">PERIODE: ${data.periodeText.toUpperCase()} | TANGGAL CETAK: ${datePrinted}</p>
-
-                    ${contentHTML}
-
-                    <div class="signature-container">
-                        <table class="signature-table">
-                            <tr>
-                                <td>
-                                    <p>Mengetahui,</p>
-                                    <p style="font-weight:bold;">Kepala Sekolah ${data.sekolah.nama}</p>
-                                    <div style="height:55px;"></div>
-                                    <p style="font-weight:bold; text-decoration:underline;">${data.sekolah.kepsek || '................................'}</p>
-                                    <p style="font-size:9px; color:#64748b;">NIP / ID: -</p>
-                                </td>
-                                <td>
-                                    <p>Palalang, ${datePrinted}</p>
-                                    <p style="font-weight:bold;">Bendahara Tabungan / Wali Kelas</p>
-                                    <div style="height:55px;"></div>
-                                    <p style="font-weight:bold; text-decoration:underline;">(...............................................)</p>
-                                    <p style="font-size:9px; color:#64748b;">Petugas Administrator</p>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-
-                    <script>
-                        window.onload = function() {
-                            setTimeout(function() {
-                                window.print();
-                            }, 500);
+            function resolveLogoDataUrl(url, callback) {
+                if (!url) { callback(''); return; }
+                // 1) Ambil dari logo yang sudah tampil di halaman (paling andal)
+                const candidates = [
+                    document.getElementById('login-school-logo'),
+                    document.querySelector('#dash-header-logo img'),
+                    document.querySelector('#header-logo-box img'),
+                    document.querySelector('img[alt="Logo"]')
+                ];
+                for (let i = 0; i < candidates.length; i++) {
+                    const el = candidates[i];
+                    if (el && el.complete && el.naturalWidth > 0) {
+                        const data = canvasFromImg(el);
+                        if (data) { callback(data); return; }
+                    }
+                }
+                // 2) Muat ulang gambar dengan crossOrigin
+                let done = false;
+                function finish(val) {
+                    if (done) return;
+                    done = true;
+                    callback(val || url);
+                }
+                try {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = function() {
+                        const data = canvasFromImg(img);
+                        finish(data || url);
+                    };
+                    img.onerror = function() {
+                        // 3) Tanpa crossOrigin
+                        const img2 = new Image();
+                        img2.onload = function() {
+                            const data = canvasFromImg(img2);
+                            finish(data || url);
                         };
-                    <\/script>
-                </body>
-                </html>
-            `;
+                        img2.onerror = function() { finish(url); };
+                        img2.src = url;
+                    };
+                    img.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'print=1';
+                } catch (e) {
+                    finish(url);
+                }
+                setTimeout(function() { finish(url); }, 2800);
+            }
 
-            const win = window.open('', '_blank');
-            if (win) {
-                win.document.open();
-                win.document.write(printHTML);
-                win.document.close();
-            } else {
-                showToast("Pop-up diblokir browser, mohon izinkan pop-up!", "error");
+            function buildPrintHTML(logoSrc) {
+                const logoHtml = logoSrc
+                    ? '<img src="' + logoSrc + '" class="logo" alt="Logo RA Al-Hidayah" style="-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;">'
+                    : '';
+                return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
+                    '<title>Rekap_Tabungan_' + safeSchoolTitle.replace(/\s+/g, '_') + '</title><style>' +
+                    '*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}' +
+                    'html,body{margin:0!important;padding:0!important;background:#ffffff!important;color:#111111!important;font-family:"Segoe UI",Arial,Helvetica,sans-serif;font-size:11px;line-height:1.45;}' +
+                    'body{padding:18px 20px;background:#ffffff!important;}' +
+                    '.header{position:relative;border-bottom:2px solid #1e293b;padding:8px 0 12px 80px;margin-bottom:14px;text-align:center;background:#ffffff!important;min-height:72px;}' +
+                    '.logo{position:absolute;left:4px;top:2px;width:70px;height:70px;object-fit:contain;background:#ffffff!important;border:0;}' +
+                    '.school-name{font-size:16px;font-weight:800;text-transform:uppercase;margin:0;color:#0f172a!important;}' +
+                    '.school-address{font-size:10px;margin:3px 0;color:#334155!important;}' +
+                    '.report-title{font-size:13px;font-weight:800;text-align:center;margin:12px 0 4px;text-transform:uppercase;color:#0f172a!important;letter-spacing:0.4px;}' +
+                    '.report-meta{text-align:center;font-size:10px;margin-bottom:14px;color:#334155!important;font-weight:600;}' +
+                    'table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:10px;background:#ffffff!important;}' +
+                    'th,td{border:1px solid #94a3b8;padding:5px 6px;text-align:left;background:#ffffff!important;color:#111111!important;}' +
+                    'th{background-color:#e2e8f0!important;font-weight:700;text-align:center;color:#0f172a!important;text-transform:uppercase;font-size:9px;}' +
+                    'tfoot td{background-color:#f1f5f9!important;}' +
+                    '.signature-container{width:100%;margin-top:28px;page-break-inside:avoid;background:#ffffff!important;}' +
+                    '.signature-table{width:100%;border:none;}' +
+                    '.signature-table td{border:none!important;text-align:center;vertical-align:top;width:50%;padding-top:6px;font-size:10px;background:transparent!important;color:#111111!important;}' +
+                    '@media print{@page{margin:12mm;size:A4;}html,body{background:#ffffff!important;color:#111111!important;margin:0!important;}body{padding:0;}' +
+                    'img.logo{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;max-width:70px!important;}}' +
+                    '</style></head><body style="background:#ffffff!important;color:#111111!important;">' +
+                    '<div class="header">' + logoHtml +
+                    '<h2 class="school-name">' + schoolNama + '</h2>' +
+                    '<p class="school-address">' + schoolAlamat + '</p>' +
+                    '<p class="school-address">Tahun Ajaran: ' + schoolTahun + '</p></div>' +
+                    '<h3 class="report-title">LAPORAN REKAPITULASI TABUNGAN SISWA</h3>' +
+                    '<p class="report-meta">PERIODE: ' + periodeUpper + ' | TANGGAL CETAK: ' + datePrinted + '</p>' +
+                    contentHTML +
+                    '<div class="signature-container"><table class="signature-table"><tr><td>' +
+                    '<p>Mengetahui,</p><p style="font-weight:bold;">Kepala Sekolah ' + schoolNama + '</p>' +
+                    '<div style="height:55px;"></div>' +
+                    '<p style="font-weight:bold;text-decoration:underline;">' + schoolKepsek + '</p>' +
+                    '<p style="font-size:9px;color:#64748b;">NIP / ID: -</p></td><td>' +
+                    '<p>Palalang, ' + datePrinted + '</p>' +
+                    '<p style="font-weight:bold;">Bendahara Tabungan / Wali Kelas</p>' +
+                    '<div style="height:55px;"></div>' +
+                    '<p style="font-weight:bold;text-decoration:underline;">(...............................................)</p>' +
+                    '<p style="font-size:9px;color:#64748b;">Petugas Administrator</p></td></tr></table></div>' +
+                    '<script>(function(){function doPrint(){try{window.focus();window.print();}catch(e){}}' +
+                    'var imgs=document.querySelectorAll("img");if(!imgs.length){setTimeout(doPrint,400);return;}' +
+                    'var left=imgs.length;function done(){left--;if(left<=0)setTimeout(doPrint,400);}' +
+                    'for(var i=0;i<imgs.length;i++){if(imgs[i].complete&&imgs[i].naturalWidth)done();else{imgs[i].onload=done;imgs[i].onerror=done;}}' +
+                    'setTimeout(doPrint,3000);})();<\/script></body></html>';
+            }
+
+            function openPrintDoc(html) {
+                try {
+                    let frame = document.getElementById('print-frame-rekap');
+                    if (frame) { try { frame.parentNode.removeChild(frame); } catch (e) {} }
+                    frame = document.createElement('iframe');
+                    frame.id = 'print-frame-rekap';
+                    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none;';
+                    document.body.appendChild(frame);
+                    const doc = frame.contentDocument || frame.contentWindow.document;
+                    doc.open();
+                    doc.write(html);
+                    doc.close();
+                    showToast("Menyiapkan cetak PDF (logo berwarna)...", "info");
+                } catch (err) {
+                    try {
+                        const win = window.open('', '_blank');
+                        if (win) {
+                            win.document.open();
+                            win.document.write(html);
+                            win.document.close();
+                        } else {
+                            showToast("Gagal membuka jendela cetak. Izinkan pop-up.", "error");
+                        }
+                    } catch (e2) {
+                        showToast("Gagal mencetak PDF.", "error");
+                    }
+                }
+            }
+
+            showToast("Memuat logo untuk cetak...", "info");
+            resolveLogoDataUrl(logoUrl, function(logoSrc) {
+                openPrintDoc(buildPrintHTML(logoSrc));
+            });
+            } catch (errOuter) {
+                console.error("exportRekapPDF error:", errOuter);
+                showToast("Gagal membuat laporan PDF. Coba lagi.", "error");
             }
         }
 
         function saveAndDownloadExcel(wb, fileName) {
+            const safeName = String(fileName || 'Rekap.xlsx').replace(/[^\w.\-]+/g, '_');
             try {
-                if (typeof XLSX !== 'undefined' && XLSX.writeFile) {
-                    XLSX.writeFile(wb, fileName);
-                    showToast("File Excel Berhasil Diunduh!", "success");
-                    return;
+                if (typeof XLSX === 'undefined') {
+                    showToast("Library Excel belum siap.", "error");
+                    return false;
                 }
-            } catch (e) {
-                console.warn("XLSX.writeFile direct download error, trying blob download:", e);
-            }
-
-            try {
-                if (typeof XLSX !== 'undefined') {
-                    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-                    function s2ab(s) {
-                        const buf = new ArrayBuffer(s.length);
-                        const view = new Uint8Array(buf);
-                        for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-                        return buf;
-                    }
-                    const blob = new Blob([s2ab(wbout)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = fileName;
-                    document.body.appendChild(a);
-                    a.click();
-                    setTimeout(() => {
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                    }, 1000);
-                    showToast("File Excel Berhasil Diunduh!", "success");
-                    return;
+                // Array buffer paling stabil di Android WebView
+                let out;
+                try {
+                    out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                } catch (e1) {
+                    // Fallback binary
+                    const bin = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+                    const buf = new ArrayBuffer(bin.length);
+                    const view = new Uint8Array(buf);
+                    for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i) & 0xFF;
+                    out = buf;
                 }
+                const blob = new Blob([out], {
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = safeName;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(function() {
+                    try { document.body.removeChild(a); } catch (e) {}
+                    try { URL.revokeObjectURL(url); } catch (e) {}
+                }, 1500);
+                showToast("File Excel berhasil diunduh!", "success");
+                return true;
             } catch (err) {
-                console.error("Blob download error:", err);
-                showToast("Gagal mengunduh Excel: " + err.message, "error");
+                console.error("Excel download error:", err);
+                showToast("Gagal unduh Excel. Mencoba CSV...", "error");
+                return false;
             }
         }
 
         function exportRekapExcel() {
-            const data = getFilteredRekapData();
-            
-            if (typeof XLSX === 'undefined') {
-                showToast("Memuat library Excel...", "info");
-                const script = document.createElement('script');
-                script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
-                script.onload = () => {
-                    exportRekapExcel();
-                };
-                script.onerror = () => {
-                    showToast("Gagal memuat library Excel, mengunduh format CSV...", "warning");
-                    downloadCSVFallback(data);
-                };
-                document.head.appendChild(script);
-                return;
-            }
+            try {
+                const data = getFilteredRekapData();
 
-            const wb = XLSX.utils.book_new();
-
-            if (data.tipe === 'per_siswa' && data.selectedSiswaObj) {
-                const s = data.selectedSiswaObj;
-                const rows = [
-                    ["LAPORAN TABUNGAN INDIVIDUAL SISWA"],
-                    ["Sekolah", data.sekolah.nama || 'RA AL-HIDAYAH'],
-                    ["Periode", data.periodeText],
-                    ["Nama Siswa", s.nama],
-                    ["NIS", s.nis],
-                    ["Kelas", s.kelas],
-                    ["Wali Murid", s.wali || '-'],
-                    ["No HP", s.hp || '-'],
-                    ["Saldo Saat Ini", Number(s.saldo) || 0],
-                    [],
-                    ["No", "Tanggal", "Jenis Transaksi", "Keperluan / Catatan", "Setoran (Rp)", "Penarikan (Rp)", "Saldo Berjalan (Rp)"]
-                ];
-
-                let rSaldo = 0;
-                let totSetor = 0;
-                let totTarik = 0;
-
-                const sorted = [...data.transaksiList].reverse();
-                sorted.forEach((t, idx) => {
-                    const nom = Number(t.nominal) || 0;
-                    if (t.tipe === 'setor') {
-                        totSetor += nom;
-                        rSaldo += nom;
-                    } else {
-                        totTarik += nom;
-                        rSaldo -= nom;
+                if (typeof XLSX === 'undefined') {
+                    showToast("Memuat library Excel...", "info");
+                    const existing = document.querySelector('script[data-xlsx-loader]');
+                    if (existing) {
+                        setTimeout(exportRekapExcel, 800);
+                        return;
                     }
-                    rows.push([
-                        idx + 1,
-                        t.tanggal,
-                        t.tipe.toUpperCase(),
-                        t.keperluan || '-',
-                        t.tipe === 'setor' ? nom : 0,
-                        t.tipe === 'tarik' ? nom : 0,
-                        rSaldo
-                    ]);
-                });
+                    const script = document.createElement('script');
+                    script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+                    script.setAttribute('data-xlsx-loader', '1');
+                    script.onload = function() { setTimeout(exportRekapExcel, 200); };
+                    script.onerror = function() {
+                        showToast("Library Excel gagal dimuat. Mengunduh CSV...", "info");
+                        downloadCSVFallback(data);
+                    };
+                    document.head.appendChild(script);
+                    return;
+                }
 
-                rows.push([]);
-                rows.push(["TOTAL PERIODE INI", "", "", "", totSetor, totTarik, totSetor - totTarik]);
+                const wb = XLSX.utils.book_new();
 
-                const ws = XLSX.utils.aoa_to_sheet(rows);
-                ws['!cols'] = [{wch: 6}, {wch: 16}, {wch: 16}, {wch: 30}, {wch: 18}, {wch: 18}, {wch: 22}];
-                XLSX.utils.book_append_sheet(wb, ws, "Tabungan_Siswa");
-                
-                const safeName = (s.nama || 'Siswa').replace(/[^a-zA-Z0-9_-]/g, '_');
-                saveAndDownloadExcel(wb, `Tabungan_${safeName}_${s.nis}.xlsx`);
-            } else {
-                const rowsSiswa = [
-                    ["REKAPITULASI TABUNGAN SISWA - " + (data.sekolah.nama ? data.sekolah.nama.toUpperCase() : "SEKOLAH")],
-                    ["Periode", data.periodeText],
-                    [],
-                    ["No", "NIS", "Nama Siswa", "Kelas", "Total Setoran (Rp)", "Total Penarikan (Rp)", "Saldo Akhir (Rp)"]
-                ];
+                if (data.tipe === 'per_siswa' && data.selectedSiswaObj) {
+                    const s = data.selectedSiswaObj;
+                    const rows = [
+                        ["LAPORAN TABUNGAN INDIVIDUAL SISWA"],
+                        ["Sekolah", data.sekolah.nama || 'RA AL-HIDAYAH'],
+                        ["Periode", data.periodeText],
+                        ["Nama Siswa", s.nama || ''],
+                        ["NIS", String(s.nis || '')],
+                        ["Kelas", s.kelas || ''],
+                        ["Wali Murid", s.wali || '-'],
+                        ["No HP", s.hp || '-'],
+                        ["Saldo Saat Ini", Number(s.saldo) || 0],
+                        [],
+                        ["No", "Tanggal", "Jenis Transaksi", "Keperluan / Catatan", "Setoran (Rp)", "Penarikan (Rp)", "Saldo Berjalan (Rp)"]
+                    ];
 
-                let gSetor = 0, gTarik = 0, gSaldo = 0;
-
-                data.siswaList.forEach((s, idx) => {
-                    let sSetor = 0, sTarik = 0;
-                    data.transaksiList.filter(t => t.nis === s.nis).forEach(t => {
+                    let rSaldo = 0;
+                    let totSetor = 0;
+                    let totTarik = 0;
+                    const sorted = [...(data.transaksiList || [])].reverse();
+                    sorted.forEach(function(t, idx) {
                         const nom = Number(t.nominal) || 0;
-                        if (t.tipe === 'setor') sSetor += nom;
-                        if (t.tipe === 'tarik') sTarik += nom;
+                        if (t.tipe === 'setor') {
+                            totSetor += nom;
+                            rSaldo += nom;
+                        } else {
+                            totTarik += nom;
+                            rSaldo -= nom;
+                        }
+                        rows.push([
+                            idx + 1,
+                            t.tanggal || '',
+                            String(t.tipe || '').toUpperCase(),
+                            t.keperluan || '-',
+                            t.tipe === 'setor' ? nom : 0,
+                            t.tipe === 'tarik' ? nom : 0,
+                            rSaldo
+                        ]);
                     });
-                    gSetor += sSetor;
-                    gTarik += sTarik;
-                    gSaldo += Number(s.saldo) || 0;
+                    rows.push([]);
+                    rows.push(["TOTAL PERIODE INI", "", "", "", totSetor, totTarik, totSetor - totTarik]);
 
-                    rowsSiswa.push([
-                        idx + 1,
-                        s.nis,
-                        s.nama,
-                        s.kelas,
-                        sSetor,
-                        sTarik,
-                        Number(s.saldo) || 0
-                    ]);
-                });
+                    const ws = XLSX.utils.aoa_to_sheet(rows);
+                    ws['!cols'] = [{wch: 6}, {wch: 16}, {wch: 16}, {wch: 30}, {wch: 18}, {wch: 18}, {wch: 22}];
+                    XLSX.utils.book_append_sheet(wb, ws, "Tabungan_Siswa");
+                    const safeName = String(s.nama || 'Siswa').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 40);
+                    if (!saveAndDownloadExcel(wb, 'Tabungan_' + safeName + '_' + String(s.nis || '') + '.xlsx')) {
+                        downloadCSVFallback(data);
+                    }
+                } else {
+                    const rowsSiswa = [
+                        ["REKAPITULASI TABUNGAN SISWA - " + ((data.sekolah.nama || "SEKOLAH") + "").toUpperCase()],
+                        ["Periode", data.periodeText || ''],
+                        [],
+                        ["No", "NIS", "Nama Siswa", "Kelas", "Total Setoran (Rp)", "Total Penarikan (Rp)", "Saldo Akhir (Rp)"]
+                    ];
+                    let gSetor = 0, gTarik = 0, gSaldo = 0;
+                    (data.siswaList || []).forEach(function(s, idx) {
+                        let sSetor = 0, sTarik = 0;
+                        const snis = String(s.nis || '');
+                        (data.transaksiList || []).filter(function(t) { return String(t.nis || '') === snis; }).forEach(function(t) {
+                            const nom = Number(t.nominal) || 0;
+                            if (t.tipe === 'setor') sSetor += nom;
+                            if (t.tipe === 'tarik') sTarik += nom;
+                        });
+                        gSetor += sSetor;
+                        gTarik += sTarik;
+                        gSaldo += Number(s.saldo) || 0;
+                        rowsSiswa.push([idx + 1, snis, s.nama || '', s.kelas || '', sSetor, sTarik, Number(s.saldo) || 0]);
+                    });
+                    rowsSiswa.push([]);
+                    rowsSiswa.push(["TOTAL KESELURUHAN", "", "", "", gSetor, gTarik, gSaldo]);
 
-                rowsSiswa.push([]);
-                rowsSiswa.push(["TOTAL KESELURUHAN", "", "", "", gSetor, gTarik, gSaldo]);
+                    const rowsJurnal = [
+                        ["JURNAL DETAIL TRANSAKSI"],
+                        ["No", "Tanggal", "NIS", "Nama Siswa", "Kelas", "Jenis", "Nominal (Rp)", "Keperluan / Catatan"]
+                    ];
+                    (data.transaksiList || []).forEach(function(t, idx) {
+                        rowsJurnal.push([
+                            idx + 1,
+                            t.tanggal || '',
+                            String(t.nis || ''),
+                            t.nama || '',
+                            t.kelas || '',
+                            String(t.tipe || '').toUpperCase(),
+                            Number(t.nominal) || 0,
+                            t.keperluan || '-'
+                        ]);
+                    });
 
-                const rowsJurnal = [
-                    ["JURNAL DETAIL TRANSAKSI"],
-                    ["No", "Tanggal", "NIS", "Nama Siswa", "Kelas", "Jenis", "Nominal (Rp)", "Keperluan / Catatan"]
-                ];
-
-                data.transaksiList.forEach((t, idx) => {
-                    rowsJurnal.push([
-                        idx + 1,
-                        t.tanggal,
-                        t.nis,
-                        t.nama,
-                        t.kelas,
-                        t.tipe.toUpperCase(),
-                        Number(t.nominal) || 0,
-                        t.keperluan || '-'
-                    ]);
-                });
-
-                const ws1 = XLSX.utils.aoa_to_sheet(rowsSiswa);
-                ws1['!cols'] = [{wch: 6}, {wch: 14}, {wch: 28}, {wch: 16}, {wch: 20}, {wch: 20}, {wch: 22}];
-
-                const ws2 = XLSX.utils.aoa_to_sheet(rowsJurnal);
-                ws2['!cols'] = [{wch: 6}, {wch: 16}, {wch: 14}, {wch: 28}, {wch: 14}, {wch: 12}, {wch: 18}, {wch: 30}];
-
-                XLSX.utils.book_append_sheet(wb, ws1, "Rekap_Saldo");
-                XLSX.utils.book_append_sheet(wb, ws2, "Jurnal_Transaksi");
-                
-                saveAndDownloadExcel(wb, `Rekap_Tabungan_RA_AlHidayah_${Date.now()}.xlsx`);
+                    const ws1 = XLSX.utils.aoa_to_sheet(rowsSiswa);
+                    ws1['!cols'] = [{wch: 6}, {wch: 14}, {wch: 28}, {wch: 16}, {wch: 20}, {wch: 20}, {wch: 22}];
+                    const ws2 = XLSX.utils.aoa_to_sheet(rowsJurnal);
+                    ws2['!cols'] = [{wch: 6}, {wch: 16}, {wch: 14}, {wch: 28}, {wch: 14}, {wch: 12}, {wch: 18}, {wch: 30}];
+                    XLSX.utils.book_append_sheet(wb, ws1, "Rekap_Saldo");
+                    XLSX.utils.book_append_sheet(wb, ws2, "Jurnal_Transaksi");
+                    if (!saveAndDownloadExcel(wb, 'Rekap_Tabungan_' + Date.now() + '.xlsx')) {
+                        downloadCSVFallback(data);
+                    }
+                }
+            } catch (err) {
+                console.error("exportRekapExcel error:", err);
+                try {
+                    downloadCSVFallback(getFilteredRekapData());
+                } catch (e2) {
+                    showToast("Gagal export. Coba lagi.", "error");
+                }
             }
         }
 
         function downloadCSVFallback(data) {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Tanggal,NIS,Nama,Kelas,Jenis,Nominal,Keperluan\n";
-            data.transaksiList.forEach(t => {
-                csvContent += `"${t.tanggal}","${t.nis}","${t.nama}","${t.kelas}","${t.tipe}","${t.nominal}","${t.keperluan || '-'}"\n`;
-            });
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Rekap_Tabungan_${Date.now()}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast("File CSV Berhasil Diunduh!", "success");
+            try {
+                if (!data) data = getFilteredRekapData();
+                let csv = '\uFEFF'; // BOM agar Excel baca UTF-8
+                csv += 'Tanggal,NIS,Nama,Kelas,Jenis,Nominal,Keperluan\n';
+                (data.transaksiList || []).forEach(function(t) {
+                    const row = [
+                        t.tanggal || '',
+                        t.nis || '',
+                        t.nama || '',
+                        t.kelas || '',
+                        t.tipe || '',
+                        t.nominal || 0,
+                        (t.keperluan || '-').replace(/"/g, "'")
+                    ].map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(',');
+                    csv += row + '\n';
+                });
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'Rekap_Tabungan_' + Date.now() + '.csv';
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(function() {
+                    try { document.body.removeChild(link); } catch (e) {}
+                    try { URL.revokeObjectURL(url); } catch (e) {}
+                }, 1000);
+                showToast("File CSV berhasil diunduh!", "success");
+            } catch (err) {
+                console.error("CSV fallback error:", err);
+                showToast("Gagal mengunduh file.", "error");
+            }
         }
     </script>
 </body>
