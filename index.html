@@ -925,20 +925,29 @@
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <div class="px-4 py-2 bg-emerald-50 border-b border-emerald-100 flex gap-2 shrink-0">
-                        <!-- Tautan asli (bukan a.click palsu) — WebView lebih aman saat user yang menekan -->
-                        <a id="excel-download-link" href="#" download="Rekap_Tabungan.xls"
-                           class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 no-underline">
-                            <i class="fas fa-download"></i> Unduh File Excel
-                        </a>
-                        <button type="button" onclick="closeModal('modal-excel-download')" class="px-4 py-2.5 rounded-xl bg-slate-200 text-slate-700 font-bold text-xs">
-                            Tutup
+                    <div class="px-4 py-2 bg-emerald-50 border-b border-emerald-100 flex flex-col gap-2 shrink-0">
+                        <button type="button" id="btn-excel-share" onclick="shareExcelData()"
+                           class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2">
+                            <i class="fas fa-share-alt"></i> Bagikan / Simpan ke File
                         </button>
+                        <div class="flex gap-2">
+                            <button type="button" id="btn-excel-copy" onclick="copyExcelData()"
+                               class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-2">
+                                <i class="fas fa-copy"></i> Salin Data
+                            </button>
+                            <button type="button" onclick="closeModal('modal-excel-download')" class="px-4 py-2 rounded-xl bg-slate-200 text-slate-700 font-bold text-xs">
+                                Tutup
+                            </button>
+                        </div>
                     </div>
-                    <p class="px-4 pt-2 text-[10px] text-slate-500 shrink-0">Pratinjau data di bawah. Tekan tombol hijau <b>Unduh File Excel</b> untuk menyimpan ke folder Unduhan.</p>
+                    <p class="px-4 pt-2 text-[10px] text-slate-500 shrink-0">
+                        <b>AppCreator24:</b> Tekan <b>Bagikan / Simpan ke File</b> → pilih <b>Drive / Files / Excel / Sheets</b>.
+                        Cara ini memakai menu sistem Android (bukan unduhan Blob yang membuat crash).
+                    </p>
                     <div id="excel-preview-body" class="flex-1 overflow-auto p-3 text-[11px] text-slate-800 leading-relaxed">
                         <!-- diisi JS -->
                     </div>
+                    <textarea id="excel-raw-text" readonly class="sr-only" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" aria-hidden="true"></textarea>
                 </div>
             </div>
 
@@ -953,7 +962,7 @@
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <h3 class="text-sm font-extrabold text-slate-100">Pembaruan Tersedia</h3>
-                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v3.0.1</span>
+                                <span id="update-version-badge" class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">v3.0.2</span>
                             </div>
                             <p class="text-[11px] text-slate-400 mt-0.5">Versi baru siap dipasang</p>
                         </div>
@@ -1121,14 +1130,14 @@
         let isUpdateInProgress = false;
 
         /* ===== SISTEM UPDATE ===== */
-        const APP_VERSION = "3.0.1";
+        const APP_VERSION = "3.0.2";
         const APP_VERSION_STORAGE_KEY = "tabungan_ra_app_version_v1";
         const UPDATE_CHECK_URL = "https://raw.githubusercontent.com/alwan281/tabungan-siswa-Ra-Alhidayah/main/version.json";
         const UPDATE_CHANGELOG = [
-            "Unduh Excel via tautan asli (bukan a.click palsu) — cegah crash WebView",
-            "SheetJS CDN jsDelivr + cadangan cdnjs",
-            "File .xls HTML ringan tanpa XLSX.write",
-            "Logo cetak PDF & stabilitas aplikasi"
+            "AppCreator24: Bagikan/Simpan via menu sistem Android (tanpa Blob)",
+            "Tidak ada a.click / data-URI / unduhan file yang crash WebView",
+            "Cadangan Salin Data + intent SHARE Android",
+            "Logo cetak PDF & fitur lain tetap utuh"
         ];
         let remoteUpdateVersion = null;
         let remoteUpdateChangelog = null;
@@ -2968,44 +2977,40 @@
             }
         }
 
-        var _excelBlobUrl = null;
+        /* Data teks Excel untuk Share / Salin — TANPA Blob / data-URI / a.click (aman AppCreator24) */
+        var _excelShareText = '';
+        var _excelShareName = 'Rekap_Tabungan.csv';
 
-        function buildExcelHtmlDocument(data) {
-            /* HTML tabel yang bisa dibuka Excel (.xls) — ringan, tanpa XLSX.write */
-            var esc = function (v) {
-                return String(v == null ? '' : v)
-                    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-            };
-            var body = '';
-
+        function buildExcelCsvText(data) {
+            function cell(v) {
+                return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+            }
+            var lines = [];
             if (data.tipe === 'per_siswa' && data.selectedSiswaObj) {
                 var s = data.selectedSiswaObj;
+                lines.push(cell('LAPORAN TABUNGAN INDIVIDUAL'));
+                lines.push(cell('Sekolah') + ',' + cell(data.sekolah.nama));
+                lines.push(cell('Periode') + ',' + cell(data.periodeText));
+                lines.push(cell('Nama') + ',' + cell(s.nama));
+                lines.push(cell('NIS') + ',' + cell(s.nis));
+                lines.push(cell('Kelas') + ',' + cell(s.kelas));
+                lines.push(cell('Saldo') + ',' + cell(Number(s.saldo) || 0));
+                lines.push('');
+                lines.push([cell('No'), cell('Tanggal'), cell('Jenis'), cell('Keperluan'), cell('Setoran'), cell('Penarikan'), cell('Saldo')].join(','));
                 var totSetor = 0, totTarik = 0, rSaldo = 0;
-                var rows = '';
-                var sorted = (data.transaksiList || []).slice().reverse();
-                sorted.forEach(function (t, idx) {
+                (data.transaksiList || []).slice().reverse().forEach(function (t, idx) {
                     var nom = Number(t.nominal) || 0;
                     if (t.tipe === 'setor') { totSetor += nom; rSaldo += nom; }
                     else { totTarik += nom; rSaldo -= nom; }
-                    rows += '<tr><td>' + (idx + 1) + '</td><td>' + esc(t.tanggal) + '</td><td>' +
-                        esc((t.tipe || '').toUpperCase()) + '</td><td>' + esc(t.keperluan || '-') +
-                        '</td><td>' + (t.tipe === 'setor' ? nom : 0) + '</td><td>' +
-                        (t.tipe === 'tarik' ? nom : 0) + '</td><td>' + rSaldo + '</td></tr>';
+                    lines.push([cell(idx + 1), cell(t.tanggal), cell((t.tipe || '').toUpperCase()), cell(t.keperluan || '-'), cell(t.tipe === 'setor' ? nom : 0), cell(t.tipe === 'tarik' ? nom : 0), cell(rSaldo)].join(','));
                 });
-                body =
-                    '<h2>LAPORAN TABUNGAN INDIVIDUAL</h2>' +
-                    '<p>Sekolah: ' + esc(data.sekolah.nama) + ' | Periode: ' + esc(data.periodeText) + '</p>' +
-                    '<p>Nama: ' + esc(s.nama) + ' | NIS: ' + esc(s.nis) + ' | Kelas: ' + esc(s.kelas) +
-                    ' | Saldo: ' + (Number(s.saldo) || 0) + '</p>' +
-                    '<table border="1" cellspacing="0" cellpadding="4">' +
-                    '<tr><th>No</th><th>Tanggal</th><th>Jenis</th><th>Keperluan</th><th>Setoran</th><th>Penarikan</th><th>Saldo</th></tr>' +
-                    (rows || '<tr><td colspan="7">Tidak ada data</td></tr>') +
-                    '<tr><td colspan="4"><b>TOTAL</b></td><td><b>' + totSetor + '</b></td><td><b>' + totTarik +
-                    '</b></td><td><b>' + (totSetor - totTarik) + '</b></td></tr></table>';
+                lines.push([cell('TOTAL'), '', '', '', cell(totSetor), cell(totTarik), cell(totSetor - totTarik)].join(','));
             } else {
+                lines.push(cell('REKAPITULASI TABUNGAN - ' + (data.sekolah.nama || '')));
+                lines.push(cell('Periode') + ',' + cell(data.periodeText));
+                lines.push('');
+                lines.push([cell('No'), cell('NIS'), cell('Nama'), cell('Kelas'), cell('Total Setor'), cell('Total Tarik'), cell('Saldo')].join(','));
                 var gSetor = 0, gTarik = 0, gSaldo = 0;
-                var r1 = '';
                 (data.siswaList || []).forEach(function (s, idx) {
                     var sSetor = 0, sTarik = 0;
                     (data.transaksiList || []).forEach(function (t) {
@@ -3015,108 +3020,170 @@
                         if (t.tipe === 'tarik') sTarik += nom;
                     });
                     gSetor += sSetor; gTarik += sTarik; gSaldo += Number(s.saldo) || 0;
-                    r1 += '<tr><td>' + (idx + 1) + '</td><td>' + esc(s.nis) + '</td><td>' + esc(s.nama) +
-                        '</td><td>' + esc(s.kelas) + '</td><td>' + sSetor + '</td><td>' + sTarik +
-                        '</td><td>' + (Number(s.saldo) || 0) + '</td></tr>';
+                    lines.push([cell(idx + 1), cell(s.nis), cell(s.nama), cell(s.kelas), cell(sSetor), cell(sTarik), cell(Number(s.saldo) || 0)].join(','));
                 });
-                var r2 = '';
+                lines.push([cell('TOTAL'), '', '', '', cell(gSetor), cell(gTarik), cell(gSaldo)].join(','));
+                lines.push('');
+                lines.push(cell('JURNAL TRANSAKSI'));
+                lines.push([cell('No'), cell('Tanggal'), cell('NIS'), cell('Nama'), cell('Kelas'), cell('Jenis'), cell('Nominal'), cell('Keperluan')].join(','));
                 (data.transaksiList || []).forEach(function (t, idx) {
-                    r2 += '<tr><td>' + (idx + 1) + '</td><td>' + esc(t.tanggal) + '</td><td>' + esc(t.nis) +
-                        '</td><td>' + esc(t.nama) + '</td><td>' + esc(t.kelas) + '</td><td>' +
-                        esc((t.tipe || '').toUpperCase()) + '</td><td>' + (Number(t.nominal) || 0) +
-                        '</td><td>' + esc(t.keperluan || '-') + '</td></tr>';
+                    lines.push([cell(idx + 1), cell(t.tanggal), cell(t.nis), cell(t.nama), cell(t.kelas), cell((t.tipe || '').toUpperCase()), cell(Number(t.nominal) || 0), cell(t.keperluan || '-')].join(','));
                 });
-                body =
-                    '<h2>REKAPITULASI TABUNGAN — ' + esc(data.sekolah.nama || '') + '</h2>' +
-                    '<p>Periode: ' + esc(data.periodeText) + '</p>' +
-                    '<h3>Rekapitulasi Saldo</h3>' +
-                    '<table border="1" cellspacing="0" cellpadding="4">' +
-                    '<tr><th>No</th><th>NIS</th><th>Nama</th><th>Kelas</th><th>Total Setor</th><th>Total Tarik</th><th>Saldo</th></tr>' +
-                    (r1 || '<tr><td colspan="7">Tidak ada data</td></tr>') +
-                    '<tr><td colspan="4"><b>TOTAL</b></td><td><b>' + gSetor + '</b></td><td><b>' + gTarik +
-                    '</b></td><td><b>' + gSaldo + '</b></td></tr></table>' +
-                    '<h3>Jurnal Transaksi</h3>' +
-                    '<table border="1" cellspacing="0" cellpadding="4">' +
-                    '<tr><th>No</th><th>Tanggal</th><th>NIS</th><th>Nama</th><th>Kelas</th><th>Jenis</th><th>Nominal</th><th>Keperluan</th></tr>' +
-                    (r2 || '<tr><td colspan="8">Tidak ada data</td></tr>') + '</table>';
             }
-
-            return '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">' +
-                '<head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets>' +
-                '<x:ExcelWorksheet><x:Name>Rekap</x:Name><x:WorksheetOptions><x:DisplayGridlines/>' +
-                '</x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->' +
-                '<style>table{border-collapse:collapse}td,th{border:1px solid #333;padding:4px 6px;font-size:12px}' +
-                'th{background:#e2e8f0}body{font-family:Arial,sans-serif}</style></head><body>' + body + '</body></html>';
+            return lines.join('\r\n');
         }
 
         function buildExcelPreviewHtml(data) {
-            var full = buildExcelHtmlDocument(data);
-            var m = full.match(/<body>([\s\S]*)<\/body>/i);
-            return m ? m[1] : full;
+            var esc = function (v) {
+                return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            };
+            if (data.tipe === 'per_siswa' && data.selectedSiswaObj) {
+                var s = data.selectedSiswaObj;
+                var trs = '', totSetor = 0, totTarik = 0, rSaldo = 0;
+                (data.transaksiList || []).slice().reverse().forEach(function (t, idx) {
+                    var nom = Number(t.nominal) || 0;
+                    if (t.tipe === 'setor') { totSetor += nom; rSaldo += nom; } else { totTarik += nom; rSaldo -= nom; }
+                    trs += '<tr><td>' + (idx + 1) + '</td><td>' + esc(t.tanggal) + '</td><td>' + esc((t.tipe || '').toUpperCase()) + '</td><td>' + esc(t.keperluan || '-') + '</td><td>' + (t.tipe === 'setor' ? nom : 0) + '</td><td>' + (t.tipe === 'tarik' ? nom : 0) + '</td><td>' + rSaldo + '</td></tr>';
+                });
+                return '<p><b>' + esc(s.nama) + '</b> (NIS ' + esc(s.nis) + ') — ' + esc(s.kelas) + '<br>Saldo: <b>' + (Number(s.saldo) || 0) + '</b></p>' +
+                    '<table style="width:100%;border-collapse:collapse;font-size:11px" border="1" cellpadding="4"><tr style="background:#e2e8f0"><th>No</th><th>Tanggal</th><th>Jenis</th><th>Keperluan</th><th>Setor</th><th>Tarik</th><th>Saldo</th></tr>' +
+                    (trs || '<tr><td colspan="7">Kosong</td></tr>') + '</table>';
+            }
+            var gSetor = 0, gTarik = 0, gSaldo = 0, siswaTr = '', trxTr = '';
+            (data.siswaList || []).forEach(function (s, idx) {
+                var sSetor = 0, sTarik = 0;
+                (data.transaksiList || []).forEach(function (t) {
+                    if (t.nis !== s.nis) return;
+                    var nom = Number(t.nominal) || 0;
+                    if (t.tipe === 'setor') sSetor += nom;
+                    if (t.tipe === 'tarik') sTarik += nom;
+                });
+                gSetor += sSetor; gTarik += sTarik; gSaldo += Number(s.saldo) || 0;
+                siswaTr += '<tr><td>' + (idx + 1) + '</td><td>' + esc(s.nis) + '</td><td>' + esc(s.nama) + '</td><td>' + esc(s.kelas) + '</td><td>' + sSetor + '</td><td>' + sTarik + '</td><td>' + (Number(s.saldo) || 0) + '</td></tr>';
+            });
+            (data.transaksiList || []).forEach(function (t, idx) {
+                trxTr += '<tr><td>' + (idx + 1) + '</td><td>' + esc(t.tanggal) + '</td><td>' + esc(t.nis) + '</td><td>' + esc(t.nama) + '</td><td>' + esc(t.kelas) + '</td><td>' + esc((t.tipe || '').toUpperCase()) + '</td><td>' + (Number(t.nominal) || 0) + '</td><td>' + esc(t.keperluan || '-') + '</td></tr>';
+            });
+            return '<p><b>' + esc(data.sekolah.nama) + '</b><br>Periode: ' + esc(data.periodeText) + '</p>' +
+                '<p style="font-weight:bold;margin:8px 0 4px">Rekapitulasi Saldo</p>' +
+                '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px" border="1" cellpadding="4"><tr style="background:#e2e8f0"><th>No</th><th>NIS</th><th>Nama</th><th>Kelas</th><th>Setor</th><th>Tarik</th><th>Saldo</th></tr>' +
+                (siswaTr || '<tr><td colspan="7">Kosong</td></tr>') +
+                '<tr style="font-weight:bold;background:#f1f5f9"><td colspan="4">TOTAL</td><td>' + gSetor + '</td><td>' + gTarik + '</td><td>' + gSaldo + '</td></tr></table>' +
+                '<p style="font-weight:bold;margin:8px 0 4px">Jurnal Transaksi</p>' +
+                '<table style="width:100%;border-collapse:collapse;font-size:11px" border="1" cellpadding="4"><tr style="background:#e2e8f0"><th>No</th><th>Tanggal</th><th>NIS</th><th>Nama</th><th>Kelas</th><th>Jenis</th><th>Nominal</th><th>Ket</th></tr>' +
+                (trxTr || '<tr><td colspan="8">Kosong</td></tr>') + '</table>';
         }
 
         function exportRekapExcel() {
-            /*
-             * TIDAK memakai a.click() programatis / XLSX.write / data-URI panjang.
-             * Alur aman WebView:
-             *  1. Siapkan file HTML-Excel (.xls)
-             *  2. Pasang ke tautan <a download> yang nyata di modal
-             *  3. User menekan tautan itu sendiri → WebView tangani unduhan
-             */
+            /* AppCreator24: JANGAN Blob / data-URI / a.click — hanya siapkan data + modal Share */
             try {
                 var data = getFilteredRekapData();
-                var fileName = 'Rekap_Tabungan_' + Date.now() + '.xls';
+                _excelShareText = buildExcelCsvText(data);
+                _excelShareName = 'Rekap_Tabungan_' + Date.now() + '.csv';
                 if (data.tipe === 'per_siswa' && data.selectedSiswaObj) {
                     var sn = (data.selectedSiswaObj.nama || 'Siswa').replace(/[^a-zA-Z0-9_-]/g, '_');
-                    fileName = 'Tabungan_' + sn + '_' + data.selectedSiswaObj.nis + '.xls';
-                }
-
-                var htmlDoc = buildExcelHtmlDocument(data);
-                var blob = new Blob(['\uFEFF' + htmlDoc], { type: 'application/vnd.ms-excel' });
-
-                /* Revoke URL lama agar tidak menumpuk memori */
-                if (_excelBlobUrl) {
-                    try { URL.revokeObjectURL(_excelBlobUrl); } catch (e) {}
-                    _excelBlobUrl = null;
-                }
-                _excelBlobUrl = URL.createObjectURL(blob);
-
-                var link = document.getElementById('excel-download-link');
-                if (link) {
-                    link.setAttribute('href', _excelBlobUrl);
-                    link.setAttribute('download', fileName);
+                    _excelShareName = 'Tabungan_' + sn + '_' + data.selectedSiswaObj.nis + '.csv';
                 }
 
                 var preview = document.getElementById('excel-preview-body');
                 if (preview) preview.innerHTML = buildExcelPreviewHtml(data);
 
+                var ta = document.getElementById('excel-raw-text');
+                if (ta) ta.value = _excelShareText;
+
                 try { closeModal('modal-rekap'); } catch (e) {}
                 openModal('modal-excel-download');
-                showToast("Tekan tombol hijau Unduh File Excel.", "success");
+                showToast("Tekan Bagikan / Simpan ke File.", "success");
             } catch (err) {
                 console.error('exportRekapExcel error:', err);
-                showToast("Gagal menyiapkan Excel. Gunakan Cetak PDF.", "error");
+                showToast("Gagal menyiapkan data. Gunakan Cetak PDF.", "error");
+            }
+        }
+
+        function shareExcelData() {
+            /* Web Share API — memunculkan menu sistem Android (Drive / Files / Excel)
+               Tidak memakai Blob unduhan → tidak crash di AppCreator24 */
+            try {
+                if (!_excelShareText) {
+                    showToast("Data kosong. Buka ulang Unduh Excel.", "error");
+                    return;
+                }
+                var title = _excelShareName || 'Rekap Tabungan';
+                var text = _excelShareText;
+
+                if (navigator.share) {
+                    navigator.share({
+                        title: title,
+                        text: text
+                    }).then(function () {
+                        showToast("Berhasil dibagikan / disimpan!", "success");
+                    }).catch(function (err) {
+                        if (err && err.name === 'AbortError') {
+                            showToast("Dibatalkan.", "info");
+                            return;
+                        }
+                        /* Share gagal → salin otomatis */
+                        copyExcelData();
+                    });
+                    return;
+                }
+
+                /* Fallback Android intent SHARE (teks) */
+                try {
+                    var intentUrl = 'intent:#Intent;action=android.intent.action.SEND;type=text/plain;' +
+                        'S.android.intent.extra.SUBJECT=' + encodeURIComponent(title) + ';' +
+                        'S.android.intent.extra.TEXT=' + encodeURIComponent(text.substring(0, 200000)) + ';' +
+                        'end';
+                    window.location.href = intentUrl;
+                    showToast("Membuka menu Bagikan sistem...", "info");
+                    return;
+                } catch (eIntent) {}
+
+                copyExcelData();
+            } catch (err) {
+                console.error('shareExcelData error:', err);
+                copyExcelData();
+            }
+        }
+
+        function copyExcelData() {
+            try {
+                if (!_excelShareText) {
+                    showToast("Data kosong.", "error");
+                    return;
+                }
+                var ok = false;
+                var ta = document.getElementById('excel-raw-text');
+                if (ta) {
+                    ta.value = _excelShareText;
+                    ta.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;z-index:-1;';
+                    ta.removeAttribute('aria-hidden');
+                    ta.focus();
+                    ta.select();
+                    if (ta.setSelectionRange) ta.setSelectionRange(0, _excelShareText.length);
+                    try { ok = document.execCommand('copy'); } catch (e1) {}
+                    ta.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;opacity:0;';
+                }
+                if (!ok && navigator.clipboard && navigator.clipboard.writeText) {
+                    try { navigator.clipboard.writeText(_excelShareText); ok = true; } catch (e2) {}
+                }
+                if (ok) {
+                    showToast("Data disalin! Buka Excel/Sheets → Tempel.", "success");
+                } else {
+                    showToast("Long-press tabel pratinjau, lalu Salin.", "info");
+                }
+            } catch (err) {
+                showToast("Long-press tabel pratinjau, lalu Salin.", "info");
             }
         }
 
         function doExcelFileDownload() {
-            /* Cadangan jika ada pemanggilan lama — arahkan ke tautan nyata */
-            try {
-                var link = document.getElementById('excel-download-link');
-                if (link && link.href && link.href !== '#' && link.href.indexOf('blob:') === 0) {
-                    /* Jangan a.click() — biarkan user yang menekan tautan di modal */
-                    showToast("Tekan tombol hijau Unduh File Excel di atas.", "info");
-                } else {
-                    exportRekapExcel();
-                }
-            } catch (e) {
-                showToast("Gunakan tombol hijau Unduh File Excel.", "info");
-            }
+            shareExcelData();
         }
 
         function downloadCSVFallback(data) {
             try { exportRekapExcel(); } catch (e) {
-                showToast("Gagal unduh. Silakan gunakan Cetak PDF.", "error");
+                showToast("Gagal. Silakan gunakan Cetak PDF.", "error");
             }
         }
 
